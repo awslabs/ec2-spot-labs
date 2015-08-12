@@ -1,0 +1,5 @@
+List of contributors:
+
+get_spot_duration.py:
+
+ - Alexei Besogonov - cyberax at amazon dot com
