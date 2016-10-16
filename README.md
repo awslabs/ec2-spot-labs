@@ -1,7 +1,7 @@
 aws-spot-labs
 =============
 
-**aws-spot-labs** is a collection of code examples and scripts that illustrates some of the Best Practices in using [AWS Spot Instances](https://aws.amazon.com/ec2/purchasing-options/spot-instances/)
+**aws-spot-labs** is a collection of code examples and scripts that illustrates some of the best practices in using [AWS Spot Instances](https://aws.amazon.com/ec2/purchasing-options/spot-instances/)
 
 
 
