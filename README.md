@@ -57,4 +57,4 @@ Please see **get_spot_duration.py --help** for additional options.
 Issues
 ======
 
-Please address any issues or feedback to dpush at amazon dot com
+Please address any issues or feedback via [issues](https://github.com/awslabs/ec2-spot-labs/issues).
