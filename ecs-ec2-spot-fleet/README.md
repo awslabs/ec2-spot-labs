@@ -2,7 +2,7 @@
 
 # Powering your Amazon ECS Cluster with Amazon EC2 Spot Instances
 
-Example AWS CloudFormation template for running an Amazon ECS cluster on Amazon EC2 Spot Instances.
+Example AWS CloudFormation template for running an Amazon ECS cluster on Amazon EC2 Spot Instances. Please see this [blog](https://aws.amazon.com/blogs/compute/powering-your-amazon-ecs-cluster-with-amazon-ec2-spot-instances/) post for more info.
 
 ## Getting Started
 
@@ -46,8 +46,8 @@ Comments, feedback, and pull requests are always welcome.
 
 ## Authors
 
-* [**Shawn O'Connor**](https://github.com/oak2278])
-* [**Chad Schmutzer**](https://github.com/schmutze])
+* [**Shawn O'Connor**](https://github.com/oak2278)
+* [**Chad Schmutzer**](https://github.com/schmutze)
 
 ## License
 
