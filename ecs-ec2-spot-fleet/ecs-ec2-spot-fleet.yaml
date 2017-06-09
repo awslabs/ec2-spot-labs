@@ -420,7 +420,7 @@ Resources:
 
                 script
 
-                echo $$ > /var/run/spot-instance-termination-notice-handler.pid
+                echo \$\$ > /var/run/spot-instance-termination-notice-handler.pid
 
                 exec /usr/local/bin/spot-instance-termination-notice-handler.sh
 
