@@ -54,7 +54,7 @@ Outputs:
   s3BucketId:
     Description: The S3 bucket ID
     Value:
-      Ref: s3BucketId
+      Ref: s3Bucket
   spotFleetId:
     Description: The Spot Fleet request ID
     Value:

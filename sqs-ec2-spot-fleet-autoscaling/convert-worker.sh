@@ -15,13 +15,13 @@ while sleep 5; do
     continue
   fi
 
-  logger "$0: Found $MESSAGES messages in $SQSQUEUE"
-
   JSON=$(aws sqs --output=json receive-message --queue-url $SQSQUEUE)
   RECEIPT=$(echo "$JSON" | jq -r '.Messages[] | .ReceiptHandle')
   BODY=$(echo "$JSON" | jq -r '.Messages[] | .Body')
-  INPUT=$(echo "$BODY" | jq -r '.Records[0] | .s3.object.key')
 
+  logger "$0: Found $MESSAGES messages in $SQSQUEUE. Details: JSON=$JSON, RECEIPT=$RECEIPT, BODY=$BODY"
+
+  INPUT=$(echo "$BODY" | jq -r '.Records[0] | .s3.object.key')
   FNAME=$(echo $INPUT | rev | cut -f2 -d"." | rev | tr '[:upper:]' '[:lower:]')
   FEXT=$(echo $INPUT | rev | cut -f1 -d"." | rev | tr '[:upper:]' '[:lower:]')
 
@@ -29,11 +29,11 @@ while sleep 5; do
 
     logger "$0: Found work to convert. Details: INPUT=$INPUT, FNAME=$FNAME, FEXT=$FEXT"
 
-    aws s3 cp s3://$S3SBUCKET/$INPUT /tmp
+    aws s3 cp s3://$S3BUCKET/$INPUT /tmp
 
-    # convert here /tmp/$INPUT /tmp/$FNAME.pdf
+    convert /tmp/$INPUT /tmp/$FNAME.pdf
 
-    # copy back here
+    aws s3 cp /tmp/$FNAME.pdf s3://$S3BUCKET
 
     # rm -rf /tmp/$FNAME.pdf
 
@@ -41,7 +41,7 @@ while sleep 5; do
 
   else
 
-    if [ "$RECEIPT" != "" ]; then
+    if [ -z "$RECEIPT" ]; then
     logger "$0: Skipping message - file not of type jpg, png, or gif. Deleting message from queue"
 
     JSON=$(aws sqs --output=json delete-message --queue-url $SQSQUEUE \
@@ -50,7 +50,7 @@ while sleep 5; do
 
   fi
 
-  if [ "$RECEIPT" != "" ]; then
+  if [ -z "$RECEIPT" ]; then
     logger "$0: Complete. Deleting message from queue"
 
     JSON=$(aws sqs --output=json delete-message --queue-url $SQSQUEUE \

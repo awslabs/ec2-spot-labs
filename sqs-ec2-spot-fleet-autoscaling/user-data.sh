@@ -8,7 +8,7 @@ yum -y --security update
 yum -y update aws-cli
 
 yum -y install \
-  awslogs jq
+  awslogs jq ImageMagick
 
 aws configure set default.region $REGION
 
