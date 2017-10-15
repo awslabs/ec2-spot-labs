@@ -248,7 +248,7 @@ Resources:
                 cd /root && git clone https://github.com/awslabs/ec2-spot-labs.git
 
                 REGION=${AWS::Region} S3BUCKET=${s3Bucket} SQSQUEUE=${sqsQueue} CLOUDWATCHLOGSGROUP=${cloudWatchLogsGroup}
-                WAITCONDITIONHANDLE="${spotFleetWaitConditionHandle}" bash /root/ec2-spot-labs/sqs-ec2-spot-fleet-autoscaling/user-data/user-data.sh
+                WAITCONDITIONHANDLE="${spotFleetWaitConditionHandle}" bash /root/ec2-spot-labs/sqs-ec2-spot-fleet-autoscaling/user-data.sh
 
                 '
         ReplaceUnhealthyInstances: true
