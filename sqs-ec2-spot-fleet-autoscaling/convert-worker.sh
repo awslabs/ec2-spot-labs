@@ -12,12 +12,21 @@ while sleep 5; do
   MESSAGES=$(echo "$JSON" | jq -r '.Attributes.ApproximateNumberOfMessages')
 
   if [ $MESSAGES -eq 0 ]; then
+
     continue
+
   fi
 
   JSON=$(aws sqs --output=json receive-message --queue-url $SQSQUEUE)
   RECEIPT=$(echo "$JSON" | jq -r '.Messages[] | .ReceiptHandle')
   BODY=$(echo "$JSON" | jq -r '.Messages[] | .Body')
+
+  if [ -z "$RECEIPT" ]; then
+
+    logger "$0: Empty receipt. Something went wrong."
+    continue
+
+  fi
 
   logger "$0: Found $MESSAGES messages in $SQSQUEUE. Details: JSON=$JSON, RECEIPT=$RECEIPT, BODY=$BODY"
 
@@ -33,28 +42,20 @@ while sleep 5; do
 
     convert /tmp/$INPUT /tmp/$FNAME.pdf
 
+    logger "$0: Convert done. Copying to S3 and cleaning up"
+
     aws s3 cp /tmp/$FNAME.pdf s3://$S3BUCKET
 
-    # rm -rf /tmp/$FNAME.pdf
+    rm -f /tmp/$INPUT /tmp/$FNAME.pdf
 
-    logger "$0: Convert done. Copying to S3 and cleaning up"
+    aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT
 
   else
 
-    if [ -z "$RECEIPT" ]; then
     logger "$0: Skipping message - file not of type jpg, png, or gif. Deleting message from queue"
 
-    JSON=$(aws sqs --output=json delete-message --queue-url $SQSQUEUE \
-      --receipt-handle $RECEIPT)
-    fi
+    aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT
 
-  fi
-
-  if [ -z "$RECEIPT" ]; then
-    logger "$0: Complete. Deleting message from queue"
-
-    JSON=$(aws sqs --output=json delete-message --queue-url $SQSQUEUE \
-      --receipt-handle $RECEIPT)
   fi
 
 done
