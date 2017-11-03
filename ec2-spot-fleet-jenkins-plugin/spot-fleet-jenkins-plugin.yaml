@@ -1,0 +1,725 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Environment for running a demo of the Spot fleet Jenkins plugin
+Mappings:
+  CidrMappings:
+    public-subnet-1:
+      CIDR: 10.0.1.0/24
+    public-subnet-2:
+      CIDR: 10.0.2.0/24
+    vpc:
+      CIDR: 10.0.0.0/16
+  amazonLinuxAmi:
+    ap-northeast-1:
+      AMI: ami-dac312b4
+    ap-southeast-1:
+      AMI: ami-dc9339bf
+    ap-southeast-2:
+      AMI: ami-1c47407f
+    ca-central-1:
+      AMI: ami-ebed508f
+    eu-central-1:
+      AMI: ami-af0fc0c0
+    eu-west-1:
+      AMI: ami-70edb016
+    eu-west-2:
+      AMI: ami-f1949e95
+    us-east-1:
+      AMI: ami-0b33d91d
+    us-east-2:
+      AMI: ami-c55673a0
+    us-west-1:
+      AMI: ami-165a0876
+    us-west-2:
+      AMI: ami-f173cc91
+  ecsAmi:
+    ap-northeast-1:
+      AMI: ami-30bdce57
+    ap-southeast-1:
+      AMI: ami-9f75ddfc
+    ap-southeast-2:
+      AMI: ami-cf393cac
+    ca-central-1:
+      AMI: ami-1b01b37f
+    eu-central-1:
+      AMI: ami-38dc1157
+    eu-west-1:
+      AMI: ami-e3fbd290
+    eu-west-2:
+      AMI: ami-77f6fc13
+    us-east-1:
+      AMI: ami-a58760b3
+    us-east-2:
+      AMI: ami-a6e4bec3
+    us-west-1:
+      AMI: ami-74cb9b14
+    us-west-2:
+      AMI: ami-5b6dde3b
+Outputs:
+  applicationLoadBalancer:
+    Description: The name of the Application Load Balancer
+    Value:
+      Ref: applicationLoadBalancer
+  applicationLoadBalancerUrl:
+    Description: The URL of the Application Load Balancer
+    Value:
+      Fn::Join:
+      - ''
+      - - http://
+        - Fn::GetAtt:
+          - applicationLoadBalancer
+          - DNSName
+  awsRegionName:
+    Description: The name of the AWS Region your template was launched in
+    Value:
+      Ref: AWS::Region
+  cloudWatchLogsGroupName:
+    Description: Name of the CloudWatch Logs Group
+    Value:
+      Ref: cloudWatchLogsGroup
+  ecsClusterName:
+    Description: The name of the ECS Cluster
+    Value:
+      Ref: ecsCluster
+  ecsService:
+    Description: The name of the ECS Service
+    Value:
+      Ref: ecsService
+  ecsSpotFleetName:
+    Description: The name of the ECS Spot fleet
+    Value:
+      Ref: ecsSpotFleet
+  jenkinsSpotFleetName:
+    Description: The name of the Jenkins Spot fleet
+    Value:
+      Ref: jenkinsSpotFleet
+  taskDefinition:
+    Description: The name of the ECS Task taskDefinition
+    Value:
+      Ref: taskDefinition
+Parameters:
+  ecsClusterTargetCapacity:
+    Default: '1'
+    Description: Number of EC2 Spot instances to initially launch in the ECS Cluster
+    Type: Number
+  ecsServiceTargetCapacity:
+    Default: '1'
+    Description: Number of tasks the ECS Service should initially start
+    Type: Number
+  jenkinsSpotFleetTargetCapacity:
+    Default: '1'
+    Description: Number of Spot instances to initially launch in the Spot fleet
+    Type: Number
+  keyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the EC2 instances
+    Type: AWS::EC2::KeyPair::KeyName
+  sourceCidr:
+    Default: 0.0.0.0/0
+    Description: Optional - CIDR/IP range for instance ssh access - defaults to 0.0.0.0/0
+    Type: String
+Resources:
+  applicationLoadBalancer:
+    DependsOn:
+    - applicationLoadBalancerSecurityGroup
+    Properties:
+      LoadBalancerAttributes:
+      - Key: idle_timeout.timeout_seconds
+        Value: 30
+      Scheme: internet-facing
+      SecurityGroups:
+      - Ref: applicationLoadBalancerSecurityGroup
+      Subnets:
+      - Ref: publicSubnet1
+      - Ref: publicSubnet2
+      Tags:
+      - Key: Name
+        Value: Application Load Balancer
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+  applicationLoadBalancerListener:
+    DependsOn:
+    - applicationLoadBalancer
+    - applicationLoadBalancerTargetGroup
+    Properties:
+      DefaultActions:
+      - TargetGroupArn:
+          Ref: applicationLoadBalancerTargetGroup
+        Type: forward
+      LoadBalancerArn:
+        Ref: applicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+    Type: AWS::ElasticLoadBalancingV2::Listener
+  applicationLoadBalancerSecurityGroup:
+    DependsOn:
+    - vpc
+    Properties:
+      GroupDescription: Application Load Balancer Security Group
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: 80
+        IpProtocol: tcp
+        ToPort: 80
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::SecurityGroup
+  applicationLoadBalancerTargetGroup:
+    DependsOn:
+    - vpc
+    Properties:
+      HealthCheckIntervalSeconds: 5
+      HealthCheckPath: /login
+      HealthCheckTimeoutSeconds: 2
+      HealthyThresholdCount: 2
+      Port: 8080
+      Protocol: HTTP
+      Tags:
+      - Key: Name
+        Value: Application Load Balancer Target Group
+      TargetGroupAttributes:
+      - Key: stickiness.enabled
+        Value: true
+      UnhealthyThresholdCount: 10
+      VpcId:
+        Ref: vpc
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+  attachGateway:
+    DependsOn:
+    - vpc
+    - internetGateway
+    Properties:
+      InternetGatewayId:
+        Ref: internetGateway
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::VPCGatewayAttachment
+  cloudWatchLogsGroup:
+    Properties:
+      RetentionInDays: 7
+    Type: AWS::Logs::LogGroup
+  ecsCluster:
+    Type: AWS::ECS::Cluster
+  ecsService:
+    DependsOn:
+    - ecsCluster
+    - ecsServiceRole
+    - taskDefinition
+    - applicationLoadBalancer
+    - applicationLoadBalancerListener
+    - applicationLoadBalancerTargetGroup
+    Properties:
+      Cluster:
+        Ref: ecsCluster
+      DesiredCount:
+        Ref: ecsServiceTargetCapacity
+      LoadBalancers:
+      - ContainerName: jenkins
+        ContainerPort: 8080
+        TargetGroupArn:
+          Ref: applicationLoadBalancerTargetGroup
+      Role:
+        Ref: ecsServiceRole
+      TaskDefinition:
+        Ref: taskDefinition
+    Type: AWS::ECS::Service
+  ecsServiceRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ecs.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole
+      Path: /
+    Type: AWS::IAM::Role
+  ecsSpotFleet:
+    DependsOn:
+    - spotFleetRole
+    - spotFleetInstanceProfile
+    - ecsCluster
+    - securityGroup
+    Properties:
+      SpotFleetRequestConfigData:
+        AllocationStrategy: diversified
+        IamFleetRole:
+          Fn::GetAtt:
+          - spotFleetRole
+          - Arn
+        LaunchSpecifications:
+        - IamInstanceProfile:
+            Arn:
+              Fn::GetAtt:
+              - spotFleetInstanceProfile
+              - Arn
+          ImageId:
+            Fn::FindInMap:
+            - ecsAmi
+            - Ref: AWS::Region
+            - AMI
+          InstanceType: m4.large
+          KeyName:
+            Ref: keyName
+          Monitoring:
+            Enabled: true
+          SecurityGroups:
+          - GroupId:
+              Ref: securityGroup
+          SubnetId:
+            Fn::Join:
+            - ','
+            - - Ref: publicSubnet1
+              - Ref: publicSubnet2
+          UserData:
+            Fn::Base64:
+              Fn::Sub: '#!/bin/bash -xe
+
+                yum -y --security update
+
+                yum -y update aws-cli
+
+                echo ECS_CLUSTER=${ecsCluster} >> /etc/ecs/ecs.config
+
+                '
+        - IamInstanceProfile:
+            Arn:
+              Fn::GetAtt:
+              - spotFleetInstanceProfile
+              - Arn
+          ImageId:
+            Fn::FindInMap:
+            - ecsAmi
+            - Ref: AWS::Region
+            - AMI
+          InstanceType: m4.xlarge
+          KeyName:
+            Ref: keyName
+          Monitoring:
+            Enabled: true
+          SecurityGroups:
+          - GroupId:
+              Ref: securityGroup
+          SubnetId:
+            Fn::Join:
+            - ','
+            - - Ref: publicSubnet1
+              - Ref: publicSubnet2
+          UserData:
+            Fn::Base64:
+              Fn::Sub: '#!/bin/bash -xe
+
+                yum -y --security update
+
+                yum -y update aws-cli
+
+                echo ECS_CLUSTER=${ecsCluster} >> /etc/ecs/ecs.config
+
+                '
+        - IamInstanceProfile:
+            Arn:
+              Fn::GetAtt:
+              - spotFleetInstanceProfile
+              - Arn
+          ImageId:
+            Fn::FindInMap:
+            - ecsAmi
+            - Ref: AWS::Region
+            - AMI
+          InstanceType: c4.large
+          KeyName:
+            Ref: keyName
+          Monitoring:
+            Enabled: true
+          SecurityGroups:
+          - GroupId:
+              Ref: securityGroup
+          SubnetId:
+            Fn::Join:
+            - ','
+            - - Ref: publicSubnet1
+              - Ref: publicSubnet2
+          UserData:
+            Fn::Base64:
+              Fn::Sub: '#!/bin/bash -xe
+
+                yum -y --security update
+
+                yum -y update aws-cli
+
+                echo ECS_CLUSTER=${ecsCluster} >> /etc/ecs/ecs.config
+
+                '
+        - IamInstanceProfile:
+            Arn:
+              Fn::GetAtt:
+              - spotFleetInstanceProfile
+              - Arn
+          ImageId:
+            Fn::FindInMap:
+            - ecsAmi
+            - Ref: AWS::Region
+            - AMI
+          InstanceType: c4.xlarge
+          KeyName:
+            Ref: keyName
+          Monitoring:
+            Enabled: true
+          SecurityGroups:
+          - GroupId:
+              Ref: securityGroup
+          SubnetId:
+            Fn::Join:
+            - ','
+            - - Ref: publicSubnet1
+              - Ref: publicSubnet2
+          UserData:
+            Fn::Base64:
+              Fn::Sub: '#!/bin/bash -xe
+
+                yum -y --security update
+
+                yum -y update aws-cli
+
+                echo ECS_CLUSTER=${ecsCluster} >> /etc/ecs/ecs.config
+
+                '
+        - IamInstanceProfile:
+            Arn:
+              Fn::GetAtt:
+              - spotFleetInstanceProfile
+              - Arn
+          ImageId:
+            Fn::FindInMap:
+            - ecsAmi
+            - Ref: AWS::Region
+            - AMI
+          InstanceType: r3.large
+          KeyName:
+            Ref: keyName
+          Monitoring:
+            Enabled: true
+          SecurityGroups:
+          - GroupId:
+              Ref: securityGroup
+          SubnetId:
+            Fn::Join:
+            - ','
+            - - Ref: publicSubnet1
+              - Ref: publicSubnet2
+          UserData:
+            Fn::Base64:
+              Fn::Sub: '#!/bin/bash -xe
+
+                yum -y --security update
+
+                yum -y update aws-cli
+
+                echo ECS_CLUSTER=${ecsCluster} >> /etc/ecs/ecs.config
+
+                '
+        - IamInstanceProfile:
+            Arn:
+              Fn::GetAtt:
+              - spotFleetInstanceProfile
+              - Arn
+          ImageId:
+            Fn::FindInMap:
+            - ecsAmi
+            - Ref: AWS::Region
+            - AMI
+          InstanceType: r3.xlarge
+          KeyName:
+            Ref: keyName
+          Monitoring:
+            Enabled: true
+          SecurityGroups:
+          - GroupId:
+              Ref: securityGroup
+          SubnetId:
+            Fn::Join:
+            - ','
+            - - Ref: publicSubnet1
+              - Ref: publicSubnet2
+          UserData:
+            Fn::Base64:
+              Fn::Sub: '#!/bin/bash -xe
+
+                yum -y --security update
+
+                yum -y update aws-cli
+
+                echo ECS_CLUSTER=${ecsCluster} >> /etc/ecs/ecs.config
+
+                '
+        SpotPrice: 1.705
+        TargetCapacity:
+          Ref: ecsClusterTargetCapacity
+        TerminateInstancesWithExpiration: true
+    Type: AWS::EC2::SpotFleet
+  internetGateway:
+    DependsOn:
+    - vpc
+    Type: AWS::EC2::InternetGateway
+  jenkinsSpotFleet:
+    DependsOn:
+    - securityGroup
+    Properties:
+      SpotFleetRequestConfigData:
+        AllocationStrategy: diversified
+        IamFleetRole:
+          Fn::GetAtt:
+          - spotFleetRole
+          - Arn
+        LaunchSpecifications:
+        - ImageId:
+            Fn::FindInMap:
+            - amazonLinuxAmi
+            - Ref: AWS::Region
+            - AMI
+          InstanceType: m4.large
+          KeyName:
+            Ref: keyName
+          Monitoring:
+            Enabled: true
+          SecurityGroups:
+          - GroupId:
+              Ref: securityGroup
+          SubnetId:
+            Fn::Join:
+            - ','
+            - - Ref: publicSubnet1
+              - Ref: publicSubnet2
+          UserData:
+            Fn::Base64:
+              Fn::Sub: '#!/bin/bash -xe
+
+                yum -y --security update
+
+                yum -y update aws-cli
+
+                yum -y groupinstall "Development Tools"
+
+                yum -y remove java-1.7.0
+
+                yum -y install java-1.8*
+
+                '
+        SpotPrice: 1.705
+        TargetCapacity:
+          Ref: jenkinsSpotFleetTargetCapacity
+        TerminateInstancesWithExpiration: true
+    Type: AWS::EC2::SpotFleet
+  publicRoute:
+    DependsOn:
+    - publicRouteTable
+    - internetGateway
+    - attachGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: internetGateway
+      RouteTableId:
+        Ref: publicRouteTable
+    Type: AWS::EC2::Route
+  publicRouteTable:
+    DependsOn:
+    - vpc
+    - attachGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: Public Route Table
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::RouteTable
+  publicSubnet1:
+    DependsOn: attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - public-subnet-1
+        - CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: Public Subnet 1
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet1RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet1
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet1
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  publicSubnet2:
+    DependsOn: attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - public-subnet-2
+        - CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: Public Subnet 2
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet2RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet2
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet2
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  securityGroup:
+    DependsOn:
+    - vpc
+    Properties:
+      GroupDescription: Spot fleet instance security group
+      SecurityGroupIngress:
+      - CidrIp:
+          Ref: sourceCidr
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
+      - CidrIp: 0.0.0.0/0
+        FromPort: 8080
+        IpProtocol: tcp
+        ToPort: 8080
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::SecurityGroup
+  securityGroupIngress:
+    DependsOn:
+    - securityGroup
+    - applicationLoadBalancerSecurityGroup
+    Properties:
+      FromPort: 31000
+      GroupId:
+        Fn::GetAtt:
+        - securityGroup
+        - GroupId
+      IpProtocol: tcp
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+        - applicationLoadBalancerSecurityGroup
+        - GroupId
+      ToPort: 61000
+    Type: AWS::EC2::SecurityGroupIngress
+  spotFleetInstanceProfile:
+    DependsOn:
+    - spotFleetInstanceRole
+    Properties:
+      Path: /
+      Roles:
+      - Ref: spotFleetInstanceRole
+    Type: AWS::IAM::InstanceProfile
+  spotFleetInstanceRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole
+      Path: /
+    Type: AWS::IAM::Role
+  spotFleetRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - spotfleet.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole
+      Path: /
+    Type: AWS::IAM::Role
+  taskDefinition:
+    DependsOn:
+    - cloudWatchLogsGroup
+    Properties:
+      ContainerDefinitions:
+      - Image: jenkins/jenkins:lts
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group:
+              Ref: cloudWatchLogsGroup
+            awslogs-region:
+              Ref: AWS::Region
+        Memory: '2048'
+        Name: jenkins
+        PortMappings:
+        - ContainerPort: 8080
+          HostPort: 0
+          Protocol: tcp
+      TaskRoleArn:
+        Ref: taskDefinitionRole
+    Type: AWS::ECS::TaskDefinition
+  taskDefinitionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ecs-tasks.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetAutoscaleRole
+      Path: /
+    Type: AWS::IAM::Role
+  vpc:
+    Properties:
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpc
+        - CIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+      - Key: Name
+        Value: Spot fleet Jenkins plugin demo
+    Type: AWS::EC2::VPC
+...
