@@ -1,0 +1,139 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deploys an AWS Lambda function to tag and log current EC2 Spot market and bid prices
+  for your fulfilled EC2 Spot Requests
+Metadata:
+  Author:
+    Description: Chad Schmutzer <schmutze@amazon.com>
+  License:
+    Description: 'Copyright 2017 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+  Source:
+    Description: https://github.com/awslabs/ec2-spot-labs
+Outputs:
+  lambdaFunction:
+    Description: The name of the Lambda function used for metric collection
+    Value:
+      Ref: lambdaFunction
+  metricCollectionRate:
+    Description: The rate of the CloudWatch Event schedule expression
+    Value:
+      Ref: metricCollectionRate
+Parameters:
+  metricCollectionRate:
+    AllowedValues:
+    - rate(1 minute)
+    - rate(5 minutes)
+    - rate(15 minutes)
+    - rate(1 hour)
+    - rate(4 hours)
+    - rate(8 hours)
+    - rate(12 hours)
+    - rate(1 day)
+    Default: rate(1 hour)
+    Type: String
+Resources:
+  lambdaFunction:
+    DependsOn: lambdaFunctionRole
+    Properties:
+      Code:
+        ZipFile:
+          Fn::Sub: "from __future__ import print_function\n\nimport json, boto3\n\nfrom datetime\
+            \ import datetime\n\ndef handler(event, context):\n  print('Loading function.')\n\
+            \  now = datetime.utcnow()\n  ec2Client = boto3.client('ec2')\n  cwClient = boto3.client('cloudwatch')\n\
+            \  response = ec2Client.describe_spot_instance_requests(Filters=[{'Name':'state',\
+            \ 'Values': ['active'], 'Name': 'status-code', 'Values': ['fulfilled']}])\n  instances\
+            \ = response['SpotInstanceRequests']\n  for i in instances:\n    response = ec2Client.describe_spot_price_history(StartTime=now,EndTime=now,InstanceTypes=[i['LaunchSpecification']['InstanceType']],AvailabilityZone=i['LaunchedAvailabilityZone'],ProductDescriptions=[i['ProductDescription']])\n\
+            \    pricehistory = response['SpotPriceHistory']\n    if pricehistory == []:\n \
+            \     response = ec2Client.describe_spot_price_history(StartTime=now,EndTime=now,InstanceTypes=[i['LaunchSpecification']['InstanceType']],AvailabilityZone=i['LaunchedAvailabilityZone'],ProductDescriptions=[i['ProductDescription']+'\
+            \ (Amazon VPC)'])\n      pricehistory = response['SpotPriceHistory']\n    try:\n\
+            \      response = ec2Client.create_tags(Resources=[i['InstanceId']],Tags=[{'Key':'EC2\
+            \ Spot Market Price', 'Value': pricehistory[0]['SpotPrice']}])\n    except:\n  \
+            \    print('Unable to create tag for InstanceId:', i['InstanceId'])\n    try:\n\
+            \      response = ec2Client.create_tags(Resources=[i['InstanceId']],Tags=[{'Key':'EC2\
+            \ Spot Bid Price', 'Value': i['SpotPrice']}])\n    except:\n      print('Unable\
+            \ to create tag for InstanceId:', i['InstanceId'])\n    for t in i['Tags']:\n  \
+            \    if t['Key'] == 'aws:ec2spot:fleet-request-id':\n        try:\n          cwClient.put_metric_data(Namespace='EC2\
+            \ Spot Instance Pricing',MetricData=[{'MetricName': 'Hourly Price','Dimensions':\
+            \ [{'Name': 'FleetRequestId','Value': t['Value']}],'Timestamp': now,'Value': float(pricehistory[0]['SpotPrice'])}])\n\
+            \          cwClient.put_metric_data(Namespace='EC2 Spot Instance Pricing',MetricData=[{'MetricName':\
+            \ 'Hourly Price','Dimensions': [{'Name': 'FleetRequestId','Value': t['Value']},\
+            \ {'Name': 'InstanceId','Value': i['InstanceId']}],'Timestamp': now,'Value': float(pricehistory[0]['SpotPrice'])}])\n\
+            \        except:\n          print('Unable to put custom metric for FleetRequestId:',\
+            \ t['Value'])\n      else:\n        try:\n          cwClient.put_metric_data(Namespace='EC2\
+            \ Spot Instance Pricing',MetricData=[{'MetricName': 'Hourly Price','Dimensions':\
+            \ [{'Name:': 'InstanceId','Value': i['InstanceId']}],'Timestamp': now,'Value': float(pricehistory[0]['SpotPrice'])}])\n\
+            \        except:\n          print('Unable to put custom metrick for InstanceId:',\
+            \ i['InstanceId'])\n  print('Function complete.')\n  return('complete')"
+      Description: AWS Lambda function to log EC2 Spot bid prices
+      Handler: index.handler
+      Role:
+        Fn::GetAtt:
+        - lambdaFunctionRole
+        - Arn
+      Runtime: python2.7
+      Timeout: 25
+    Type: AWS::Lambda::Function
+  lambdaFunctionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+        Version: '2012-10-17'
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - ec2:Describe*
+            - ec2:CreateTags
+            - cloudwatch:PutMetricData
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName: EC2SpotBidPriceLogging
+    Type: AWS::IAM::Role
+  scheduledRule:
+    DependsOn: lambdaFunction
+    Properties:
+      Description: Schedule rule to run EC2 Spot Bid Price logging lambda function
+      ScheduleExpression:
+        Ref: metricCollectionRate
+      State: ENABLED
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - lambdaFunction
+          - Arn
+        Id: Version1
+    Type: AWS::Events::Rule
+  scheduledRulePermissions:
+    DependsOn:
+    - lambdaFunction
+    - scheduledRule
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: lambdaFunction
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - scheduledRule
+        - Arn
+    Type: AWS::Lambda::Permission
+...
