@@ -1,0 +1,74 @@
+#!/bin/sh
+#
+# uWSGI daemon
+#
+# chkconfig:   - 85 15
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ "$NETWORKING" = "no" ] && exit 0
+
+uwsgi="/var/www/mustacheme/venv/bin/uwsgi"
+prog=$(basename $uwsgi)
+
+pidfile="/var/run/${prog}.pid"
+lockfile="/var/lock/subsys/uwsgi"
+
+UWSGI_CONF_FILE="/var/www/mustacheme/nginx/uwsgi.ini"
+UWSGI_LOG_FILE="/var/www/mustacheme/nginx/uwsgi.log"
+
+
+start() {
+    [ -x $uwsgi ] || exit 5
+    [ -f $UWSGI_CONF_FILE ] || exit 6
+    echo -n $"Starting $prog: "
+    daemon $uwsgi --daemonize $UWSGI_LOG_FILE --ini $UWSGI_CONF_FILE
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && touch $lockfile
+    return $retval
+}
+
+stop() {
+    echo -n $"Stopping $prog: "
+    pkill uwsgi
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && rm -f $lockfile
+    return $retval
+}
+
+restart() {
+    stop
+    start
+}
+
+rh_status() {
+    status $prog
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
+case "$1" in
+    start)
+        rh_status_q && exit 0
+        $1
+        ;;
+    stop)
+        rh_status_q || exit 0
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|restart}"
+        exit 2
+esac

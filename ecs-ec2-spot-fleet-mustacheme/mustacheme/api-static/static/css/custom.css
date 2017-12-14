@@ -1,0 +1,348 @@
+/*############################################################################*/
+/*                                                                            */
+/*   Coauthors: Antoine Eddi (@antoeddi) & Philippe Desmaison (@desmaisn)     */
+/*                                                                            */
+/*   Team: EMEA Partner Solutions Architects                                  */
+/*   Date: March 2016                                                         */
+/*                                                                            */
+/*############################################################################*/
+
+html,
+body {
+	font-family: Lucida Grande,Lucida Sans Unicode,Arial,sans-serif;
+	color: #503F3F;
+	overflow-x: hidden;
+	height: 100%;
+}
+
+.no-select {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	cursor: default;
+}
+
+.container-fluid {
+	display: table;
+	padding: 0 5%;
+	width: 100%;
+	height: 100%;
+	min-height: 100%;
+	-webkit-box-shadow: inset 0 0 35px -10px rgba(0,0,0,.3);
+			box-shadow: inset 0 0 35px -10px rgba(0,0,0,.3);
+}
+
+#page-loader {
+	position : fixed;
+	z-index: 9999;
+	background : url('../img/loader.gif') 50% 50% no-repeat;
+	background-color: white;
+	top : 0px;
+	left : 0px;
+	height : 100%;
+	width : 100%;
+	cursor : wait;
+}
+
+.vertical-alignment-helper {
+    display: table;
+    height: 100%;
+    width: 100%;
+    pointer-events: none;
+}
+.vertical-align-center {
+    display: table-cell;
+    vertical-align: middle;
+    pointer-events: none;
+}
+.modal-content {
+    width: inherit;
+    height: inherit;
+    margin: 0 auto;
+    pointer-events: all;
+}
+h4.modal-header {
+	font-weight: bold;
+}
+div.modal-body {
+	text-align: center;
+}
+
+
+.page-header {
+	margin: 14px 0 20px;
+}
+
+.page-header h1 {
+	font-size: 30px;
+	text-shadow: 1px 1px 1px #9C9B9B;
+    display: inline-block;
+}
+
+#edition small {
+	color: gray;
+	font-size: 20px;
+	font-style: oblique;
+	text-shadow: 1px 1px 1px #BDBBBB;
+	position: relative;
+	right: 50px;
+	bottom: 34px;
+}
+
+
+#edition {
+	margin-bottom: -35px;
+	text-align: right;
+}
+
+.page-header img {
+    margin: 0 3%;
+    display: inline-block;
+    position: relative;
+    bottom: 38px;
+	width: 98px;
+	animation: pulsate 20s linear infinite;
+	-webkit-animation: pulsate 20s linear infinite;
+	-moz-animation: pulsate 20s linear infinite;
+	-o-animation: pulsate 20s linear infinite;
+	-ms-animation: pulsate 20s linear infinite;
+}
+@keyframes pulsate {
+	9%{transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	10%{transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	11%{transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	12%{transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	13%{transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	14%{transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	15%{transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+}
+@-webkit-keyframes pulsate {
+	9%{-webkit-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	10%{-webkit-transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	11%{-webkit-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	12%{-webkit-transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	13%{-webkit-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	14%{-webkit-transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	15%{-webkit-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+}
+@-moz-keyframes pulsate {
+	9%{-moz-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	10%{-moz-transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	11%{-moz-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	12%{-moz-transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	13%{-moz-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	14%{-moz-transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	15%{-moz-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+}
+@-o-keyframes pulsate {
+	9%{-o-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	10%{-o-transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	11%{-o-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	12%{-o-transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	13%{-o-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	14%{-o-transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	15%{-o-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+}
+@-ms-keyframes pulsate {
+	9%{-ms-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	10%{-ms-transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	11%{-ms-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	12%{-ms-transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	13%{-ms-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+	14%{-ms-transform: rotate(10deg) translate(0px, 5px) skew(2deg, 2deg)}
+	15%{-ms-transform: rotate(0deg) translate(0px, 0px) skew(0deg, 0deg)}
+}
+
+
+#panel-infos {
+	margin-top: 22px;
+}
+
+.panel-heading {
+	cursor: pointer;
+	font-size: 18px;
+}
+
+h4.list-group-item-heading {
+	font-size: 16px;
+}
+
+p.list-group-item-text {
+	text-align: right;
+	color: #1E1E92;
+}
+.list-group-item-text > img {
+	text-align: center;
+}
+
+.panel-body {
+	padding: 0;
+}
+
+#map-display {
+	margin: 10px;
+}
+
+
+
+.carousel .carousel-inner {
+	border: 1px solid gray;
+	border-radius: 3px;
+	width:100%;
+	background: #ffa319;
+	background: -moz-radial-gradient(center, ellipse cover, #ffa319 40%, #ed8200 100%);
+	background: -webkit-radial-gradient(center, ellipse cover, #ffa319 40%,#ed8200 100%);
+	background: radial-gradient(ellipse at center, #ffa319 40%,#ed8200 100%);
+	-moz-box-shadow: inset 1px 1px 5px 2px rgba(0, 0, 0, 0.19);
+	-webkit-box-shadow: inset 1px 1px 4px 3px rgba(0, 0, 0, 0.19);
+	-o-box-shadow: inset 1px 1px 5px 2px rgba(0, 0, 0, 0.19);
+	box-shadow: inset 1px 1px 5px 2px rgba(0, 0, 0, 0.19);
+}
+
+.carousel-inner > .item > a > img {
+	margin: 0 auto;
+	max-width: 100%;
+	max-height: 100%;
+	-moz-box-shadow: 1px 1px 3px 3px rgba(0, 0, 0, 0.19);
+	-webkit-box-shadow: 1px 1px 3px 3px rgba(0, 0, 0, 0.19);
+	-o-box-shadow: 1px 1px 3px 3px rgba(0, 0, 0, 0.19);
+	box-shadow: 1px 1px 3px 3px rgba(0, 0, 0, 0.19);
+}
+
+.car-control button {
+	margin: 10px;
+	font-size: 16px;
+	-moz-box-shadow: 1px 1px 1px 0px #656565;
+	-webkit-box-shadow: 1px 1px 1px 0px #656565;
+	-o-box-shadow: 1px 1px 1px 0px #656565;
+	box-shadow: 1px 1px 1px 0px #656565;
+}
+
+#car-prev {
+	text-align: left;
+}
+
+#car-next {
+	text-align: right;
+}
+
+#buttons-bar {
+	text-align: center;
+}
+
+.ssk {
+	-moz-box-shadow: 2px 2px 6px -2px #656565;
+	-webkit-box-shadow: 2px 2px 6px -2px #656565;
+	-o-box-shadow: 2px 2px 6px -2px #656565;
+	box-shadow: 2px 2px 6px -2px #656565;
+}
+
+#dropcontainer {
+	text-align: center;
+	width: 100%;
+	height: 100%;
+	color: #4E4E50;
+}
+
+#dropcontainer h3 {
+	text-shadow: 1px 1px 1px rgba(33, 33, 33, 0.5);
+	font-size: 18px;
+}
+
+#dropzone {
+	margin: 0 auto;
+	margin-top: 10%;
+	border: 10px dotted #4E4E50;
+	border-radius: 2%;
+	width: 40%;
+	height: 40%;
+	background: url('../img/drop.png') 50% 50% no-repeat;
+	background-size: contain;
+	cursor: pointer;
+}
+
+#dropzone.mobile {
+	background: url('../img/touch.png') 50% 50% no-repeat;
+	background-size: contain;
+}
+
+#dropzone img {
+	opacity: 0.9;
+	margin: 0 auto;
+	max-width:100%;
+	max-height:100%;
+}
+
+#dropzone.hovered, #dropzone:hover {
+	background-color: rgba(78, 78, 80, 0.6);
+}
+
+#dropzone.dropped {
+	background: none;
+	background-color: rgba(78, 78, 80, 0.7);
+}
+
+@media (min-width: 540px) {
+	.page-header {
+		margin: 42px 0 20px;
+	}
+
+	.page-header h1 br {
+		display: none;
+	}
+
+	.page-header img {
+		margin: 0 1%;
+		bottom: 15px;
+		width: 120px;
+	}
+
+	#edition small {
+		position: relative;
+		top: initial;
+		right: 5%;
+		bottom: 48px;
+		font-size: 25px;
+	}
+
+	#dropzone {
+		margin-top: 15%;
+		border: 10px dashed #4E4E50;
+	}
+
+	#dropcontainer h3 {
+		font-size: 24px;
+	}
+}
+
+@media (min-width: 768px) {
+	#edition {
+		text-align: left;
+	}
+
+	#edition small {
+		right: initial;
+		left: 500px;
+	}
+
+	.page-header h1 {
+		font-size: 40px;
+	}
+}
+
+@media (min-width: 992px) {
+	.page-header h1 {
+		font-size: 50px;
+	}
+
+	#edition small {
+		left: 600px;
+	}
+
+	#panel-infos {
+		margin-top: 0;
+	}
+}
