@@ -1,0 +1,138 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Example of monitoring for EC2 Spot Instance state changes in CloudWatch Events
+  and Lambda Events
+Metadata:
+  Author:
+    Description: Chad Schmutzer <schmutze@amazon.com>
+  License:
+    Description: 'Copyright 2017 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+Outputs:
+  awsRegionId:
+    Description: The AWS Region ID your template was launched in
+    Value:
+      Ref: AWS::Region
+  snsTopic:
+    Description: SNS topic ARN
+    Value:
+      Ref: snsTopic
+Resources:
+  eventRule:
+    DependsOn:
+    - snsTopic
+    Properties:
+      Description: Events rule for EC2 Instance State-change Notification
+      EventPattern:
+        detail-type:
+        - EC2 Instance State-change Notification
+        source:
+        - aws.ec2
+      State: ENABLED
+      Targets:
+      - Arn:
+          Ref: snsTopic
+        Id:
+          Fn::GetAtt:
+          - snsTopic
+          - TopicName
+      - Arn:
+          Fn::GetAtt:
+          - lambdaFunction
+          - Arn
+        Id:
+          Ref: lambdaFunction
+    Type: AWS::Events::Rule
+  lambdaFunction:
+    DependsOn:
+    - lambdaFunctionRole
+    Properties:
+      Code:
+        ZipFile: "import boto3\ndef handler(event, context):\n  instanceId = event['detail']['instance-id']\n\
+          \  instanceState = event['detail']['state']\n  ec2client = boto3.client('ec2')\n \
+          \ try:\n    response = ec2client.describe_instances(Filters=[{'Name': 'instance-lifecycle','Values':\
+          \ ['spot']}],InstanceIds=[instanceId])\n  except:\n    print(\"Unable to describe\
+          \ instance ID:\", instanceId)\n  if response['Reservations']:\n    print(\"Spot Instance\
+          \ found:\", instanceId, \"State:\", instanceState)\n  else:\n    print(\"Spot Instance\
+          \ NOT found - skipping\", instanceId, \"State:\", instanceState)\n  return\n"
+      Handler: index.handler
+      Role:
+        Fn::GetAtt:
+        - lambdaFunctionRole
+        - Arn
+      Runtime: python3.6
+    Type: AWS::Lambda::Function
+  lambdaFunctionPermission:
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+        - lambdaFunction
+        - Arn
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - eventRule
+        - Arn
+    Type: AWS::Lambda::Permission
+  lambdaFunctionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action: ec2:DescribeInstances
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - lambdaFunctionRole
+    Type: AWS::IAM::Role
+  snsTopic:
+    Properties:
+      DisplayName: SNS Topic for EC2 Spot Instance State-change Notification
+    Type: AWS::SNS::Topic
+  snsTopicPolicy:
+    DependsOn:
+    - snsTopic
+    Properties:
+      PolicyDocument:
+        Id:
+          Fn::GetAtt:
+          - snsTopic
+          - TopicName
+        Statement:
+        - Action: sns:Publish
+          Effect: Allow
+          Principal:
+            Service:
+            - events.amazonaws.com
+          Resource:
+            Ref: snsTopic
+        Version: '2012-10-17'
+      Topics:
+      - Ref: snsTopic
+    Type: AWS::SNS::TopicPolicy
+...
