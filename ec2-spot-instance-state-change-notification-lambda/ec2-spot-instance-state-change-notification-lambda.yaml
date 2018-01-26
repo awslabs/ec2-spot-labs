@@ -1,7 +1,7 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
 Description: Example of monitoring for EC2 Spot Instance state changes in CloudWatch Events
-  and Lambda Events
+  and Lambda
 Metadata:
   Author:
     Description: Chad Schmutzer <schmutze@amazon.com>
