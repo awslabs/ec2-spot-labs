@@ -32,6 +32,9 @@ Resources:
     Properties:
       Description: Events rule for EC2 Instance State-change Notification
       EventPattern:
+        detail:
+          state:
+          - running
         detail-type:
         - EC2 Instance State-change Notification
         source:

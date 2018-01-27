@@ -94,7 +94,7 @@ Resources:
           \  instanceAction = event['detail']['instance-action']\n  ec2client = boto3.client('ec2')\n\
           \  try:\n    response = ec2client.describe_instances(Filters=[{'Name': 'tag-key','Values':\
           \ ['targetGroup']}],InstanceIds=[instanceId])\n    print(response)\n  except:\n  \
-          \  print(\"Either the instance ID was not found or the tag key 'targetGroup' was not\
+          \  print(\"Either the instance id was not found or the tag key 'targetGroup' was not\
           \ found. No action is being taken.\")\n  return\n"
       Handler: index.handler
       Role:
