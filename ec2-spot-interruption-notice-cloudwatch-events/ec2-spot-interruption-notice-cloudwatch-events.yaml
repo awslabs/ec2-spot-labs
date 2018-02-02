@@ -30,15 +30,19 @@ Outputs:
     Value:
       Ref: AWS::Region
   loadBalancer:
-    Description: Application Load Balancer
+    Description: Application load balancer
     Value:
       Ref: loadBalancer
+  loadBalancerTargetGroup:
+    Description: Load balancer target group ARN
+    Value:
+      Ref: loadBalancerTargetGroup
   publicSubnet1:
-    Description: Public Subnet 1
+    Description: Public subnet 1
     Value:
       Ref: publicSubnet1
   publicSubnet2:
-    Description: Public Subnet 2
+    Description: Public subnet 2
     Value:
       Ref: publicSubnet2
   snsTopic:
@@ -90,12 +94,16 @@ Resources:
     - lambdaFunctionRole
     Properties:
       Code:
-        ZipFile: "import json\nimport boto3\ndef handler(event, context):\n  instanceId = event['detail']['instance-id']\n\
-          \  instanceAction = event['detail']['instance-action']\n  ec2client = boto3.client('ec2')\n\
-          \  try:\n    response = ec2client.describe_instances(Filters=[{'Name': 'tag-key','Values':\
-          \ ['targetGroup']}],InstanceIds=[instanceId])\n    print(response)\n  except:\n  \
-          \  print(\"Either the instance id was not found or the tag key 'targetGroup' was not\
-          \ found. No action is being taken.\")\n  return\n"
+        ZipFile: "import boto3\ndef handler(event, context):\n  instanceId = event['detail']['instance-id']\n\
+          \  instanceAction = event['detail']['instance-action']\n  try:\n    ec2client = boto3.client('ec2')\n\
+          \    describeTags = ec2client.describe_tags(Filters=[{'Name': 'resource-id','Values':[instanceId],'Name':'key','Values':['loadBalancerTargetGroup']}])\n\
+          \  except:\n    print(\"No action being taken. Unable to describe tags for instance\
+          \ id:\", instanceId)\n    return\n  try:\n    elbv2client = boto3.client('elbv2')\n\
+          \    deregisterTargets = elbv2client.deregister_targets(TargetGroupArn=describeTags['Tags'][0]['Value'],Targets=[{'Id':instanceId}])\n\
+          \  except:\n    print(\"No action being taken. Unable to deregister targets for instance\
+          \ id:\", instanceId)\n    return\n  print(\"Spot Instance interruption notice detected.\
+          \ Detaching instance from target:\")\n  print(instanceId, describeTags['Tags'][0]['Value'],\
+          \ deregisterTargets, sep=\",\")\n  return\n"
       Handler: index.handler
       Role:
         Fn::GetAtt:
@@ -136,7 +144,7 @@ Resources:
           - Action: elasticloadbalancing:DeregisterTargets
             Effect: Allow
             Resource: '*'
-          - Action: ec2:DescribeInstances
+          - Action: ec2:DescribeTags
             Effect: Allow
             Resource: '*'
           Version: '2012-10-17'
