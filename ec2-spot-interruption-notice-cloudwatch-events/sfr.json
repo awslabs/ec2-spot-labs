@@ -1,0 +1,41 @@
+{
+  "AllocationStrategy": "diversified",
+  "IamFleetRole": "arn:aws:iam::753949184587:role/spot-spin-cwe-spotFleetRole-WZCLFJOVLAYH",
+  "LaunchSpecifications": [
+    {
+      "ImageId": "ami-97785bed",
+      "InstanceType": "c4.large",
+      "Monitoring": {
+        "Enabled": true
+      },
+      "KeyName": "schmutze@amazon-ec2",
+      "SubnetId": "subnet-e4e6e5af,subnet-fa245aa7",
+      "UserData": "IyEvYmluL2Jhc2gKeXVtIC15IHVwZGF0ZQp5dW0gLXkgaW5zdGFsbCBodHRwZApjaGtjb25maWcgaHR0cGQgb24KaW5zdGFuY2VpZD0kKGN1cmwgaHR0cDovLzE2OS4yNTQuMTY5LjI1NC9sYXRlc3QvbWV0YS1kYXRhL2luc3RhbmNlLWlkKQplY2hvICJoZWxsbyBmcm9tICRpbnN0YW5jZWlkIiA+IC92YXIvd3d3L2h0bWwvaW5kZXguaHRtbApzZXJ2aWNlIGh0dHBkIHN0YXJ0Cg==",
+      "TagSpecifications": [
+        {
+          "ResourceType": "instance",
+          "Tags": [
+            {
+              "Key": "loadBalancerTargetGroup",
+              "Value": "arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/spot-loadB-1DZUVWL720VS6/26456d12cddbf23a"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "TargetCapacity": 2,
+  "TerminateInstancesWithExpiration": true,
+  "Type": "maintain",
+  "ReplaceUnhealthyInstances": true,
+  "InstanceInterruptionBehavior": "terminate",
+  "LoadBalancersConfig": {
+    "TargetGroupsConfig": {
+      "TargetGroups": [
+        {
+          "Arn": "arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/spot-loadB-1DZUVWL720VS6/26456d12cddbf23a"
+        }
+      ]
+    }
+  }
+}

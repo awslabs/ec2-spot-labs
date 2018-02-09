@@ -49,6 +49,12 @@ Outputs:
     Description: SNS topic ARN
     Value:
       Ref: snsTopic
+  spotFleetRole:
+    Description: Spot Fleet role
+    Value:
+      Fn::GetAtt:
+      - spotFleetRole
+      - Arn
 Resources:
   attachGateway:
     DependsOn:
@@ -96,7 +102,7 @@ Resources:
       Code:
         ZipFile: "import boto3\ndef handler(event, context):\n  instanceId = event['detail']['instance-id']\n\
           \  instanceAction = event['detail']['instance-action']\n  try:\n    ec2client = boto3.client('ec2')\n\
-          \    describeTags = ec2client.describe_tags(Filters=[{'Name': 'resource-id','Values':[instanceId],'Name':'key','Values':['loadBalancerTargetGroup']}])\n\
+          \    describeTags = ec2client.describe_tags(Filters=[{'Name': 'resource-id','Values':[instanceId]},{'Name':'key','Values':['loadBalancerTargetGroup']}])\n\
           \  except:\n    print(\"No action being taken. Unable to describe tags for instance\
           \ id:\", instanceId)\n    return\n  try:\n    elbv2client = boto3.client('elbv2')\n\
           \    deregisterTargets = elbv2client.deregister_targets(TargetGroupArn=describeTags['Tags'][0]['Value'],Targets=[{'Id':instanceId}])\n\
@@ -162,6 +168,9 @@ Resources:
       Scheme: internet-facing
       SecurityGroups:
       - Ref: loadBalancerSecurityGroup
+      - Fn::GetAtt:
+        - vpc
+        - DefaultSecurityGroup
       Subnets:
       - Ref: publicSubnet1
       - Ref: publicSubnet2
@@ -319,6 +328,21 @@ Resources:
       Topics:
       - Ref: snsTopic
     Type: AWS::SNS::TopicPolicy
+  spotFleetRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - spotfleet.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole
+      Path: /
+    Type: AWS::IAM::Role
   vpc:
     Properties:
       CidrBlock:
