@@ -1,6 +1,7 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: Example of EC2 Spot Fleet with Instance Weighting. Fractional Instances Weights are being used such that 1 unit of target capacity = 100 vCPUs.
+Description: Example of EC2 Spot Fleet with Instance Weighting. Fractional Instances Weights
+  are being used such that 1 unit of target capacity = 100 vCPUs.
 Metadata:
   Author:
     Description: Chad Schmutzer <schmutze@amazon.com>
