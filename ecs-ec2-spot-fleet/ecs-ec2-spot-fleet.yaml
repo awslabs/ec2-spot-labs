@@ -12,27 +12,27 @@ Mappings:
       CIDR: 10.0.0.0/16
   ecsOptimizedAmi:
     ap-northeast-1:
-      AMI: ami-f63f6f91
+      AMI: ami-a99d8ad5
     ap-southeast-1:
-      AMI: ami-b4ae1dd7
+      AMI: ami-846144f8
     ap-southeast-2:
-      AMI: ami-fbe9eb98
+      AMI: ami-efda148d
     ca-central-1:
-      AMI: ami-ee58e58a
+      AMI: ami-897ff9ed
     eu-central-1:
-      AMI: ami-085e8a67
+      AMI: ami-9fc39c74
     eu-west-1:
-      AMI: ami-95f8d2f3
+      AMI: ami-2d386654
     eu-west-2:
-      AMI: ami-bf9481db
+      AMI: ami-2218f945
     us-east-1:
-      AMI: ami-275ffe31
+      AMI: ami-aff65ad2
     us-east-2:
-      AMI: ami-62745007
+      AMI: ami-64300001
     us-west-1:
-      AMI: ami-689bc208
+      AMI: ami-69677709
     us-west-2:
-      AMI: ami-62d35c02
+      AMI: ami-40ddb938
 Metadata:
   Authors:
     Description: Shawn OConnor (shawo@amazon.com), Chad Schmutzer (schmutze@amazon.com)
@@ -90,10 +90,6 @@ Parameters:
   sourceCidr:
     Default: 0.0.0.0/0
     Description: Optional - CIDR/IP range for instance ssh access - defaults to 0.0.0.0/0
-    Type: String
-  spotBidPrice:
-    Default: 1.0
-    Description: Spot Instance bid price
     Type: String
 Resources:
   attachGateway:
@@ -495,8 +491,6 @@ Resources:
                 chmod +x /usr/local/bin/spot-instance-termination-notice-handler.sh
 
                 '
-        SpotPrice:
-          Ref: spotBidPrice
         TargetCapacity:
           Ref: ecsClusterTargetCapacity
         TerminateInstancesWithExpiration: true

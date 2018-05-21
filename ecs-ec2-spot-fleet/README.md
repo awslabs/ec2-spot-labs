@@ -29,7 +29,7 @@ AWS CloudFormation is a free service; however, you are charged for the AWS resou
 
 After signing up for an AWS account, you can use AWS CloudFormation through the AWS Management Console, AWS CloudFormation API, or AWS CLI.
 
-Use the [template](ecs-ec2-spot-fleet.yaml) to create a CloudFormation stack, providing details and parameters such as the **ECS cluster target capacity**, the **instance type**, and the **Spot bid price**.
+Use the [template](ecs-ec2-spot-fleet.yaml) to create a CloudFormation stack, providing details and parameters such as the **ECS cluster target capacity** and the **instance type(s)**.
 
 You can learn more about working with CloudFormation stacks [here](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacks.html).
 
