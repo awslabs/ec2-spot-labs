@@ -1,0 +1,181 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Example of launching an EC2 Spot Instance using EC2 Launch Templates
+Mappings:
+  CidrMappings:
+    public-subnet-1:
+      CIDR: 10.0.1.0/24
+    public-subnet-2:
+      CIDR: 10.0.2.0/24
+    vpc:
+      CIDR: 10.0.0.0/16
+  amazonLinuxAmi:
+    us-east-1:
+      AMI: ami-97785bed
+Metadata:
+  Author:
+    Description: Chad Schmutzer <schmutze@amazon.com>
+  License:
+    Description: 'Copyright 2017 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+Outputs:
+  launchTemplate:
+    Value:
+      Ref: launchTemplate
+Parameters:
+  keyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the EC2 Instances
+    Type: AWS::EC2::KeyPair::KeyName
+Resources:
+  attachGateway:
+    DependsOn:
+    - vpc
+    - internetGateway
+    Properties:
+      InternetGatewayId:
+        Ref: internetGateway
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::VPCGatewayAttachment
+  internetGateway:
+    DependsOn:
+    - vpc
+    Type: AWS::EC2::InternetGateway
+  launchTemplate:
+    DependsOn:
+    - publicSubnet1
+    Properties:
+      LaunchTemplateData:
+        ImageId:
+          Fn::FindInMap:
+          - amazonLinuxAmi
+          - Ref: AWS::Region
+          - AMI
+        InstanceMarketOptions:
+          MarketType: spot
+        InstanceType: c3.large
+        KeyName:
+          Ref: keyName
+        NetworkInterfaces:
+        - DeviceIndex: 0
+          SubnetId:
+            Ref: publicSubnet1
+        TagSpecifications:
+        - ResourceType: instance
+          Tags:
+          - Key: Name
+            Value: CFN EC2 Spot Instance
+    Type: AWS::EC2::LaunchTemplate
+  publicRoute:
+    DependsOn:
+    - publicRouteTable
+    - internetGateway
+    - attachGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: internetGateway
+      RouteTableId:
+        Ref: publicRouteTable
+    Type: AWS::EC2::Route
+  publicRouteTable:
+    DependsOn:
+    - vpc
+    - attachGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: Public Route Table
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::RouteTable
+  publicSubnet1:
+    DependsOn: attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - public-subnet-1
+        - CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: Public Subnet 1
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet1RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet1
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet1
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  publicSubnet2:
+    DependsOn: attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - public-subnet-2
+        - CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: Public Subnet 2
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet2RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet2
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet2
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  spotInstance:
+    DependsOn:
+    - launchTemplate
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId:
+          Ref: launchTemplate
+        Version: 1
+    Type: AWS::EC2::Instance
+  vpc:
+    Properties:
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpc
+        - CIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+    Type: AWS::EC2::VPC
+...
