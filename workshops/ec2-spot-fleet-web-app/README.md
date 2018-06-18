@@ -4,20 +4,28 @@
 ## Overview:
 [Amazon EC2 Spot Instances](https://aws.amazon.com/ec2/spot/) are spare compute capacity in the AWS cloud available to you at steep discounts compared to On-Demand prices. EC2 Spot enables you to optimize your costs on the AWS cloud and scale your application's throughput up to 10X for the same budget. By simply selecting Spot when launching EC2 instances, you can save up-to 90% on On-Demand prices.
 
-This workshop is designed to get you familiar with EC2 Spot Instances by learning how to deploy a simple web app on an EC2 Spot Fleet behind a load balancer and scale it to handle peak demand, as well as handle Spot Instance interruptions.
+This workshop is designed to get you familiar with EC2 Spot Instances by learning how to deploy a simple web app on an EC2 Spot Fleet behind a load balancer and enable automatic scaling to allow it to handle peak demand, as well as handle Spot Instance interruptions.
 
 ## Requirements:  
 To complete this workshop, have the [AWS CLI](https://aws.amazon.com/cli/) installed and configured, and appropriate permissions to launch EC2 instances and launch CloudFormation stacks within your AWS account.	
 
 ## Architecture
 
-In this reference architecture, you use an AWS CloudFormation template to deploy the following:
+In this workshop, you will deploy the following:
 
-![Launch ECS Deep Learning Stack into Ohio with CloudFormation](/images/interruption_notices_arch_diagram.jpg)
+* An Amazon Virtual Private Cloud (Amazon VPC) with subnets in two Availability Zones
+* An Application Load Balancer with a listener and target group
+* An Amazon CloudWatch Events rule
+* An AWS Lambda function
+* An Amazon Simple Notification Service (SNS) topic
+Associated IAM policies and roles for all of the above
+* An Amazon EC2 Spot Fleet request diversified across both Availability Zones using a couple of recent Spot Fleet features: Elastic Load Balancing integration and Tagging Spot Fleet Instances
 
-An Amazon Virtual Private Cloud (Amazon VPC) with subnets in two Availability Zones
+When any of the Spot Instances receives an interruption notice, Spot Fleet sends the event to CloudWatch Events. The CloudWatch Events rule then notifies both targets, the Lambda function and SNS topic. The Lambda function detaches the Spot Instance from the Application Load Balancer target group, taking advantage of a full two minutes of connection draining before the instance is interrupted. The SNS topic also receives a message, and is provided as an example for the reader to use as an exercise (***hint***: have it send you an email or an SMS message).
 
+Here is a diagram of the resulting architecture:
 
+![](images/interruption_notices_arch_diagram.jpg)
 
 ## Let's Begin!  
 
