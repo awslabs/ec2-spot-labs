@@ -1,19 +1,31 @@
-# Introduction to EC2 Spot: Workshop Guide
+# Introduction to Amazon EC2 Spot Instances: Workshop Guide
   
   
 ## Overview:
 [Amazon EC2 Spot Instances](https://aws.amazon.com/ec2/spot/) are spare compute capacity in the AWS cloud available to you at steep discounts compared to On-Demand prices. EC2 Spot enables you to optimize your costs on the AWS cloud and scale your application's throughput up to 10X for the same budget. By simply selecting Spot when launching EC2 instances, you can save up-to 90% on On-Demand prices.
 
-This workshop is designed to get you familiar with EC2 Spot Instances. Since there are many ways to request Spot Instances, we'll walk you through a few methods for deploying and managing them.
+This workshop is designed to get you familiar with EC2 Spot Instances by learning how to deploy a simple web app on an EC2 Spot Fleet behind a load balancer and scale it to handle peak demand, as well as handle Spot Instance interruptions.
 
-### Requirements:  
-To complete this workshop, have the [AWS CLI](https://aws.amazon.com/cli/) installed and configured, and appropriate permissions to launch EC2 instances within your AWS account.
-	
+## Requirements:  
+To complete this workshop, have the [AWS CLI](https://aws.amazon.com/cli/) installed and configured, and appropriate permissions to launch EC2 instances and launch CloudFormation stacks within your AWS account.	
+
+## Architecture
+
+In this reference architecture, you use an AWS CloudFormation template to deploy the following:
+
+![Launch ECS Deep Learning Stack into Ohio with CloudFormation](/images/interruption_notices_arch_diagram.jpg)
+
+An Amazon Virtual Private Cloud (Amazon VPC) with subnets in two Availability Zones
+
+
+
 ## Let's Begin!  
 
-The first thing to understand about Spot Instances is that you are requesting access to spare EC2 capacity. Therefore there will always ultimately be an associated sir (Spot Instance request) associated with your request, either made directly or indirectly on your behalf depending upon which API you use. 
+The first thing to understand about Spot Instances is that you are requesting access to spare EC2 capacity. Therefore there will always ultimately be an associated SIR (Spot Instance Request) associated with your request, either made directly or indirectly on your behalf depending upon which API you use. 
 
-A Spot Instance request is either one-time or persistent. Amazon EC2 automatically resubmits a persistent Spot request after the Spot Instance associated with the request is interrupted. Your Spot Instance request can optionally specify a duration for the Spot Instances.
+A Spot Instance request is either one-time or persistent. Amazon EC2 automatically resubmits a persistent Spot request after the Spot Instance associated with the request is interrupted.
+
+
 
 
 
