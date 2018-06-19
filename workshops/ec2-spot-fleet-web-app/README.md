@@ -40,19 +40,21 @@ To save time on the initial setup, a CloudFormation template will be used to cre
 
 1\. Go ahead and launch the CloudFormation stack. You can check it out from GitHub, or grab the template directly. I use the stack name “ec2-spot-fleet-web-app“, but feel free to use any name you like. Just remember to change it in the instructions.
 
-`
+```
 $ git clone https://github.com/awslabs/ec2-spot-labs.git
-`
+```
 
-`
+```
 $ aws cloudformation create-stack --stack-name ec2-spot-fleet-web-app --template-body file://ec2-spot-labs/workshops/ec2-spot-fleet-web-app/ec2-spot-fleet-web-app.yaml --capabilities CAPABILITY_IAM --region us-east-1
-`
+```
 
 You should receive a StackId value in return, confirming the stack is launching.
 
-	{
-	  "StackId": "arn:aws:cloudformation:us-east-1:123456789012:stack/spot-fleet-web-app/083e7ad0-0ade-11e8-9e36-500c219ab02a"
-	}
+```
+{
+	"StackId": "arn:aws:cloudformation:us-east-1:123456789012:stack/spot-fleet-web-app/083e7ad0-0ade-11e8-9e36-500c219ab02a"
+}
+```
 
 2\. Wait for the status of the CloudFormation stack to move to **CREATE_COMPLETE** before moving on to the next step. You will need to reference the Output values from the stack in the next steps.
 
@@ -114,13 +116,15 @@ To deploy your load balancer and Spot Fleet in your AWS account, you will begin 
 10\. Select a Key pair name if you'd like to enable ssh access to your instances (not required for this workshop).
 
 11\. In the User data field, enter the following data as text:
-`#!/bin/bash
-yum -y update
-yum -y install httpd
-chkconfig httpd on
-instanceid=$(curl http://169.254.169.254/latest/meta-data/instance-id)
-echo "hello from $instanceid" > /var/www/html/index.html
-service httpd start`
+
+ ```#!/bin/bash
+ yum -y update
+ yum -y install httpd
+ chkconfig httpd on
+ instanceid=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+ echo "hello from $instanceid" > /var/www/html/index.html
+ service httpd start
+ ```
 
 Add any Instance tags you'd like to have propagated to the instances the Spot Fleet launches.
 
