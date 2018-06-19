@@ -1,4 +1,4 @@
-# Introduction to Amazon EC2 Spot Instances: Workshop Guide
+# EC2 Spot Fleet web app: Workshop guide
   
   
 ## Overview:
@@ -18,7 +18,7 @@ In this workshop, you will deploy the following:
 * An Amazon CloudWatch Events rule
 * An AWS Lambda function
 * An Amazon Simple Notification Service (SNS) topic
-Associated IAM policies and roles for all of the above
+* Associated IAM policies and roles for all of the above
 * An Amazon EC2 Spot Fleet request diversified across both Availability Zones using a couple of recent Spot Fleet features: Elastic Load Balancing integration and Tagging Spot Fleet Instances
 
 When any of the Spot Instances receives an interruption notice, Spot Fleet sends the event to CloudWatch Events. The CloudWatch Events rule then notifies both targets, the Lambda function and SNS topic. The Lambda function detaches the Spot Instance from the Application Load Balancer target group, taking advantage of a full two minutes of connection draining before the instance is interrupted. The SNS topic also receives a message, and is provided as an example for the reader to use as an exercise (***hint***: have it send you an email or an SMS message).
@@ -29,17 +29,28 @@ Here is a diagram of the resulting architecture:
 
 ## Let's Begin!  
 
-The first thing to understand about Spot Instances is that you are requesting access to spare EC2 capacity. Therefore there will always ultimately be an associated SIR (Spot Instance Request) associated with your request, either made directly or indirectly on your behalf depending upon which API you use. 
+### 1\. Launch the CloudFormation stack
 
-A Spot Instance request is either one-time or persistent. Amazon EC2 automatically resubmits a persistent Spot request after the Spot Instance associated with the request is interrupted.
+To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets in two Availability Zones, as well as the IAM policies and roles.
 
+Go ahead and launch the CloudFormation stack. You can check it out from GitHub, or grab the template directly. I use the stack name “ec2-spot-fleet-web-app“, but feel free to use any name you like. Just remember to change it in the instructions.
 
+`
+$ git clone https://github.com/awslabs/ec2-spot-labs.git
+`
 
+`
+$ aws cloudformation create-stack --stack-name ec2-spot-fleet-web-app --template-body file://ec2-spot-labs/workshops/ec2-spot-fleet-web-app/ec2-spot-fleet-web-app.yaml --capabilities CAPABILITY_IAM
+`
 
+You should receive a StackId value in return, confirming the stack is launching.
 
-Grab the latest [Amazon Linux AMI ID](https://aws.amazon.com/amazon-linux-ami/) in the region of your choice, as we'll be using it throughout these exercises. If you have specific requirements for which VPC, subnet, or security groups you can use to launch EC2 instances, grab those as well. Otherwise we will assume to be launching into your default VPC.
+`{
+  "StackId": "arn:aws:cloudformation:us-east-1:123456789012:stack/spot-fleet-web-app/083e7ad0-0ade-11e8-9e36-500c219ab02a"
+}
+`
 
-### Using the EC2 RunInstances API
+### 2\. 
 
 Now, simply place a request for a Spot Instance by providing the market (purchasing) option as "spot":
 
