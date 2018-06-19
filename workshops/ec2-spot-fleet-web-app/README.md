@@ -1,4 +1,4 @@
-# EC2 Spot Fleet web app: Workshop guide
+# Amazon EC2 Spot Fleet web app: Workshop guide
   
   
 ## Overview:
@@ -7,7 +7,12 @@
 This workshop is designed to get you familiar with EC2 Spot Instances by learning how to deploy a simple web app on an EC2 Spot Fleet behind a load balancer and enable automatic scaling to allow it to handle peak demand, as well as handle Spot Instance interruptions.
 
 ## Requirements:  
-To complete this workshop, have the [AWS CLI](https://aws.amazon.com/cli/) installed and configured, and appropriate permissions to launch EC2 instances and launch CloudFormation stacks within your AWS account.	
+To complete this workshop, have the [AWS CLI](https://aws.amazon.com/cli/) installed and configured, and appropriate permissions to launch EC2 instances and launch CloudFormation stacks within your AWS account.
+
+This workshop is self-paced. The instructions will use both the AWS CLI and AWS Management Console- feel free to use either or both as you are comfortable.
+
+**IMPORTANT:**
+*This workshop has been designed to run in the AWS Region us-east-1 (Virginia). Please make sure you are operating in this region for all steps.*
 
 ## Architecture
 
@@ -29,32 +34,64 @@ Here is a diagram of the resulting architecture:
 
 ## Let's Begin!  
 
-### 1\. Launch the CloudFormation stack
+### Launch the CloudFormation stack
 
-To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets in two Availability Zones, as well as the IAM policies and roles.
+To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets in two Availability Zones, as well as the IAM policies and roles, and security groups.
 
-Go ahead and launch the CloudFormation stack. You can check it out from GitHub, or grab the template directly. I use the stack name “ec2-spot-fleet-web-app“, but feel free to use any name you like. Just remember to change it in the instructions.
+1\. Go ahead and launch the CloudFormation stack. You can check it out from GitHub, or grab the template directly. I use the stack name “ec2-spot-fleet-web-app“, but feel free to use any name you like. Just remember to change it in the instructions.
 
 `
 $ git clone https://github.com/awslabs/ec2-spot-labs.git
 `
 
 `
-$ aws cloudformation create-stack --stack-name ec2-spot-fleet-web-app --template-body file://ec2-spot-labs/workshops/ec2-spot-fleet-web-app/ec2-spot-fleet-web-app.yaml --capabilities CAPABILITY_IAM
+$ aws cloudformation create-stack --stack-name ec2-spot-fleet-web-app --template-body file://ec2-spot-labs/workshops/ec2-spot-fleet-web-app/ec2-spot-fleet-web-app.yaml --capabilities CAPABILITY_IAM --region us-east-1
 `
 
 You should receive a StackId value in return, confirming the stack is launching.
 
-`{
-  "StackId": "arn:aws:cloudformation:us-east-1:123456789012:stack/spot-fleet-web-app/083e7ad0-0ade-11e8-9e36-500c219ab02a"
-}
-`
+	{
+	  "StackId": "arn:aws:cloudformation:us-east-1:123456789012:stack/spot-fleet-web-app/083e7ad0-0ade-11e8-9e36-500c219ab02a"
+	}
 
-### 2\. 
+2\. Wait for the status of the CloudFormation stack to move to **CREATE_COMPLETE** before moving on to the next step. You will need to reference the Output values from the stack in the next steps.
 
-Now, simply place a request for a Spot Instance by providing the market (purchasing) option as "spot":
 
-``$ aws ec2 run-instances --image-id ami-97785bed --count 1 --instance-type c3.large --instance-market-options MarketType=spot``
+### Deploy the load balancer
+
+To deploy your load balancer and Spot Fleet in your AWS account, you will begin by signing in to the AWS Management Console with your user name and password. 
+
+1\. Go to the EC2 console by choosing EC2 under “Compute.”
+
+2\. Next, choose Load Balancers in the navigation pane. This page shows a list of load balancer types to choose from.
+
+3\. Choose Create in the Application Load Balancer box. 
+
+4\. Give your load balancer a name.
+
+5\. You can leave the rest of the Basic Configuration and Listeners options as default for the purposes of this workshop.
+
+6\. Under Availability Zones, you'll need to select the VPC created by the CloudFormation stack you launched in the previous step, and then select both Availability Zones for the load balancer to route traffic to. Best practices for both load balancing and Spot Fleet are to select at least two Availability Zones - ideally you should select as many as possible. Remember that you can specify only one subnet per Availability Zone.
+
+7\. Once done, click on Next: Configure Security Settings.
+
+*Since this is a demonstration, we will continue without configuring a secure listener. However, if this was a production load balancer, it is recommended to configure a secure listener if your traffic to the load balancer needs to be secure.*
+
+8\. Go ahead and click on Next: Configure Security Groups. Choose **Select an existing security group**, then select both the **default** security group, and the security group created in the CloudFormation stack.
+
+9\. Click on Next: Configure Routing.
+
+10\. In the Configure Routing section, we'll configure a Target group. Your load balancer routes requests to the targets in this target group using the protocol and port that you specify, and performs health checks on the targets using these health check settings. Give your Target group a Name, and leave the rest of the options as default under Target group, Health checks, and Advanced health check settings.
+
+11\. Click on Next: Register Targets. On the Register Targets section, we don't need to register any targets or instances at this point, because we will do this when we configure the EC2 Spot Fleet.
+
+12\. Click on Next: Review.
+
+13\. Here you can review your settings. Once you are done reviewing, click Create.
+
+14\. You should get a return that your load balancer was successfully created. Click Close.
+
+### Launch an EC2 Spot Fleet and associate the Load Balancing Target Group with it
 
 
 

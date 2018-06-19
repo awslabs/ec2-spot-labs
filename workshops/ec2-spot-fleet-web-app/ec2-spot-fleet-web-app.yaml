@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: EC2 Spot Fleet web app workshop template Events
+Description: EC2 Spot Fleet web app workshop template
 Mappings:
   CidrMappings:
     public-subnet-1:
@@ -301,5 +301,8 @@ Resources:
         - CIDR
       EnableDnsHostnames: true
       EnableDnsSupport: true
+      Tags:
+      - Key: Name
+        Value: EC2 Spot Fleet web app workshop
     Type: AWS::EC2::VPC
 ...
