@@ -93,6 +93,46 @@ To deploy your load balancer and Spot Fleet in your AWS account, you will begin 
 
 ### Launch an EC2 Spot Fleet and associate the Load Balancing Target Group with it
 
+1\. Head to Spot Requests in the navigation pane.
+
+2\. Click on Request Spot Instances.
+
+3\. Select Request and Maintain under Request type. This requests a fleet of Spot instances to maintain your target capacity.
+ 
+4\. Under Amount, set the Total target capacity 2, and leave the Optional On-Demand portion set to 0.
+
+5\. We'll make a few changes under Requirements. First, leave the AMI with the default Amazon Linux AMI.
+
+6\. Let's add an additional Instance type by clicking Select, and then checking both c3.large and c4.large. This will allow the Spot Fleet to be flexible across both instance types when it is requesting Spot capacity. Click Select to save your changes.
+
+7\. For Network, make sure to select the same VPC you used when creating the Application Load Balancer.
+
+8\. Then check the same Availability Zones and Subnets you selected when creating the Application Load Balancer.
+
+9\. Check the default Security group.
+
+10\. Select a Key pair name if you'd like to enable ssh access to your instances (not required for this workshop).
+
+11\. In the User data field, enter the following data as text:
+`#!/bin/bash
+yum -y update
+yum -y install httpd
+chkconfig httpd on
+instanceid=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+echo "hello from $instanceid" > /var/www/html/index.html
+service httpd start`
+
+Add any Instance tags you'd like to have propagated to the instances the Spot Fleet launches.
+
+Under Load balancing, check the Load balancing box to Receive traffic from one or more load balancers.
+
+Select the Target group you created in the earliest step of creating the Application Load Balancer.
+
+Under Spot request fulfillment, leave the default options.
+
+Click Launch.
+
+[show Spot Fleet launching instances]
 
 
 
