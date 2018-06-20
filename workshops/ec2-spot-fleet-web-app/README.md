@@ -121,7 +121,7 @@ In this section, we'll launch an EC2 Spot Fleet and have the Spot Instances auto
 
 8\. Then check the same **Availability Zones** and **Subnets** you selected when creating the Application Load Balancer.
 
-9\. Check *Replace unhealthy instances* at **Health check**.
+9\. Check **Replace unhealthy instances** at **Health check**.
 
 10\. Check the **default** Security group.
 
@@ -139,9 +139,9 @@ echo "hello from $instanceid" > /var/www/html/index.html
 service httpd start
 ```
 
->For this next step, you'll need to full Target group ARN you noted earlier in step 2.16.
+>For this next step, you'll need the full Target group ARN you noted earlier in step 2.16.
 
-13\. You'll need to add an instance tag that includes the name of the load balancer target group created in the load balancer creation step earlier. Click **add new tag** and set **key** = *loadBalancerTargetGroup*, **value** = *[FULL-TARGET-GROUP-ARN]*
+13\. You'll need to add an **instance tag** that includes the name of the load balancer target group ARN created in the load balancer creation step earlier. Click **add new tag** and set **key** = *loadBalancerTargetGroup*, **value** = *[FULL-TARGET-GROUP-ARN]*
 
 >Example Target group ARN:
 
