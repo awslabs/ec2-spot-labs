@@ -97,7 +97,8 @@ To deploy your Application Load Balancer and Spot Fleet in your AWS account, you
 
 16\. You'll need to make a note of the ARN of the Target group you created, as you'll be using it a few times in the following steps. Back on the EC2 console, choose **Target Groups** in the navigation pane. This page shows a list of Target groups to choose from. Select the Target group you just created, and copy/paste the full ARN of the Target group listed below in the **Basic Configuration** of the **Description** tab somewhere for easy access in the later steps (or simply know where to refer back when you need it).
 
-Example Target group ARN:
+>Example Target group ARN:
+
 ```arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/aa/cdbe5f2266d41909```
 
 ### 3\. Launch an EC2 Spot Fleet and associate the Load Balancing Target Group with it
@@ -142,7 +143,8 @@ service httpd start
 
 13\. You'll need to add an instance tag that includes the name of the load balancer target group created in the load balancer creation step earlier. Click **add new tag** and set **key** = *loadBalancerTargetGroup*, **value** = *[FULL-TARGET-GROUP-ARN]*
 
-Example Target group ARN:
+>Example Target group ARN:
+
 ```arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/aa/cdbe5f2266d41909```
 
 14\. Under **Load balancing**, check the **Load balancing** box to receive traffic from one or more load balancers. Select the Target group you created in the earlier step of creating the Application Load Balancer.
