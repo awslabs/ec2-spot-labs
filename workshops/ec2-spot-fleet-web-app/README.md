@@ -149,7 +149,7 @@ service httpd start
 
 14\. Under **Load balancing**, check the **Load balancing** box to receive traffic from one or more load balancers. Select the Target group you created in the earlier step of creating the Application Load Balancer.
 
-15\. Under **Spot request fulfillment**, change **Allocation strategy** to *Diversified*, and leave the rest of the settings as **default** options.
+15\. Under **Spot request fulfillment**, change **Allocation strategy** to **Diversified**, and leave the rest of the settings as **default** options.
 
 16\. Click **Launch**.
 
