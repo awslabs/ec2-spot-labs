@@ -79,11 +79,11 @@ To deploy your Application Load Balancer and Spot Fleet in your AWS account, you
 
 >**Note**: Since this is a demonstration, we will continue without configuring a secure listener. However, if this was a production load balancer, it is recommended to configure a secure listener if your traffic to the load balancer needs to be secure.
 
-8\. Go ahead and click on Next: Configure Security Groups. Choose **Select an existing security group**, then select both the **default** security group, and the security group created in the CloudFormation stack.
+8\. Go ahead and click on **Next: Configure Security Groups**. Choose **Select an existing security group**, then select both the **default** security group, and the security group created in the CloudFormation stack.
 
 9\. Click on **Next: Configure Routing**.
 
-10\. In the **Configure Routing section**, we'll configure a **Target group**. Your load balancer routes requests to the targets in this target group using the protocol and port that you specify, and performs health checks on the targets using these health check settings. Give your Target group a **Name**, and leave the rest of the options as default under **Target group**, **Health checks**, and **Advanced health check settings**.
+10\. In the **Configure Routing section**, we'll configure a **Target group**. Your load balancer routes requests to the targets in this target group using the protocol and port that you specify, and performs health checks on the targets using these health check settings. Give your Target group a **Name**, and leave the rest of the options as **defaults** under **Target group**, **Health checks**, and **Advanced health check settings**.
 
 11\. Click on **Next: Register Targets**. On the **Register Targets** section, we don't need to register any targets or instances at this point because we will do this when we configure the EC2 Spot Fleet.
 
