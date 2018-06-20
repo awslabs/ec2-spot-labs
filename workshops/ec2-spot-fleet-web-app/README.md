@@ -249,11 +249,27 @@ The Lambda function does the heavy lifting for you. The details of the CloudWatc
 
 ### 7\. Test the Spot Instance interruption notice handler
 
+In order to test, you can take advantage of the fact that any interruption action that Spot Fleet takes on a Spot Instance results in a Spot Instance interruption notice being provided. Therefore, you can simply decrease the target size of your Spot Fleet from 2 to 1. The instance that is interrupted receives the interruption notice.
 
+1\. Head to **Spot Requests** in the EC2 console navigation pane.
 
-### 8\. Extra credit - 
+2\. Select your **Spot Fleet request**. 
 
+3\. At the top in the **Actions** dropdown, select **Modify target capacity**.
 
+4\. Set the **New target capacity** to *1*, and click **Submit**.
+
+5\. Click on **Target Groups** in the EC2 console navigation pane.
+
+6\. Select your **Target group**.
+
+7\. Click on the **Targets** tab below.
+
+8\. In a few moments, you should see one of the Registered targets change status to **Draining** (you may have to refresh a few times). This is the Spot Instance that is being artificially interrupted by reducing the Spot Fleet target capacity. It will stay in **Draining** state for *120 seconds* based on the configuration set earlier to match the Spot Instance 2 minute interruption notice.
+
+### 8\. Extra credit - configure the SNS topic
+
+1\. If time permits, try configuring the SNS topic that was deployed via the CloudFormation stack. The SNS topic is also configured as a target for the CloudWatch Event rule firing on Spot Instance interruption notices (***hint***: have it send you an email or an SMS message).
 
 * * *
 
