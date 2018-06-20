@@ -67,9 +67,9 @@ To deploy your Application Load Balancer and Spot Fleet in your AWS account, you
 
 2\. Next, choose **Load Balancers** in the navigation pane. This page shows a list of load balancer types to choose from.
 
-3\. Choose **Create** in the **Application Load Balancer** box. 
+3\. Click **Create Load Balancer** at the top, and then choose **Create** in the **Application Load Balancer** box. 
 
-4\. Give your load balancer a **name**.
+4\. Give your load balancer a **Name**.
 
 5\. You can leave the rest of the **Basic Configuration** and **Listeners** options as **default** for the purposes of this workshop.
 
@@ -155,6 +155,12 @@ service httpd start
 
 16\. Click **Launch**.
 
+Example return:
+
+```
+Spot request with id: sfr-d1f3c0cc-db37-45b6-88ec-a8b2d8f1520d successfully created.
+```
+
 17\. Take a moment to review the Spot Fleet request in the Spot console. You should see *2* Spot Instance requests being fulfilled. Click around to get a good feel for the Spot console.
 
 18\. Head back to **Target Groups** in the EC2 console navigation pane and select your Target group. Select the **Targets** tab below and note the Spot Instances becoming available in the **Registered targets** and **Availability Zones**.
@@ -167,7 +173,7 @@ In this section, we'll configure automatic scaling for the Spot Fleet so it can 
 
 2\. Select the **Spot Fleet Request Id** that you just launched.
 
-3\. In the **lower section details**, click on the **Auto Scaling** tab. Click the **Configure** button.
+3\. In the **lower section details** click on the **Auto Scaling** tab. Click the **Configure** button.
 
 4\. You can now select details for how your Spot Fleet will scale. Set the **Scale capacity** between *2* and *10* instances.
 
@@ -175,13 +181,13 @@ In this section, we'll configure automatic scaling for the Spot Fleet so it can 
 
 5\. In **Scaling policies**, change the **Target metric** to *Application Load Balancer Request Count Per Target*.
 
-6\. This will show a new field **Application Load Balancer target group**. Select the **Target Group** created in the earlier step.
+6\. This will show a new field **ALB target group**. Select the **Target Group** created in the earlier step.
 
 7\. Leave the rest of the settings as **default**.
 
 8\. Click **Save**.
 
-You have now attached a target based automatic scaling policy to your Spot Fleet to allow it to scale for peak demand.
+You have now attached a target based automatic scaling policy to your Spot Fleet to allow it to scale for peak demand. You can check out the associated CloudWatch alarms in the [CloudWatch console](https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#).
 
 ### 5\. Test the web app
 
@@ -215,7 +221,7 @@ Now let's take advantage of the two-minute Spot Instance interruption notice by 
 
 To capture the Spot Instance interruption notice being published to CloudWatch Events, we'll use a rule with two targets that was created in the CloudFormation stack. The two targets are a Lambda function and an SNS topic.
 
-5\. Go to the Lambda console by choosing **Lambda** under **Compute** in the AWS Management Console.
+5\. Go to the [Lambda console](https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions) by choosing **Lambda** under **Compute** in the AWS Management Console.
 
 6\. Find the name of the Lambda function created in the CloudFormation stack and select it.
 
@@ -245,11 +251,11 @@ def handler(event, context):
 
 8\. Click **Save** in the upper right-hand corner.
 
-The Lambda function does the heavy lifting for you. The details of the CloudWatch event are published to the Lambda function, which then uses boto3 to make a couple of AWS API calls. The first call is to describe the EC2 tags for the Spot Instance, filtering on a key of “TargetGroupArn”. If this tag is found, the instance is then deregistered from the target group ARN stored as the value of the tag.
+The Lambda function does the heavy lifting for you. The details of the CloudWatch event are published to the Lambda function, which then uses [boto3](https://boto3.readthedocs.io/en/latest/) to make a couple of AWS API calls. The first call is to describe the EC2 tags for the Spot Instance, filtering on a key of “TargetGroupArn”. If this tag is found, the instance is then deregistered from the target group ARN stored as the value of the tag.
 
 ### 7\. Test the Spot Instance interruption notice handler
 
-In order to test, you can take advantage of the fact that any interruption action that Spot Fleet takes on a Spot Instance results in a Spot Instance interruption notice being provided. Therefore, you can simply decrease the target size of your Spot Fleet from 2 to 1. The instance that is interrupted receives the interruption notice.
+In order to test, you can take advantage of the fact that any interruption action that Spot Fleet takes on a Spot Instance results in a Spot Instance interruption notice being provided. Therefore, you can simply decrease the target size of your Spot Fleet from 2 to 1. The instance that is interrupted receives the Spot Instance interruption notice.
 
 1\. Head to **Spot Requests** in the EC2 console navigation pane.
 
@@ -257,9 +263,9 @@ In order to test, you can take advantage of the fact that any interruption actio
 
 3\. At the top in the **Actions** dropdown, select **Modify target capacity**.
 
-4\. Set the **New target capacity** to *1*, and click **Submit**.
+4\. Set the **New target capacity** to *1*, and click **Submit**. This will now reduce the size of the Spot Fleet request target capacity from *2* to *1*.
 
-5\. Click on **Target Groups** in the EC2 console navigation pane.
+5\. Let's watch the Lambda function in action. Click on **Target Groups** in the EC2 console navigation pane.
 
 6\. Select your **Target group**.
 
