@@ -39,7 +39,7 @@ Here is a diagram of the resulting architecture:
 
 To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets in two Availability Zones, as well as the IAM policies and roles, and security groups.
 
-1\. Go ahead and launch the CloudFormation stack. You can check it out from GitHub, or grab the template directly. I use the stack name “ec2-spot-fleet-web-app“, but feel free to use any name you like. Just remember to change it in the instructions.
+1\. Go ahead and launch the CloudFormation stack. You can check it out from GitHub, or grab the [template directly](https://github.com/awslabs/ec2-spot-labs/blob/master/workshops/ec2-spot-fleet-web-app/ec2-spot-fleet-web-app.yaml). I use the stack name “ec2-spot-fleet-web-app“, but feel free to use any name you like. Just remember to change it in the instructions.
 
 ```
 $ git clone https://github.com/awslabs/ec2-spot-labs.git
