@@ -1,0 +1,65 @@
+{
+  "SpotOptions": {
+    "AllocationStrategy": "diversified",
+    "InstanceInterruptionBehavior": "terminate"
+  },
+  "ExcessCapacityTerminationPolicy": "termination",
+  "LaunchTemplateConfigs": [
+    {
+      "LaunchTemplateSpecification": {
+        "LaunchTemplateName": "ec2-fleet",
+        "Version": "1"
+      },
+      "Overrides": [
+        {
+          "InstanceType": "r4.4xlarge",
+          "SubnetId": "subnet-fa2653a3",
+          "WeightedCapacity": 16
+        },
+        {
+          "InstanceType": "r4.4xlarge",
+          "SubnetId": "subnet-05ef7d72",
+          "WeightedCapacity": 16
+        },
+        {
+          "InstanceType": "c5.2xlarge",
+          "SubnetId": "subnet-fa2653a3",
+          "WeightedCapacity": 8
+        },
+        {
+          "InstanceType": "c5.2xlarge",
+          "SubnetId": "subnet-05ef7d72",
+          "WeightedCapacity": 8
+        },
+        {
+          "InstanceType": "m5.xlarge",
+          "SubnetId": "subnet-fa2653a3",
+          "WeightedCapacity": 4
+        },
+        {
+          "InstanceType": "m5.xlarge",
+          "SubnetId": "subnet-05ef7d72",
+          "WeightedCapacity": 4
+        }
+      ]
+    }
+  ],
+  "TargetCapacitySpecification": {
+    "TotalTargetCapacity": 1000,
+    "DefaultTargetCapacityType": "spot"
+  },
+  "TerminateInstancesWithExpiration": true,
+  "Type": "maintain",
+  "ReplaceUnhealthyInstances": true,
+  "TagSpecifications": [
+    {
+      "ResourceType": "fleet",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "Demo EC2 Fleet"
+        }
+      ]
+    }
+  ]
+}
