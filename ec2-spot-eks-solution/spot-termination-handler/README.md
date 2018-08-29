@@ -1,4 +1,4 @@
-## Refer to the https://github.com/mumoshu/kube-spot-termination-notice-handler
+## Refer to the https://github.com/kube-aws/kube-spot-termination-notice-handler
 
 ONLY CHANGES include removing hipchat and slack from the notifications, and making it generic.
 
