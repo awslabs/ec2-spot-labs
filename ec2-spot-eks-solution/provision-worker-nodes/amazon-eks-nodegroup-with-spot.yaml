@@ -476,6 +476,7 @@ Resources:
             - autoscaling:DescribeAutoScalingInstances
             - autoscaling:DescribeLaunchConfigurations
             - autoscaling:SetDesiredCapacity
+            - autoscaling:DescribeTags
             - autoscaling:TerminateInstanceInAutoScalingGroup
             Resource: "*"
 
