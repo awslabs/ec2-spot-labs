@@ -537,7 +537,7 @@ Resources:
   SpotNode1Group:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      DesiredCapacity: !Ref NodeAutoScalingGroupMaxSize
+      DesiredCapacity: !Ref NodeAutoScalingGroupMinSize
       LaunchConfigurationName: !Ref SpotNode1LaunchConfig
       MinSize: !Ref NodeAutoScalingGroupMinSize
       MaxSize: !Ref NodeAutoScalingGroupMaxSize
@@ -561,7 +561,7 @@ Resources:
   SpotNode2Group:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      DesiredCapacity: !Ref NodeAutoScalingGroupMaxSize
+      DesiredCapacity: !Ref NodeAutoScalingGroupMinSize
       LaunchConfigurationName: !Ref SpotNode2LaunchConfig
       MinSize: !Ref NodeAutoScalingGroupMinSize
       MaxSize: !Ref NodeAutoScalingGroupMaxSize
@@ -585,7 +585,7 @@ Resources:
   OnDemandNodeGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      DesiredCapacity: !Ref NodeAutoScalingGroupMaxSize
+      DesiredCapacity: !Ref NodeAutoScalingGroupMinSize
       LaunchConfigurationName: !Ref OnDemandNodeLaunchConfig
       MinSize: !Ref NodeAutoScalingGroupMinSize
       MaxSize: !Ref NodeAutoScalingGroupMaxSize
