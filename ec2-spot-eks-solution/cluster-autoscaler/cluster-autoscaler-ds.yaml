@@ -138,7 +138,9 @@ spec:
             - --cloud-provider=aws
             - --skip-nodes-with-local-storage=false
             - --expander=least-waste
-            - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/[CLUSTER-NAME]
+            - --nodes=1:3:[OD-NodeGroup-Name]
+            - --nodes=1:3:[Spot-NodeGroup1-Name]
+            - --nodes=1:3:[Spot-NodeGroup2-Name]
             - --skip-nodes-with-system-pods=false
           env:
             - name: AWS_REGION
