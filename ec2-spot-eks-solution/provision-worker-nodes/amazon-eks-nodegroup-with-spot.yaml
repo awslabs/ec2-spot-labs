@@ -350,9 +350,11 @@ Mappings:
       MaxPods: 234
   RegionMap:
     us-east-1:
-      AMI: "ami-dea4d5a1"
+      AMI: "ami-0a54c984b9f908c81"
     us-west-2:
-      AMI: "ami-73a6e20b"
+      AMI: "ami-0440e4f6b9713faf6"
+    eu-west-1:
+      AMI: "ami-0c7a4976cb6fafd3a"
 
 Metadata:
   AWS::CloudFormation::Interface:
