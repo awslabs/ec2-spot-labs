@@ -12,11 +12,11 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: greeter
+  name: greeter-sample
   labels:
     app: greeter-srv
 spec:
-  replicas: 100
+  replicas: 1
   selector:
     matchLabels:
       app: greeter-srv
