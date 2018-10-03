@@ -11,27 +11,35 @@ Mappings:
       CIDR: 10.0.0.0/16
   amazonLinuxAmi:
     ap-northeast-1:
-      AMI: ami-dac312b4
+      AMI: ami-06cd52961ce9f0d85
+    ap-northeast-2:
+      AMI: ami-0a10b2721688ce9d2
+    ap-south-1:
+      AMI: ami-0912f71e06545ad88
     ap-southeast-1:
-      AMI: ami-dc9339bf
+      AMI: ami-08569b978cc4dfa10
     ap-southeast-2:
-      AMI: ami-1c47407f
+      AMI: ami-09b42976632b27e9b
     ca-central-1:
-      AMI: ami-ebed508f
+      AMI: ami-0b18956f
     eu-central-1:
-      AMI: ami-af0fc0c0
+      AMI: ami-0233214e13e500f77
     eu-west-1:
-      AMI: ami-70edb016
+      AMI: ami-047bb4163c506cd98
     eu-west-2:
-      AMI: ami-f1949e95
+      AMI: ami-f976839e
+    eu-west-3:
+      AMI: ami-0ebc281c20e89ba4b
+    sa-east-1:
+      AMI: ami-07b14488da8ea02a0
     us-east-1:
-      AMI: ami-0b33d91d
+      AMI: ami-0ff8a91507f77f867
     us-east-2:
-      AMI: ami-c55673a0
+      AMI: ami-0b59bfac6be064b78
     us-west-1:
-      AMI: ami-165a0876
+      AMI: ami-0bdb828fd58c52235
     us-west-2:
-      AMI: ami-f173cc91
+      AMI: ami-a0cfeed8
 Metadata:
   Author:
     Description: Chad Schmutzer <schmutze@amazon.com>
@@ -81,10 +89,6 @@ Parameters:
   spotFleetTargetCapacity:
     Default: 1
     Description: Number of EC2 Spot Instances to initially launch in the Spot Fleet
-    Type: Number
-  spotInstancePrice:
-    Default: 0.159
-    Description: Maximum Spot Instance price per hour per instance
     Type: Number
 Resources:
   attachGateway:
@@ -252,8 +256,6 @@ Resources:
 
                 '
         ReplaceUnhealthyInstances: true
-        SpotPrice:
-          Ref: spotInstancePrice
         TargetCapacity:
           Ref: spotFleetTargetCapacity
         TerminateInstancesWithExpiration: true
