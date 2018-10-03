@@ -1,0 +1,350 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Example of attaching an unmanaged compute environment (EC2 ASG with Spot Instances)
+  to AWS Batch
+Mappings:
+  CidrMappings:
+    public-subnet-1:
+      CIDR: 10.0.1.0/24
+    public-subnet-2:
+      CIDR: 10.0.2.0/24
+    vpc:
+      CIDR: 10.0.0.0/16
+  ecsOptimizedAmi:
+    us-east-1:
+      AMI: ami-0b9a214f40c38d5eb
+Metadata:
+  Author:
+    Description: Chad Schmutzer <schmutze@amazon.com>
+  License:
+    Description: 'Copyright 2017 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+Outputs:
+  launchTemplate:
+    Value:
+      Ref: launchTemplate
+Parameters:
+  keyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the EC2 Instances
+    Type: AWS::EC2::KeyPair::KeyName
+  sourceCidr:
+    Default: 0.0.0.0/0
+    Description: Optional - CIDR/IP range for instance ssh access - defaults to 0.0.0.0/0
+    Type: String
+Resources:
+  attachGateway:
+    DependsOn:
+    - vpc
+    - internetGateway
+    Properties:
+      InternetGatewayId:
+        Ref: internetGateway
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::VPCGatewayAttachment
+  autoScalingGroup:
+    DependsOn:
+    - launchTemplate
+    - publicSubnet1
+    - publicSubnet2
+    Properties:
+      DesiredCapacity: 2
+      LaunchTemplate:
+        LaunchTemplateId:
+          Ref: launchTemplate
+        Version: 1
+      MaxSize: 4
+      MinSize: 2
+      VPCZoneIdentifier:
+      - Ref: publicSubnet1
+      - Ref: publicSubnet2
+    Type: AWS::AutoScaling::AutoScalingGroup
+  batchServiceRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - batch.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole
+    Type: AWS::IAM::Role
+  computeEnvironment:
+    Properties:
+      ServiceRole:
+        Ref: batchServiceRole
+      State: ENABLED
+      Type: UNMANAGED
+    Type: AWS::Batch::ComputeEnvironment
+  instanceProfile:
+    DependsOn:
+    - instanceRole
+    Properties:
+      Path: /
+      Roles:
+      - Ref: instanceRole
+    Type: AWS::IAM::InstanceProfile
+  instanceRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - ecs:UpdateContainerInstancesState
+            Effect: Allow
+            Resource: '*'
+          Version: 2012-10-17
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - ecsUpdateContainerInstancesStatePolicy
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - batch:Describe*
+            Effect: Allow
+            Resource: '*'
+          Version: 2012-10-17
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - batchDescribeContainerInstancesStatePolicy
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStreams
+            Effect: Allow
+            Resource: arn:aws:logs:*:*:*
+          Version: 2012-10-17
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - cloudWatchLogsPolicy
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - s3:PutObject*
+            - s3:GetObject
+            - s3:DeleteObject
+            Effect: Allow
+            Resource:
+            - Fn::Join:
+              - ''
+              - - 'arn:aws:s3:::'
+                - Ref: s3Bucket
+                - /*
+          Version: '2012-10-17'
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - s3BucketReadWritePolicy
+    Type: AWS::IAM::Role
+  internetGateway:
+    DependsOn:
+    - vpc
+    Type: AWS::EC2::InternetGateway
+  jobQueue:
+    Properties:
+      ComputeEnvironmentOrder:
+      - ComputeEnvironment:
+          Ref: computeEnvironment
+        Order: 1
+      Priority: 1
+      State: ENABLED
+    Type: AWS::Batch::JobQueue
+  launchTemplate:
+    Properties:
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn:
+            Fn::GetAtt:
+            - instanceProfile
+            - Arn
+        ImageId:
+          Fn::FindInMap:
+          - ecsOptimizedAmi
+          - Ref: AWS::Region
+          - AMI
+        InstanceMarketOptions:
+          MarketType: spot
+          SpotOptions:
+            InstanceInterruptionBehavior: terminate
+            SpotInstanceType: one-time
+        InstanceType: c3.large
+        KeyName:
+          Ref: keyName
+        SecurityGroupIds:
+        - Ref: securityGroup
+        TagSpecifications:
+        - ResourceType: instance
+          Tags:
+          - Key: Name
+            Value: CFN EC2 Spot Instance
+        UserData:
+          Fn::Base64:
+            Fn::Sub: '#!/bin/bash -xe
+
+              yum -y install aws-cli
+
+              aws configure set default.region ${AWS::Region}
+
+              ECSCLUSTER=$(aws batch describe-compute-environments --compute-environments ${computeEnvironment}
+              --query computeEnvironments[].ecsClusterArn --output text)
+
+              echo "ECS_CLUSTER=$ECSCLUSTER" >> /etc/ecs/ecs.config
+
+              '
+    Type: AWS::EC2::LaunchTemplate
+  publicRoute:
+    DependsOn:
+    - publicRouteTable
+    - internetGateway
+    - attachGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: internetGateway
+      RouteTableId:
+        Ref: publicRouteTable
+    Type: AWS::EC2::Route
+  publicRouteTable:
+    DependsOn:
+    - vpc
+    - attachGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: Public Route Table
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::RouteTable
+  publicSubnet1:
+    DependsOn: attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - public-subnet-1
+        - CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: Public Subnet 1
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet1RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet1
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet1
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  publicSubnet2:
+    DependsOn: attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - public-subnet-2
+        - CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: Public Subnet 2
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet2RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet2
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet2
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  s3Bucket:
+    Type: AWS::S3::Bucket
+  scalingPolicy:
+    Properties:
+      AutoScalingGroupName:
+        Ref: autoScalingGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: 50
+    Type: AWS::AutoScaling::ScalingPolicy
+  securityGroup:
+    DependsOn:
+    - vpc
+    Properties:
+      GroupDescription: Instance Security Group
+      SecurityGroupIngress:
+      - CidrIp:
+          Ref: sourceCidr
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::SecurityGroup
+  vpc:
+    Properties:
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpc
+        - CIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+    Type: AWS::EC2::VPC
+...
