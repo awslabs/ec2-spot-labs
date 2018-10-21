@@ -1,0 +1,185 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Example of EC2 Spot Fleet using multiple VPCs with hub and spoke configuration
+  (VPC B)
+Mappings:
+  CidrMappings:
+    vpcB:
+      CIDR: 10.0.0.0/16
+    vpcBPrivateSubnet0:
+      CIDR: 10.0.0.0/19
+    vpcBPrivateSubnet1:
+      CIDR: 10.0.32.0/19
+    vpcBPrivateSubnet2:
+      CIDR: 10.0.64.0/19
+    vpcBPrivateSubnet3:
+      CIDR: 10.0.96.0/19
+    vpcBPrivateSubnet4:
+      CIDR: 10.0.128.0/19
+    vpcBPrivateSubnet5:
+      CIDR: 10.0.160.0/19
+Metadata:
+  Author:
+    Description: Chad Schmutzer <schmutze@amazon.com>
+  License:
+    Description: 'Copyright 2017 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+Outputs:
+  vpcB:
+    Value:
+      Ref: vpcB
+  vpcBPrivateSubnet0:
+    Value:
+      Ref: vpcBPrivateSubnet0
+  vpcBPrivateSubnet1:
+    Value:
+      Ref: vpcBPrivateSubnet1
+  vpcBPrivateSubnet2:
+    Value:
+      Ref: vpcBPrivateSubnet2
+  vpcBPrivateSubnet3:
+    Value:
+      Ref: vpcBPrivateSubnet3
+  vpcBPrivateSubnet4:
+    Value:
+      Ref: vpcBPrivateSubnet4
+  vpcBPrivateSubnet5:
+    Value:
+      Ref: vpcBPrivateSubnet5
+Resources:
+  vpcB:
+    Properties:
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpcB
+        - CIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+      - Key: Name
+        Value: VPC B
+    Type: AWS::EC2::VPC
+  vpcBPrivateSubnet0:
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpcBPrivateSubnet0
+        - CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value: VPC B Private Subnet 0
+      VpcId:
+        Ref: vpcB
+    Type: AWS::EC2::Subnet
+  vpcBPrivateSubnet1:
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpcBPrivateSubnet1
+        - CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value: VPC B Private Subnet 1
+      VpcId:
+        Ref: vpcB
+    Type: AWS::EC2::Subnet
+  vpcBPrivateSubnet2:
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 2
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpcBPrivateSubnet2
+        - CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value: VPC B Private Subnet 2
+      VpcId:
+        Ref: vpcB
+    Type: AWS::EC2::Subnet
+  vpcBPrivateSubnet3:
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 3
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpcBPrivateSubnet3
+        - CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value: VPC B Private Subnet 3
+      VpcId:
+        Ref: vpcB
+    Type: AWS::EC2::Subnet
+  vpcBPrivateSubnet4:
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 4
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpcBPrivateSubnet4
+        - CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value: VPC B Private Subnet 4
+      VpcId:
+        Ref: vpcB
+    Type: AWS::EC2::Subnet
+  vpcBPrivateSubnet5:
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 5
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpcBPrivateSubnet5
+        - CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+      - Key: Name
+        Value: VPC B Private Subnet 5
+      VpcId:
+        Ref: vpcB
+    Type: AWS::EC2::Subnet
+...

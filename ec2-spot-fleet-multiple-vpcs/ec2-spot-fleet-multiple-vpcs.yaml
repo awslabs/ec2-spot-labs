@@ -1,0 +1,302 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Example of EC2 Spot Fleet using multiple VPCs with hub and spoke configuration.
+  Fractional Instances Weights are being used such that 1 unit of target capacity = 100 vCPUs.
+Mappings:
+  amazonLinuxAmi:
+    us-east-1:
+      AMI: ami-0922553b7b0369273
+Metadata:
+  Author:
+    Description: Chad Schmutzer <schmutze@amazon.com>
+  License:
+    Description: 'Copyright 2017 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+Parameters:
+  keyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the EC2 Instances
+    Type: AWS::EC2::KeyPair::KeyName
+  spotFleetTargetCapacity:
+    Default: 1
+    Description: Spot Fleet target capacity. Fractional Instances Weights are being used such
+      that 1 unit of target capacity = 100 vCPUs.
+    Type: Number
+Resources:
+  launchTemplate:
+    Properties:
+      LaunchTemplateData:
+        ImageId:
+          Fn::FindInMap:
+          - amazonLinuxAmi
+          - Ref: AWS::Region
+          - AMI
+    Type: AWS::EC2::LaunchTemplate
+  spotFleet:
+    DependsOn:
+    - spotFleetRole
+    - launchTemplate
+    - vpcAStack
+    - vpcBStack
+    - vpcCStack
+    Properties:
+      SpotFleetRequestConfigData:
+        AllocationStrategy: diversified
+        IamFleetRole:
+          Fn::GetAtt:
+          - spotFleetRole
+          - Arn
+        LaunchTemplateConfigs:
+        - LaunchTemplateSpecification:
+            LaunchTemplateId:
+              Ref: launchTemplate
+            Version: 1
+          Overrides:
+          - InstanceType: c3.large
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet0
+            WeightedCapacity: 0.02
+          - InstanceType: c3.large
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet1
+            WeightedCapacity: 0.02
+          - InstanceType: c3.large
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet2
+            WeightedCapacity: 0.02
+          - InstanceType: c3.large
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet3
+            WeightedCapacity: 0.02
+          - InstanceType: c3.large
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet4
+            WeightedCapacity: 0.02
+          - InstanceType: c3.large
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet5
+            WeightedCapacity: 0.02
+          - InstanceType: c3.xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcCStack
+              - Outputs.vpcCPrivateSubnet0
+            WeightedCapacity: 0.04
+          - InstanceType: c3.xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcCStack
+              - Outputs.vpcCPrivateSubnet1
+            WeightedCapacity: 0.04
+          - InstanceType: c3.xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcCStack
+              - Outputs.vpcCPrivateSubnet2
+            WeightedCapacity: 0.04
+          - InstanceType: c3.xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcCStack
+              - Outputs.vpcCPrivateSubnet3
+            WeightedCapacity: 0.04
+          - InstanceType: c3.xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcCStack
+              - Outputs.vpcCPrivateSubnet4
+            WeightedCapacity: 0.04
+          - InstanceType: c3.xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcCStack
+              - Outputs.vpcCPrivateSubnet5
+            WeightedCapacity: 0.04
+          - InstanceType: c3.2xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet0
+            WeightedCapacity: 0.08
+          - InstanceType: c3.2xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet1
+            WeightedCapacity: 0.08
+          - InstanceType: c3.2xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet2
+            WeightedCapacity: 0.08
+          - InstanceType: c3.2xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet3
+            WeightedCapacity: 0.08
+          - InstanceType: c3.2xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet4
+            WeightedCapacity: 0.08
+          - InstanceType: c3.2xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet5
+            WeightedCapacity: 0.08
+          - InstanceType: c3.4xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcCStack
+              - Outputs.vpcCPrivateSubnet0
+            WeightedCapacity: 0.16
+          - InstanceType: c3.4xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcCStack
+              - Outputs.vpcCPrivateSubnet1
+            WeightedCapacity: 0.16
+          - InstanceType: c3.4xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcCStack
+              - Outputs.vpcCPrivateSubnet2
+            WeightedCapacity: 0.16
+          - InstanceType: c3.4xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcCStack
+              - Outputs.vpcCPrivateSubnet3
+            WeightedCapacity: 0.16
+          - InstanceType: c3.4xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcCStack
+              - Outputs.vpcCPrivateSubnet4
+            WeightedCapacity: 0.16
+          - InstanceType: c3.4xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcCStack
+              - Outputs.vpcCPrivateSubnet5
+            WeightedCapacity: 0.16
+          - InstanceType: c3.8xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet0
+            WeightedCapacity: 0.32
+          - InstanceType: c3.8xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet1
+            WeightedCapacity: 0.32
+          - InstanceType: c3.8xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet2
+            WeightedCapacity: 0.32
+          - InstanceType: c3.8xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet3
+            WeightedCapacity: 0.32
+          - InstanceType: c3.8xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet4
+            WeightedCapacity: 0.32
+          - InstanceType: c3.8xlarge
+            SubnetId:
+              Fn::GetAtt:
+              - vpcBStack
+              - Outputs.vpcBPrivateSubnet5
+            WeightedCapacity: 0.32
+        ReplaceUnhealthyInstances: true
+        TargetCapacity:
+          Ref: spotFleetTargetCapacity
+        TerminateInstancesWithExpiration: true
+    Type: AWS::EC2::SpotFleet
+  spotFleetRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - spotfleet.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole
+      Path: /
+    Type: AWS::IAM::Role
+  vpcAPeeringB:
+    DependsOn:
+    - vpcAStack
+    - vpcBStack
+    Properties:
+      PeerVpcId:
+        Fn::GetAtt:
+        - vpcBStack
+        - Outputs.vpcB
+      VpcId:
+        Fn::GetAtt:
+        - vpcAStack
+        - Outputs.vpcA
+    Type: AWS::EC2::VPCPeeringConnection
+  vpcAPeeringC:
+    DependsOn:
+    - vpcAStack
+    - vpcCStack
+    Properties:
+      PeerVpcId:
+        Fn::GetAtt:
+        - vpcCStack
+        - Outputs.vpcC
+      VpcId:
+        Fn::GetAtt:
+        - vpcAStack
+        - Outputs.vpcA
+    Type: AWS::EC2::VPCPeeringConnection
+  vpcAStack:
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/{MYBUCKET}/ec2-spot-fleet-multiple-vpcs-vpca.yaml
+    Type: AWS::CloudFormation::Stack
+  vpcBStack:
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/{MYBUCKET}/ec2-spot-fleet-multiple-vpcs-vpcb.yaml
+    Type: AWS::CloudFormation::Stack
+  vpcCStack:
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/{MYBUCKET}/ec2-spot-fleet-multiple-vpcs-vpcc.yaml
+    Type: AWS::CloudFormation::Stack
+...

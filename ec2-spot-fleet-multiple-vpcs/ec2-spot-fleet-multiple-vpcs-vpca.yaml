@@ -1,0 +1,150 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Example of EC2 Spot Fleet using multiple VPCs with hub and spoke configuration
+  (VPC A)
+Mappings:
+  CidrMappings:
+    vpcA:
+      CIDR: 172.16.0.0/16
+    vpcAPublicSubnet1:
+      CIDR: 172.16.0.0/19
+    vpcAPublicSubnet2:
+      CIDR: 172.16.32.0/19
+Metadata:
+  Author:
+    Description: Chad Schmutzer <schmutze@amazon.com>
+  License:
+    Description: 'Copyright 2017 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+Outputs:
+  vpcA:
+    Value:
+      Ref: vpcA
+  vpcAPublicSubnet1:
+    Value:
+      Ref: vpcAPublicSubnet1
+  vpcAPublicSubnet2:
+    Value:
+      Ref: vpcAPublicSubnet2
+Resources:
+  vpcA:
+    Properties:
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpcA
+        - CIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+      - Key: Name
+        Value: VPC A
+    Type: AWS::EC2::VPC
+  vpcAAttachGateway:
+    DependsOn:
+    - vpcA
+    - vpcAInternetGateway
+    Properties:
+      InternetGatewayId:
+        Ref: vpcAInternetGateway
+      VpcId:
+        Ref: vpcA
+    Type: AWS::EC2::VPCGatewayAttachment
+  vpcAInternetGateway:
+    DependsOn:
+    - vpcA
+    Type: AWS::EC2::InternetGateway
+  vpcAPublicRoute:
+    DependsOn:
+    - vpcAPublicRouteTable
+    - vpcAInternetGateway
+    - vpcAAttachGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: vpcAInternetGateway
+      RouteTableId:
+        Ref: vpcAPublicRouteTable
+    Type: AWS::EC2::Route
+  vpcAPublicRouteTable:
+    DependsOn:
+    - vpcA
+    - vpcAAttachGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: VPC A Public Route Table
+      VpcId:
+        Ref: vpcA
+    Type: AWS::EC2::RouteTable
+  vpcAPublicSubnet1:
+    DependsOn: vpcAAttachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpcAPublicSubnet1
+        - CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: VPC A Public Subnet 1
+      VpcId:
+        Ref: vpcA
+    Type: AWS::EC2::Subnet
+  vpcAPublicSubnet1RouteTableAssociation:
+    DependsOn:
+    - vpcAPublicRouteTable
+    - vpcAPublicSubnet1
+    - vpcAAttachGateway
+    Properties:
+      RouteTableId:
+        Ref: vpcAPublicRouteTable
+      SubnetId:
+        Ref: vpcAPublicSubnet1
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  vpcAPublicSubnet2:
+    DependsOn: vpcAAttachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpcAPublicSubnet2
+        - CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: VPC A Public Subnet 2
+      VpcId:
+        Ref: vpcA
+    Type: AWS::EC2::Subnet
+  vpcAPublicSubnet2RouteTableAssociation:
+    DependsOn:
+    - vpcAPublicRouteTable
+    - vpcAPublicSubnet2
+    - vpcAAttachGateway
+    Properties:
+      RouteTableId:
+        Ref: vpcAPublicRouteTable
+      SubnetId:
+        Ref: vpcAPublicSubnet2
+    Type: AWS::EC2::SubnetRouteTableAssociation
+...
