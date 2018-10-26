@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  ASGLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: ReInvent2018CFNLT
+      LaunchTemplateData:
+        ImageId: ami-0922553b7b0369273
+        InstanceType: t2.micro
+        UserData:
+          IyEvYmluL2Jhc2gKeXVtIHVwZGF0ZSAteQphbWF6b24tbGludXgtZXh0cmFzIGluc3RhbGwgLXkgbGFtcC1tYXJpYWRiMTAuMi1waHA3LjIgcGhwNy4yCnl1bSBpbnN0YWxsIC15IGh0dHBkIG1hcmlhZGItc2VydmVyCnN5c3RlbWN0bCBzdGFydCBodHRwZApzeXN0ZW1jdGwgZW5hYmxlIGh0dHBkCnVzZXJtb2QgLWEgLUcgYXBhY2hlIGVjMi11c2VyCmNob3duIC1SIGVjMi11c2VyOmFwYWNoZSAvdmFyL3d3dwpjaG1vZCAyNzc1IC92YXIvd3d3CmZpbmQgL3Zhci93d3cgLXR5cGUgZCAtZXhlYyBjaG1vZCAyNzc1IHt9IFw7CmZpbmQgL3Zhci93d3cgLXR5cGUgZiAtZXhlYyBjaG1vZCAwNjY0IHt9IFw7CmVjaG8gIjw/cGhwIHBocGluZm8oKTsgPz4iID4gL3Zhci93d3cvaHRtbC9waHBpbmZvLnBocA==
+        SecurityGroupIds:
+          - sg-025def4d7af8d3d23
+        CreditSpecification:
+          CpuCredits: standard  
+  CFNLTAsg:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: Reinvent2018CFNASG
+      LaunchTemplate:
+        LaunchTemplateId:
+          Ref: ASGLaunchTemplate
+        Version:
+          Fn::GetAtt: [ASGLaunchTemplate, LatestVersionNumber]
+      MaxSize: 1
+      MinSize: 1
+      VPCZoneIdentifier:
+        - subnet-031cc93d
