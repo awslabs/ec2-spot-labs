@@ -289,14 +289,14 @@ Resources:
     Type: AWS::EC2::VPCPeeringConnection
   vpcAStack:
     Properties:
-      TemplateURL: https://s3.amazonaws.com/{MYBUCKET}/ec2-spot-fleet-multiple-vpcs-vpca.yaml
+      TemplateURL: https://s3.amazonaws.com/schmutze/ec2-spot-fleet-multiple-vpcs-vpca.yaml
     Type: AWS::CloudFormation::Stack
   vpcBStack:
     Properties:
-      TemplateURL: https://s3.amazonaws.com/{MYBUCKET}/ec2-spot-fleet-multiple-vpcs-vpcb.yaml
+      TemplateURL: https://s3.amazonaws.com/schmutze/ec2-spot-fleet-multiple-vpcs-vpcb.yaml
     Type: AWS::CloudFormation::Stack
   vpcCStack:
     Properties:
-      TemplateURL: https://s3.amazonaws.com/{MYBUCKET}/ec2-spot-fleet-multiple-vpcs-vpcc.yaml
+      TemplateURL: https://s3.amazonaws.com/schmutze/ec2-spot-fleet-multiple-vpcs-vpcc.yaml
     Type: AWS::CloudFormation::Stack
 ...
