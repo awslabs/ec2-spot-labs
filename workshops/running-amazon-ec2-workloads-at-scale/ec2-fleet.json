@@ -12,27 +12,27 @@
       },
       "Overrides": [
         {
-          "InstanceType": "t2.micro",
+          "InstanceType": "c3.large",
           "SubnetId": "subnet-014dc7cbc51598989"
         },
         {
-          "InstanceType": "t2.micro",
+          "InstanceType": "c3.large",
           "SubnetId": "subnet-0db0cd8698d053841"
         },
         {
-          "InstanceType": "t2.small",
+          "InstanceType": "m3.large",
           "SubnetId": "subnet-014dc7cbc51598989"
         },
         {
-          "InstanceType": "t2.small",
+          "InstanceType": "m3.large",
           "SubnetId": "subnet-0db0cd8698d053841"
         },
         {
-          "InstanceType": "t2.medium",
+          "InstanceType": "t2.large",
           "SubnetId": "subnet-014dc7cbc51598989"
         },
         {
-          "InstanceType": "t2.medium",
+          "InstanceType": "t2.large",
           "SubnetId": "subnet-0db0cd8698d053841"
         }
       ]
