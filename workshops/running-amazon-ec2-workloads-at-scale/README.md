@@ -38,17 +38,19 @@ Here is a diagram of the resulting architecture:
 1. Launch the CloudFormation stack
 2. Enter the Cloud9 Ide
 3. Clone the GitHub repo ($ git clone https://github.com/awslabs/ec2-spot-labs.git)
+4. cd ec2-spot-labs/workshops/running-amazon-ec2-workloads-at-scale
 4. Update user-data.txt
 5. Create base64 user-data ($ base64 user-data.txt > user-data.base64.txt)
 6. Update the EC2 Launch Template
 7. Create the EC2 Launch Template ($ aws ec2 create-launch-template --launch-template-name runningAmazonEC2WorkloadsAtScale --launch-template-data file://launch-template-data.json)
 8. Launch instance via ec2-fleet ($ aws ec2 create-fleet --cli-input-json file://ec2-fleet.json)
 11. $ git clone https://github.com/phanan/koel.git; $ git checkout v3.7.2
-12. move codedeploy structure in place
+12. move codedeploy structure and configs in place (appspec.y
 13. $ aws deploy create-application --application-name koelAppDev
 14. $ aws deploy push --application-name koelAppDev --s3-location s3://cmp402-codedeploybucket-recrh13edl4r/koelAppDev.zip --no-ignore-hidden-files
-15. aws deploy create-deployment-group --application-name koelAppDev --deployment-group-name koelDepGroupDev --deployment-config-name CodeDeployDefault.OneAtATime --ec2-tag-filters Key=Name,Value=runningAmazonEC2WorkloadsAtScale,Type=KEY_AND_VALUE Key=Env,Value=dev,Type=KEY_AND_VALUE --service-role-arn arn:aws:iam::753949184587:role/cmp402-codeDeployServiceRole-1REL37OJOS88N
+15. aws deploy create-deployment-group --application-name koelAppDev --deployment-group-name koelDepGroupDev --deployment-config-name CodeDeployDefault.OneAtATime --ec2-tag-filters Key=Name,Value=runningAmazonEC2WorkloadsAtScale,Type=KEY\_AND\_VALUE Key=Env,Value=dev,Type=KEY\_AND\_VALUE --service-role-arn arn:aws:iam::753949184587:role/cmp402-codeDeployServiceRole-1REL37OJOS88N
 16. aws deploy create-deployment --application-name koelAppDev --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name koelDepGroupDev --s3-location bucket=cmp402-codedeploybucket-recrh13edl4r,bundleType=zip,key=koelAppDev.zip
+17. 
 
 ### 1\. Launch the CloudFormation stack
 

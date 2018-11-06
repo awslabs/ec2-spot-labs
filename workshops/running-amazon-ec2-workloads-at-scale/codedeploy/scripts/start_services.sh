@@ -1,7 +1,6 @@
 #!/bin/bash
 
-systemctl enable mariadb.service
-systemctl start mariadb.service
+cd /var/www/koel && php artisan koel:init
 
 systemctl enable httpd.service
 systemctl start httpd.service
