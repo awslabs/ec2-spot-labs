@@ -40,9 +40,9 @@ Here is a diagram of the resulting architecture:
 3. Clone the GitHub repo ($ git clone https://github.com/awslabs/ec2-spot-labs.git)
 4. cd ec2-spot-labs/workshops/running-amazon-ec2-workloads-at-scale
 4. Update user-data.txt
-5. Create base64 user-data ($ base64 user-data.txt > user-data.base64.txt)
+5. Create base64 user-data ($ base64 --wrap=0 user-data.txt > user-data.base64.txt)
 6. Update the EC2 Launch Template
-7. Create the EC2 Launch Template ($ aws ec2 create-launch-template --launch-template-name runningAmazonEC2WorkloadsAtScale --launch-template-data file://launch-template-data.json)
+7. Create the EC2 Launch Template ($ aws ec2 create-launch-template --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description dev --launch-template-data file://launch-template-data.json)
 8. Launch instance via ec2-fleet ($ aws ec2 create-fleet --cli-input-json file://ec2-fleet.json)
 11. $ git clone https://github.com/phanan/koel.git; $ git checkout v3.7.2
 12. move codedeploy structure and configs in place (appspec.y
@@ -50,7 +50,12 @@ Here is a diagram of the resulting architecture:
 14. $ aws deploy push --application-name koelAppDev --s3-location s3://cmp402-codedeploybucket-recrh13edl4r/koelAppDev.zip --no-ignore-hidden-files
 15. aws deploy create-deployment-group --application-name koelAppDev --deployment-group-name koelDepGroupDev --deployment-config-name CodeDeployDefault.OneAtATime --ec2-tag-filters Key=Name,Value=runningAmazonEC2WorkloadsAtScale,Type=KEY\_AND\_VALUE Key=Env,Value=dev,Type=KEY\_AND\_VALUE --service-role-arn arn:aws:iam::753949184587:role/cmp402-codeDeployServiceRole-1REL37OJOS88N
 16. aws deploy create-deployment --application-name koelAppDev --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name koelDepGroupDev --s3-location bucket=cmp402-codedeploybucket-recrh13edl4r,bundleType=zip,key=koelAppDev.zip
-17. 
+17. launch RDS instance ($ aws rds create-db-instance --db-name koel --db-instance-identifier runningAmazonEC2WorkloadsAtScale --allocated-storage 20 --db-instance-class db.t2.medium --engine mariadb --master-username dbadmin --master-user-password dbpass2018 --vpc-security-group-ids sg-04ce2796f0faae210 --db-subnet-group-name cmp402-r1-dbsubnetgroup-1u9hcxurkaw8j --no-publicly-accessible)
+18. create application load balancer ($ aws elbv2 create-load-balancer --name runningAmazonEC2WorkloadsAtScale --subnets subnet-0fd51594e1c27795e subnet-0071e8aa25445266f --security-groups sg-00c6508e8257c5660)
+19. create target group ($ aws elbv2 create-target-group --name runningAmazonEC2WorkloadsAtScale --protocol HTTP --port 80 --vpc-id vpc-0bfc7d8f2826c853e)
+20. create listener ($ aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:753949184587:loadbalancer/app/runningAmazonEC2WorkloadsAtScale/e9195569f4f71e10 --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c)
+21. create new version of launch template for prod ($ aws ec2 create-launch-template-version --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description prod --source-version 1 --launch-template-data "{\"TagSpecifications\":[{\"ResourceType\":\"instance\",\"Tags\":[{\"Key\":\"Name\",\"Value\":\"runningAmazonEC2WorkloadsAtScale\"},{\"Key\":\"Env\",\"Value\":\"prod\"}]}]}")
+22. create auto scaling group ($ aws autoscaling create-auto-scaling-group --launch-template LaunchTemplateName=runningAmazonEC2WorkloadsAtScale,Version=2 --min-size 2 --max-size 10 --desired-capacity 2 --target-group-arns arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c --health-check-type ELB --vpc-zone-identifier subnet-0fd51594e1c27795e,subnet-0071e8aa25445266f 
 
 ### 1\. Launch the CloudFormation stack
 

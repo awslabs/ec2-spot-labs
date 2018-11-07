@@ -42,6 +42,14 @@ Outputs:
       Fn::GetAtt:
       - codeDeployServiceRole
       - Arn
+  dbSecurityGroup:
+    Description: The RDS database security group
+    Value:
+      Ref: dbSecurityGroup
+  dbSubnetGroup:
+    Description: The RDS database subnet group
+    Value:
+      Ref: dbSubnetGroup
   eventRule:
     Description: Events rule
     Value:
@@ -76,6 +84,10 @@ Outputs:
     Description: SNS topic ARN
     Value:
       Ref: snsTopic
+  vpc:
+    Description: The VPC
+    Value:
+      Ref: vpc
 Parameters:
   sourceCidr:
     Default: 0.0.0.0/0
@@ -119,6 +131,31 @@ Resources:
       - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole
       Path: /
     Type: AWS::IAM::Role
+  dbSecurityGroup:
+    DependsOn:
+    - vpc
+    Properties:
+      GroupDescription: Allow mysql (3306)
+      SecurityGroupIngress:
+      - CidrIp:
+          Ref: sourceCidr
+        FromPort: 3306
+        IpProtocol: tcp
+        ToPort: 3306
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::SecurityGroup
+  dbSubnetGroup:
+    Properties:
+      DBSubnetGroupDescription: Running Amazon EC2 Workloads at Scale - RDS database subnet
+        group
+      SubnetIds:
+      - Ref: publicSubnet1
+      - Ref: publicSubnet2
+      Tags:
+      - Key: Name
+        Value: Running Amazon EC2 Workloads at Scale - RDS database subnet group
+    Type: AWS::RDS::DBSubnetGroup
   eventRule:
     DependsOn:
     - snsTopic
