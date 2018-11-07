@@ -55,7 +55,7 @@ Here is a diagram of the resulting architecture:
 19. create target group ($ aws elbv2 create-target-group --name runningAmazonEC2WorkloadsAtScale --protocol HTTP --port 80 --vpc-id vpc-0bfc7d8f2826c853e)
 20. create listener ($ aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:753949184587:loadbalancer/app/runningAmazonEC2WorkloadsAtScale/e9195569f4f71e10 --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c)
 21. create new version of launch template for prod ($ aws ec2 create-launch-template-version --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description prod --source-version 1 --launch-template-data "{\"TagSpecifications\":[{\"ResourceType\":\"instance\",\"Tags\":[{\"Key\":\"Name\",\"Value\":\"runningAmazonEC2WorkloadsAtScale\"},{\"Key\":\"Env\",\"Value\":\"prod\"}]}]}")
-22. create auto scaling group ($ aws autoscaling create-auto-scaling-group --launch-template LaunchTemplateName=runningAmazonEC2WorkloadsAtScale,Version=2 --min-size 2 --max-size 10 --desired-capacity 2 --target-group-arns arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c --health-check-type ELB --vpc-zone-identifier subnet-0fd51594e1c27795e,subnet-0071e8aa25445266f 
+22. create auto scaling group ($ aws autoscaling create-auto-scaling-group --cli-input-json file://asg.json) 
 
 ### 1\. Launch the CloudFormation stack
 

@@ -11,7 +11,6 @@
     "TargetGroupARNs": [
         "arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c"
     ], 
-    "HealthCheckType": "ELB", 
-    "HealthCheckGracePeriod": 0, 
+    "HealthCheckType": "EC2", 
     "VPCZoneIdentifier": "subnet-0fd51594e1c27795e,subnet-0071e8aa25445266f"
 }
