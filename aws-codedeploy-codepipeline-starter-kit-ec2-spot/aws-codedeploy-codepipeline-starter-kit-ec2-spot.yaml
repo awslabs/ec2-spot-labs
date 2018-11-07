@@ -1,0 +1,1208 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Conditions:
+  GitHubAsSource:
+    Fn::Equals:
+    - Ref: AppSourceType
+    - GitHub
+  S3AsSource:
+    Fn::Equals:
+    - Ref: AppSourceType
+    - S3
+Description: Builds a S3 bucket, a VPC w/ 1 public subnet, an IGW, route tables, ACL, 2 EC2
+  instances, CodeDeploy and CodePipeline bits.
+Mappings:
+  AWSInstanceType2EBSOpt:
+    t2.large:
+      EBSOpt: 'false'
+    t2.medium:
+      EBSOpt: 'false'
+    t2.micro:
+      EBSOpt: 'false'
+    t2.small:
+      EBSOpt: 'false'
+  AWSInstanceType2Virt:
+    t2.large:
+      Virt: HVM
+    t2.medium:
+      Virt: HVM
+    t2.micro:
+      Virt: HVM
+    t2.small:
+      Virt: HVM
+  AWSRegionVirt2AMI:
+    us-east-1:
+      HVM: ami-8fcee4e5
+    us-west-2:
+      HVM: ami-63b25203
+  SubnetTypeIpRanges:
+    public:
+      RANGE: 0.0/17
+  VPCIpSpace:
+    us-east-1:
+      RANGE: '10.42'
+    us-west-2:
+      RANGE: '10.43'
+  instancesTypes:
+    Demo:
+      INST: t2.small
+  publicSubnetConfig:
+    publicSubnet01:
+      CIDR: 10.0/24
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: Application
+      Parameters:
+      - AppName
+      - AppSourceType
+    - Label:
+        default: Application Source - S3
+      Parameters:
+      - S3ArtifactBucket
+      - S3ArtifactObject
+    - Label:
+        default: Application Source - GitHub
+      Parameters:
+      - GitHubUser
+      - GitHubToken
+      - GitHubRepoName
+      - GitHubBranchName
+    - Label:
+        default: SSH & HTTP Configuration
+      Parameters:
+      - KeyName
+      - YourIP
+Outputs:
+  AppSourceType:
+    Description: The source type of the application
+    Value:
+      Ref: AppSourceType
+  ApplicationSource:
+    Description: The source location of the application
+    Value:
+      Fn::If:
+      - S3AsSource
+      - Fn::Join:
+        - ''
+        - - https://s3.amazonaws.com/
+          - Ref: S3ArtifactBucket
+          - /
+          - Ref: S3ArtifactObject
+      - Fn::Join:
+        - ''
+        - - https://github.com/
+          - Ref: GitHubUser
+          - /
+          - Ref: GitHubRepoName
+          - /tree/
+          - Ref: GitHubBranchName
+  DevInstanceID:
+    Description: DevWebApp01 Instance ID
+    Value:
+      Ref: DevWebApp01
+  DevWebApp01PublicIP:
+    Description: DevWebApp01 Public IP Address
+    Value:
+      Fn::GetAtt:
+      - DevWebApp01
+      - PublicIp
+  IGWId:
+    Description: Internet Gateway ID
+    Value:
+      Ref: InternetGateway
+  JenkinsInstanceID:
+    Description: Jenkins Instance ID
+    Value:
+      Ref: JenkinsServer
+  JenkinsPublicIP:
+    Description: Jenkins Public IP Address
+    Value:
+      Fn::GetAtt:
+      - JenkinsServer
+      - PublicIp
+  ProdWebApp01InstanceID:
+    Description: ProdWebApp01 Instance ID
+    Value:
+      Ref: ProdWebApp01
+  ProdWebApp01PublicIP:
+    Description: ProdWebApp01 Public IP Address
+    Value:
+      Fn::GetAtt:
+      - ProdWebApp01
+      - PublicIp
+  PublicSubnetA:
+    Description: Public Subnet in AZ A
+    Value:
+      Ref: publicSubnet01
+  VpcId:
+    Description: VPC ID of newly created VPC
+    Value:
+      Ref: MyVPC
+Parameters:
+  AppName:
+    AllowedPattern: '[a-z0-9][-. a-z0-9]*'
+    ConstraintDescription: Must be between 2 and 15 characters long, lowercase and may contain
+      alphanumeric characters, hyphens (-), and dots (.), but must start with alphanumeric.
+    Default: app-name
+    Description: Name of the application.
+    MaxLength: '15'
+    MinLength: '2'
+    Type: String
+  AppSourceType:
+    AllowedValues:
+    - S3
+    - GitHub
+    Default: S3
+    Description: Source of your application's code
+    Type: String
+  GitHubBranchName:
+    Default: master
+    Description: Name of the branch that you want to pull from. Not the Url.
+    Type: String
+  GitHubRepoName:
+    Default: aws-codedeploy-sample-tomcat
+    Description: Name of the repository that your application is in. Not the Url.
+    Type: String
+  GitHubToken:
+    Default: oauthtoken1234
+    Description: Go to https://github.com/settings/tokens to create/find a token for your account
+    NoEcho: 'true'
+    Type: String
+  GitHubUser:
+    Default: aGitHubUser
+    Description: Your GitHub username
+    Type: String
+  KeyName:
+    Description: Name of an existing EC2 KeyPair for SSH access to the instances.
+    Type: AWS::EC2::KeyPair::KeyName
+  S3ArtifactBucket:
+    Default: aws-codedeploy-samples-us-east-1
+    Description: Name of the bucket that the application artifact will be based in.
+    Type: String
+  S3ArtifactObject:
+    Default: samples/latest/aws-codedeploy-sample-tomcat.zip
+    Description: Application artfiact name in S3.
+    Type: String
+  YourIP:
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+    Default: 999.999.999.999/32
+    Description: IP address to connect to SSH from. Check http://checkip.amazonaws.com/ to find
+      yours.
+    MaxLength: '18'
+    MinLength: '10'
+    Type: String
+Resources:
+  AttachGateway:
+    Properties:
+      InternetGatewayId:
+        Ref: InternetGateway
+      VpcId:
+        Ref: MyVPC
+    Type: AWS::EC2::VPCGatewayAttachment
+  CodeDeployTrustRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - codedeploy.amazonaws.com
+          Sid: ''
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole
+      Path: /
+    Type: AWS::IAM::Role
+  CodePipelineRolePolicies:
+    Properties:
+      PolicyDocument:
+        Statement:
+        - Action:
+          - s3:*
+          Effect: Allow
+          Resource:
+          - '*'
+        - Action:
+          - s3:PutBucketPolicy
+          - s3:PutObject
+          Effect: Allow
+          Resource:
+          - Fn::Join:
+            - ''
+            - - arn:aws:s3:::demo-
+              - Ref: AWS::Region
+              - '-'
+              - Ref: AWS::AccountId
+              - '-'
+              - Ref: AppName
+        - Action:
+          - codecommit:GetBranch
+          - codecommit:GetCommit
+          - codecommit:UploadArchive
+          - codecommit:GetUploadArchiveStatus
+          - codecommit:CancelUploadArchive
+          Effect: Allow
+          Resource: '*'
+        - Action:
+          - codepipeline:*
+          - iam:ListRoles
+          - iam:PassRole
+          - codedeploy:CreateDeployment
+          - codedeploy:GetApplicationRevision
+          - codedeploy:GetDeployment
+          - codedeploy:GetDeploymentConfig
+          - codedeploy:RegisterApplicationRevision
+          - elasticbeanstalk:DescribeApplications
+          - elasticbeanstalk:DescribeEnvironments
+          - lambda:GetFunctionConfiguration
+          - lambda:ListFunctions
+          Effect: Allow
+          Resource: '*'
+      PolicyName: CodePipelinePolicy
+      Roles:
+      - Ref: CodePipelineTrustRole
+    Type: AWS::IAM::Policy
+  CodePipelineTrustRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - codepipeline.amazonaws.com
+          Sid: '1'
+      Path: /
+    Type: AWS::IAM::Role
+  CustomJenkinsActionType:
+    DependsOn: JenkinsHostWaitCondition
+    Properties:
+      Category: Build
+      ConfigurationProperties:
+      - Key: 'true'
+        Name: ProjectName
+        Queryable: 'true'
+        Required: 'true'
+        Secret: 'false'
+        Type: String
+      InputArtifactDetails:
+        MaximumCount: 5
+        MinimumCount: 0
+      OutputArtifactDetails:
+        MaximumCount: 5
+        MinimumCount: 0
+      Provider:
+        Fn::Join:
+        - ''
+        - - Ref: AppName
+          - -Jenkins
+      Settings:
+        EntityUrlTemplate:
+          Fn::Join:
+          - ''
+          - - http://
+            - Fn::GetAtt:
+              - JenkinsServer
+              - PublicIp
+            - /job/{Config:ProjectName}
+        ExecutionUrlTemplate:
+          Fn::Join:
+          - ''
+          - - http://
+            - Fn::GetAtt:
+              - JenkinsServer
+              - PublicIp
+            - /job/{Config:ProjectName}/{ExternalExecutionId}
+      Version: '1'
+    Type: AWS::CodePipeline::CustomActionType
+  DevDeploymentGroup:
+    DependsOn: CodeDeployTrustRole
+    Properties:
+      ApplicationName:
+        Ref: MyApp
+      DeploymentConfigName: CodeDeployDefault.OneAtATime
+      DeploymentGroupName:
+        Fn::Join:
+        - ''
+        - - Ref: AppName
+          - -DevEnv
+      Ec2TagFilters:
+      - Key: Environment
+        Type: KEY_AND_VALUE
+        Value:
+          Fn::Join:
+          - ''
+          - - Ref: AppName
+            - -DevWebApp
+      ServiceRoleArn:
+        Fn::GetAtt:
+        - CodeDeployTrustRole
+        - Arn
+    Type: AWS::CodeDeploy::DeploymentGroup
+  DevWebApp01:
+    Properties:
+      EbsOptimized:
+        Fn::FindInMap:
+        - AWSInstanceType2EBSOpt
+        - Fn::FindInMap:
+          - instancesTypes
+          - Demo
+          - INST
+        - EBSOpt
+      IamInstanceProfile:
+        Ref: WebAppInstanceProfile
+      ImageId:
+        Fn::FindInMap:
+        - AWSRegionVirt2AMI
+        - Ref: AWS::Region
+        - Fn::FindInMap:
+          - AWSInstanceType2Virt
+          - Fn::FindInMap:
+            - instancesTypes
+            - Demo
+            - INST
+          - Virt
+      InstanceType:
+        Fn::FindInMap:
+        - instancesTypes
+        - Demo
+        - INST
+      KeyName:
+        Ref: KeyName
+      NetworkInterfaces:
+      - AssociatePublicIpAddress: 'true'
+        DeviceIndex: '0'
+        GroupSet:
+        - Ref: WebAppSG
+        SubnetId:
+          Ref: publicSubnet01
+      Tags:
+      - Key: Environment
+        Value:
+          Fn::Join:
+          - ''
+          - - Ref: AppName
+            - -DevWebApp
+      - Key: Name
+        Value: DevWebApp01
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - '#!/bin/bash -ex
+
+              '
+            - 'yum install -y aws-cli
+
+              '
+            - 'cd /home/ec2-user/
+
+              '
+            - wget https://aws-codedeploy-
+            - Ref: AWS::Region
+            - '.s3.amazonaws.com/latest/codedeploy-agent.noarch.rpm
+
+              '
+            - 'yum -y install codedeploy-agent.noarch.rpm
+
+              '
+            - 'service codedeploy-agent start
+
+              '
+            - '
+
+              '
+    Type: AWS::EC2::Instance
+  InboundPublicNAclEntry:
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: 'false'
+      NetworkAclId:
+        Ref: PublicNetworkAcl
+      PortRange:
+        From: '0'
+        To: '65535'
+      Protocol: '-1'
+      RuleAction: allow
+      RuleNumber: '2000'
+    Type: AWS::EC2::NetworkAclEntry
+  InternetGateway:
+    Properties:
+      Tags:
+      - Key: Name
+        Value: DemoVPCIGW
+    Type: AWS::EC2::InternetGateway
+  JenkinsHostWaitCondition:
+    DependsOn: JenkinsServer
+    Properties:
+      Handle:
+        Ref: JenkinsHostWaitHandle
+      Timeout: '600'
+    Type: AWS::CloudFormation::WaitCondition
+  JenkinsHostWaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  JenkinsInstanceProfile:
+    Properties:
+      Path: /
+      Roles:
+      - Ref: JenkinsRole
+    Type: AWS::IAM::InstanceProfile
+  JenkinsRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: ec2.amazonaws.com
+          Sid: ''
+      Path: /
+    Type: AWS::IAM::Role
+  JenkinsRolePolicies:
+    Properties:
+      PolicyDocument:
+        Statement:
+        - Action:
+          - codepipeline:AcknowledgeJob
+          - codepipeline:GetJobDetails
+          - codepipeline:PollForJobs
+          - codepipeline:PutJobFailureResult
+          - codepipeline:PutJobSuccessResult
+          Effect: Allow
+          Resource: '*'
+      PolicyName: JenkinsRole
+      Roles:
+      - Ref: JenkinsRole
+    Type: AWS::IAM::Policy
+  JenkinsSG:
+    Properties:
+      GroupDescription: Enable HTTP access on port 80
+      SecurityGroupEgress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: '80'
+        IpProtocol: tcp
+        ToPort: '80'
+      - CidrIp: 0.0.0.0/0
+        FromPort: '443'
+        IpProtocol: tcp
+        ToPort: '443'
+      - CidrIp: 0.0.0.0/0
+        FromPort: '123'
+        IpProtocol: udp
+        ToPort: '123'
+      - CidrIp: 0.0.0.0/0
+        FromPort: '9418'
+        IpProtocol: udp
+        ToPort: '9418'
+      - CidrIp: 0.0.0.0/0
+        FromPort: '-1'
+        IpProtocol: icmp
+        ToPort: '-1'
+      SecurityGroupIngress:
+      - CidrIp:
+          Ref: YourIP
+        FromPort: '22'
+        IpProtocol: tcp
+        ToPort: '22'
+      - CidrIp:
+          Ref: YourIP
+        FromPort: '80'
+        IpProtocol: tcp
+        ToPort: '80'
+      Tags:
+      - Key: Name
+        Value: JenkinsSG
+      VpcId:
+        Ref: MyVPC
+    Type: AWS::EC2::SecurityGroup
+  JenkinsServer:
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          files:
+            /tmp/config.xml:
+              mode: '644'
+              source: https://s3.amazonaws.com/aws-codedeploy-samples-us-east-1/templates/latest/Jenkins_Helper_Scripts/config.xml
+            /tmp/hudson.tasks.Maven.xml:
+              mode: '644'
+              source: https://s3.amazonaws.com/aws-codedeploy-samples-us-east-1/templates/latest/Jenkins_Helper_Scripts/hudson.tasks.Maven.xml
+            /tmp/jenkins.mvn.GlobalMavenConfig.xml:
+              mode: '644'
+              source: https://s3.amazonaws.com/aws-codedeploy-samples-us-east-1/templates/latest/Jenkins_Helper_Scripts/jenkins.mvn.GlobalMavenConfig.xml
+          packages:
+            yum:
+              java-1.7.0-openjdk: []
+              java-1.7.0-openjdk-devel: []
+    Properties:
+      EbsOptimized:
+        Fn::FindInMap:
+        - AWSInstanceType2EBSOpt
+        - t2.large
+        - EBSOpt
+      IamInstanceProfile:
+        Ref: JenkinsInstanceProfile
+      ImageId:
+        Fn::FindInMap:
+        - AWSRegionVirt2AMI
+        - Ref: AWS::Region
+        - Fn::FindInMap:
+          - AWSInstanceType2Virt
+          - t2.large
+          - Virt
+      InstanceType: t2.large
+      KeyName:
+        Ref: KeyName
+      NetworkInterfaces:
+      - AssociatePublicIpAddress: 'true'
+        DeviceIndex: '0'
+        GroupSet:
+        - Ref: JenkinsSG
+        SubnetId:
+          Ref: publicSubnet01
+      Tags:
+      - Key: Name
+        Value: JenkinsServer
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - '#!/bin/bash -ex
+
+              '
+            - 'yum update -y aws-cfn-bootstrap
+
+              '
+            - '# Update the AWS CLI to the latest version
+
+              '
+            - 'yum install -y aws-cli
+
+              '
+            - 'function error_exit
+
+              '
+            - '{
+
+              '
+            - '  /opt/aws/bin/cfn-signal -e 1 -r "$1" '''
+            - Ref: JenkinsHostWaitHandle
+            - '''
+
+              '
+            - '  exit 1
+
+              '
+            - '}
+
+              '
+            - '/opt/aws/bin/cfn-init -v -s '
+            - Ref: AWS::StackName
+            - ' -r JenkinsServer --region '
+            - Ref: AWS::Region
+            - '
+
+              '
+            - '# Install Maven
+
+              '
+            - 'cd /tmp/
+
+              '
+            - 'MAVEN_VERSION=3.3.9
+
+              '
+            - 'wget https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz
+
+              '
+            - 'tar xzvf apache-maven-$MAVEN_VERSION-bin.tar.gz -C /opt/
+
+              '
+            - 'ln -s /opt/apache-maven-$MAVEN_VERSION /opt/apache-maven
+
+              '
+            - 'rm /tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz
+
+              '
+            - '# Install Jenkins
+
+              '
+            - 'wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
+
+              '
+            - 'rpm --import http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key
+
+              '
+            - 'yum install -y http://pkg.jenkins-ci.org/redhat/jenkins-1.658-1.1.noarch.rpm
+
+              '
+            - 'service jenkins start
+
+              '
+            - 'chkconfig jenkins on
+
+              '
+            - '# Wait 30 seconds to allow Jenkins to startup
+
+              '
+            - 'echo "Waiting 30 seconds for Jenkins to start....."
+
+              '
+            - 'sleep 30
+
+              '
+            - '# Install the required plugins
+
+              '
+            - 'cd /var/lib/jenkins/plugins
+
+              '
+            - 'curl -O -L https://updates.jenkins-ci.org/latest/aws-codepipeline.hpi
+
+              '
+            - 'chown jenkins:jenkins *.hpi
+
+              '
+            - 'mv /tmp/hudson.tasks.Maven.xml /var/lib/jenkins/
+
+              '
+            - 'mv /tmp/jenkins.mvn.GlobalMavenConfig.xml /var/lib/jenkins/
+
+              '
+            - 'chown jenkins:jenkins /var/lib/jenkins/*.xml
+
+              '
+            - '# Restarting Jenkins
+
+              '
+            - 'service jenkins restart
+
+              '
+            - 'echo "Waiting 30 seconds for Jenkins to start....."
+
+              '
+            - 'sleep 30
+
+              '
+            - '# configure our job
+
+              '
+            - /bin/sed -i "s/APPNAME/
+            - Ref: AppName
+            - '/g" /tmp/config.xml
+
+              '
+            - /bin/sed -i "s/REGION/
+            - Ref: AWS::Region
+            - '/g" /tmp/config.xml
+
+              '
+            - '/usr/bin/java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080
+              create-job '
+            - Ref: AppName
+            - '< /tmp/config.xml
+
+              '
+            - 'rm /tmp/config.xml
+
+              '
+            - '# Set up port forwarding
+
+              '
+            - 'iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 80 -j REDIRECT --to-port
+              8080
+
+              '
+            - 'iptables-save > /etc/sysconfig/iptables
+
+              '
+            - '# If all went well, signal success
+
+              '
+            - /opt/aws/bin/cfn-signal -e $? -r 'Instance configuration complete' '
+            - Ref: JenkinsHostWaitHandle
+            - '''
+
+              '
+            - '
+
+              '
+    Type: AWS::EC2::Instance
+  MyApp:
+    Properties:
+      ApplicationName:
+        Ref: AppName
+    Type: AWS::CodeDeploy::Application
+  MyPipeline:
+    DependsOn: CustomJenkinsActionType
+    Properties:
+      ArtifactStore:
+        Location:
+          Fn::Join:
+          - ''
+          - - demo-
+            - Ref: AWS::Region
+            - '-'
+            - Ref: AWS::AccountId
+            - '-'
+            - Ref: AppName
+        Type: S3
+      Name:
+        Fn::Join:
+        - ''
+        - - Ref: AppName
+          - -Pipeline
+      RoleArn:
+        Fn::GetAtt:
+        - CodePipelineTrustRole
+        - Arn
+      Stages:
+      - Actions:
+        - ActionTypeId:
+            Category: Source
+            Owner:
+              Fn::If:
+              - S3AsSource
+              - AWS
+              - ThirdParty
+            Provider:
+              Fn::If:
+              - S3AsSource
+              - S3
+              - GitHub
+            Version: '1'
+          Configuration:
+            Fn::If:
+            - S3AsSource
+            - S3Bucket:
+                Ref: S3ArtifactBucket
+              S3ObjectKey:
+                Ref: S3ArtifactObject
+            - Branch:
+                Ref: GitHubBranchName
+              OAuthToken:
+                Ref: GitHubToken
+              Owner:
+                Ref: GitHubUser
+              Repo:
+                Ref: GitHubRepoName
+          InputArtifacts: []
+          Name: ApplicationSource
+          OutputArtifacts:
+          - Name:
+              Fn::Join:
+              - ''
+              - - Ref: AppName
+                - -SourceArtifact
+          RunOrder: 1
+        Name: Source
+      - Actions:
+        - ActionTypeId:
+            Category: Build
+            Owner: Custom
+            Provider:
+              Fn::Join:
+              - ''
+              - - Ref: AppName
+                - -Jenkins
+            Version: '1'
+          Configuration:
+            ProjectName:
+              Ref: AppName
+          InputArtifacts:
+          - Name:
+              Fn::Join:
+              - ''
+              - - Ref: AppName
+                - -SourceArtifact
+          Name: ApplicationBuild
+          OutputArtifacts:
+          - Name:
+              Fn::Join:
+              - ''
+              - - Ref: AppName
+                - -BuiltArtifact
+          RunOrder: 1
+        Name: Build
+      - Actions:
+        - ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CodeDeploy
+            Version: '1'
+          Configuration:
+            ApplicationName:
+              Ref: MyApp
+            DeploymentGroupName:
+              Ref: DevDeploymentGroup
+          InputArtifacts:
+          - Name:
+              Fn::Join:
+              - ''
+              - - Ref: AppName
+                - -BuiltArtifact
+          Name: BetaDeploy
+          RunOrder: 1
+        Name: Beta
+      - Actions:
+        - ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Provider: CodeDeploy
+            Version: '1'
+          Configuration:
+            ApplicationName:
+              Ref: MyApp
+            DeploymentGroupName:
+              Ref: ProdDeploymentGroup
+          InputArtifacts:
+          - Name:
+              Fn::Join:
+              - ''
+              - - Ref: AppName
+                - -BuiltArtifact
+          Name: ProdDeploy
+          RunOrder: 1
+        Name: Prod
+    Type: AWS::CodePipeline::Pipeline
+  MyVPC:
+    Properties:
+      CidrBlock:
+        Fn::Join:
+        - ''
+        - - Fn::FindInMap:
+            - VPCIpSpace
+            - Ref: AWS::Region
+            - RANGE
+          - .
+          - 0.0/16
+      EnableDnsHostnames: 'true'
+      EnableDnsSupport: 'true'
+      Tags:
+      - Key: Name
+        Value: CodeStarDemo-VPC
+    Type: AWS::EC2::VPC
+  OutboundPublicNetworkAclEntry:
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: 'true'
+      NetworkAclId:
+        Ref: PublicNetworkAcl
+      PortRange:
+        From: '0'
+        To: '65535'
+      Protocol: '-1'
+      RuleAction: allow
+      RuleNumber: '2000'
+    Type: AWS::EC2::NetworkAclEntry
+  ProdDeploymentGroup:
+    DependsOn: CodeDeployTrustRole
+    Properties:
+      ApplicationName:
+        Ref: MyApp
+      DeploymentConfigName: CodeDeployDefault.OneAtATime
+      DeploymentGroupName:
+        Fn::Join:
+        - ''
+        - - Ref: AppName
+          - -ProdEnv
+      Ec2TagFilters:
+      - Key: Environment
+        Type: KEY_AND_VALUE
+        Value:
+          Fn::Join:
+          - ''
+          - - Ref: AppName
+            - -ProdWebApp
+      ServiceRoleArn:
+        Fn::GetAtt:
+        - CodeDeployTrustRole
+        - Arn
+    Type: AWS::CodeDeploy::DeploymentGroup
+  ProdWebApp01:
+    Properties:
+      EbsOptimized:
+        Fn::FindInMap:
+        - AWSInstanceType2EBSOpt
+        - Fn::FindInMap:
+          - instancesTypes
+          - Demo
+          - INST
+        - EBSOpt
+      IamInstanceProfile:
+        Ref: WebAppInstanceProfile
+      ImageId:
+        Fn::FindInMap:
+        - AWSRegionVirt2AMI
+        - Ref: AWS::Region
+        - Fn::FindInMap:
+          - AWSInstanceType2Virt
+          - Fn::FindInMap:
+            - instancesTypes
+            - Demo
+            - INST
+          - Virt
+      InstanceType:
+        Fn::FindInMap:
+        - instancesTypes
+        - Demo
+        - INST
+      KeyName:
+        Ref: KeyName
+      NetworkInterfaces:
+      - AssociatePublicIpAddress: 'true'
+        DeviceIndex: '0'
+        GroupSet:
+        - Ref: WebAppSG
+        SubnetId:
+          Ref: publicSubnet01
+      Tags:
+      - Key: Environment
+        Value:
+          Fn::Join:
+          - ''
+          - - Ref: AppName
+            - -ProdWebApp
+      - Key: Name
+        Value: ProdWebApp01
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - '#!/bin/bash -ex
+
+              '
+            - 'yum install -y aws-cli
+
+              '
+            - 'cd /home/ec2-user/
+
+              '
+            - wget https://aws-codedeploy-
+            - Ref: AWS::Region
+            - '.s3.amazonaws.com/latest/codedeploy-agent.noarch.rpm
+
+              '
+            - 'yum -y install codedeploy-agent.noarch.rpm
+
+              '
+            - 'service codedeploy-agent start
+
+              '
+            - '
+
+              '
+    Type: AWS::EC2::Instance
+  PublicNetworkAcl:
+    Properties:
+      Tags:
+      - Key: Name
+        Value: NetworkAcl
+      VpcId:
+        Ref: MyVPC
+    Type: AWS::EC2::NetworkAcl
+  PublicRoute:
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+      RouteTableId:
+        Ref: PublicRouteTable
+    Type: AWS::EC2::Route
+  PublicRouteTable:
+    Properties:
+      Tags:
+      - Key: Name
+        Value: PublicRouteTable
+      VpcId:
+        Ref: MyVPC
+    Type: AWS::EC2::RouteTable
+  PublicSubnetRTAssociation01:
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      SubnetId:
+        Ref: publicSubnet01
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  S3Bucket:
+    DeletionPolicy: Retain
+    Properties:
+      BucketName:
+        Fn::Join:
+        - ''
+        - - demo-
+          - Ref: AWS::Region
+          - '-'
+          - Ref: AWS::AccountId
+          - '-'
+          - Ref: AppName
+      Tags:
+      - Key: Name
+        Value: CodeStarDemo-S3Bucket
+      VersioningConfiguration:
+        Status: Enabled
+    Type: AWS::S3::Bucket
+  WebAppInstanceProfile:
+    Properties:
+      Path: /
+      Roles:
+      - Ref: WebAppRole
+    Type: AWS::IAM::InstanceProfile
+  WebAppRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: ec2.amazonaws.com
+          Sid: ''
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AWSCodeDeployReadOnlyAccess
+      - arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess
+      Path: /
+    Type: AWS::IAM::Role
+  WebAppRolePolicies:
+    Properties:
+      PolicyDocument:
+        Statement:
+        - Action: cloudformation:DescribeStackResources
+          Effect: Allow
+          Resource:
+          - Fn::Join:
+            - ''
+            - - 'arn:aws:cloudformation:'
+              - Ref: AWS::Region
+              - ':'
+              - Ref: AWS::AccountId
+              - :stack/
+              - Ref: AWS::StackName
+              - /*
+        - Action:
+          - autoscaling:Describe*
+          - autoscaling:EnterStandby
+          - autoscaling:ExitStandby
+          - autoscaling:UpdateAutoScalingGroup
+          Effect: Allow
+          Resource: '*'
+        - Action:
+          - ec2:DescribeInstances
+          - ec2:DescribeInstanceStatus
+          Effect: Allow
+          Resource: '*'
+        - Action:
+          - elasticloadbalancing:Describe*
+          - elasticloadbalancing:DeregisterInstancesFromLoadBalancer
+          - elasticloadbalancing:RegisterInstancesWithLoadBalancer
+          Effect: Allow
+          Resource: '*'
+        - Action:
+          - s3:Get*
+          - s3:List*
+          Effect: Allow
+          Resource:
+          - Fn::Join:
+            - ''
+            - - arn:aws:s3:::demo-
+              - Ref: AWS::Region
+              - '-'
+              - Ref: AWS::AccountId
+              - '-'
+              - Ref: AppName
+          - Fn::Join:
+            - ''
+            - - arn:aws:s3:::demo-
+              - Ref: AWS::Region
+              - '-'
+              - Ref: AWS::AccountId
+              - '-'
+              - Ref: AppName
+              - /*
+      PolicyName: BackendRole
+      Roles:
+      - Ref: WebAppRole
+    Type: AWS::IAM::Policy
+  WebAppSG:
+    Properties:
+      GroupDescription: Enable HTTP access on port 80
+      SecurityGroupEgress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: '80'
+        IpProtocol: tcp
+        ToPort: '80'
+      - CidrIp: 0.0.0.0/0
+        FromPort: '443'
+        IpProtocol: tcp
+        ToPort: '443'
+      - CidrIp: 0.0.0.0/0
+        FromPort: '123'
+        IpProtocol: udp
+        ToPort: '123'
+      - CidrIp: 0.0.0.0/0
+        FromPort: '9418'
+        IpProtocol: udp
+        ToPort: '9418'
+      - CidrIp: 0.0.0.0/0
+        FromPort: '-1'
+        IpProtocol: icmp
+        ToPort: '-1'
+      SecurityGroupIngress:
+      - CidrIp:
+          Fn::Join:
+          - ''
+          - - Fn::FindInMap:
+              - VPCIpSpace
+              - Ref: AWS::Region
+              - RANGE
+            - .
+            - 0.0/16
+        FromPort: '22'
+        IpProtocol: tcp
+        ToPort: '22'
+      - CidrIp: 0.0.0.0/0
+        FromPort: '80'
+        IpProtocol: tcp
+        ToPort: '80'
+      Tags:
+      - Key: Name
+        Value: WebAppSG
+      VpcId:
+        Ref: MyVPC
+    Type: AWS::EC2::SecurityGroup
+  publicSubnet01:
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - '0'
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::Join:
+        - ''
+        - - Fn::FindInMap:
+            - VPCIpSpace
+            - Ref: AWS::Region
+            - RANGE
+          - .
+          - Fn::FindInMap:
+            - publicSubnetConfig
+            - publicSubnet01
+            - CIDR
+      Tags:
+      - Key: SubnetType
+        Value: Public
+      - Key: Name
+        Value: publicSubnet01
+      VpcId:
+        Ref: MyVPC
+    Type: AWS::EC2::Subnet
+  publicSubnetNetworkAclAssociation01:
+    Properties:
+      NetworkAclId:
+        Ref: PublicNetworkAcl
+      SubnetId:
+        Ref: publicSubnet01
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+...

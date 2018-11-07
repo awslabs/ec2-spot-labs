@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: Environment for running a demo of the Spot fleet Jenkins plugin
+Description: Environment for running a demo of the Spot Fleet Jenkins plugin
 Mappings:
   CidrMappings:
     public-subnet-1:
@@ -11,10 +11,10 @@ Mappings:
       CIDR: 10.0.0.0/16
   amazonLinuxAmi:
     us-east-1:
-      AMI: ami-97785bed
+      AMI: ami-0ff8a91507f77f867
   ecsAmi:
     us-east-1:
-      AMI: ami-aff65ad2
+      AMI: ami-07eb698ce660402d2
 Outputs:
   applicationLoadBalancer:
     Description: The name of the Application Load Balancer
@@ -46,11 +46,11 @@ Outputs:
     Value:
       Ref: ecsService
   ecsSpotFleetName:
-    Description: The name of the ECS Spot fleet
+    Description: The name of the ECS Spot Fleet
     Value:
       Ref: ecsSpotFleet
   jenkinsSpotFleetName:
-    Description: The name of the Jenkins Spot fleet
+    Description: The name of the Jenkins Spot Fleet
     Value:
       Ref: jenkinsSpotFleet
   taskDefinition:
@@ -68,10 +68,10 @@ Parameters:
     Type: Number
   jenkinsSpotFleetTargetCapacity:
     Default: '1'
-    Description: Number of Spot instances to initially launch in the Spot fleet
+    Description: Number of Spot instances to initially launch in the Spot Fleet
     Type: Number
   keyName:
-    Description: Name of an existing EC2 KeyPair to enable SSH access to the EC2 instances
+    Description: Name of an existing EC2 KeyPair to enable Jenkins SSH access to the EC2 instances
     Type: AWS::EC2::KeyPair::KeyName
   sourceCidr:
     Default: 0.0.0.0/0
@@ -438,7 +438,7 @@ Resources:
             - amazonLinuxAmi
             - Ref: AWS::Region
             - AMI
-          InstanceType: m4.large
+          InstanceType: m3.large
           KeyName:
             Ref: keyName
           Monitoring:
@@ -464,6 +464,99 @@ Resources:
                 yum -y remove java-1.7.0
 
                 yum -y install java-1.8*
+
+                wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo
+                -O /etc/yum.repos.d/epel-apache-maven.repo
+
+                sed -i "s/\$releasever/6/g" /etc/yum.repos.d/epel-apache-maven.repo
+
+                yum -y install apache-maven
+
+                update-alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
+
+                '
+        - ImageId:
+            Fn::FindInMap:
+            - amazonLinuxAmi
+            - Ref: AWS::Region
+            - AMI
+          InstanceType: c3.large
+          KeyName:
+            Ref: keyName
+          Monitoring:
+            Enabled: true
+          SecurityGroups:
+          - GroupId:
+              Ref: securityGroup
+          SubnetId:
+            Fn::Join:
+            - ','
+            - - Ref: publicSubnet1
+              - Ref: publicSubnet2
+          UserData:
+            Fn::Base64:
+              Fn::Sub: '#!/bin/bash -xe
+
+                yum -y --security update
+
+                yum -y update aws-cli
+
+                yum -y groupinstall "Development Tools"
+
+                yum -y remove java-1.7.0
+
+                yum -y install java-1.8*
+
+                wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo
+                -O /etc/yum.repos.d/epel-apache-maven.repo
+
+                sed -i "s/\$releasever/6/g" /etc/yum.repos.d/epel-apache-maven.repo
+
+                yum -y install apache-maven
+
+                update-alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
+
+                '
+        - ImageId:
+            Fn::FindInMap:
+            - amazonLinuxAmi
+            - Ref: AWS::Region
+            - AMI
+          InstanceType: r3.large
+          KeyName:
+            Ref: keyName
+          Monitoring:
+            Enabled: true
+          SecurityGroups:
+          - GroupId:
+              Ref: securityGroup
+          SubnetId:
+            Fn::Join:
+            - ','
+            - - Ref: publicSubnet1
+              - Ref: publicSubnet2
+          UserData:
+            Fn::Base64:
+              Fn::Sub: '#!/bin/bash -xe
+
+                yum -y --security update
+
+                yum -y update aws-cli
+
+                yum -y groupinstall "Development Tools"
+
+                yum -y remove java-1.7.0
+
+                yum -y install java-1.8*
+
+                wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo
+                -O /etc/yum.repos.d/epel-apache-maven.repo
+
+                sed -i "s/\$releasever/6/g" /etc/yum.repos.d/epel-apache-maven.repo
+
+                yum -y install apache-maven
+
+                update-alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 
                 '
         TargetCapacity:
@@ -559,7 +652,7 @@ Resources:
     DependsOn:
     - vpc
     Properties:
-      GroupDescription: Spot fleet instance security group
+      GroupDescription: Spot Fleet instance security group
       SecurityGroupIngress:
       - CidrIp:
           Ref: sourceCidr
@@ -626,7 +719,7 @@ Resources:
             - spotfleet.amazonaws.com
         Version: 2012-10-17
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole
       Path: /
     Type: AWS::IAM::Role
   taskDefinition:
@@ -678,6 +771,6 @@ Resources:
       EnableDnsSupport: true
       Tags:
       - Key: Name
-        Value: Spot fleet Jenkins plugin demo
+        Value: Spot Fleet Jenkins plugin demo
     Type: AWS::EC2::VPC
 ...

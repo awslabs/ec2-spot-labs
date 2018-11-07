@@ -54,6 +54,9 @@ Outputs:
   vpcCPrivateSubnet5:
     Value:
       Ref: vpcCPrivateSubnet5
+  vpcCRouteTable:
+    Value:
+      Ref: vpcCRouteTable
 Resources:
   vpcC:
     Properties:
@@ -87,6 +90,16 @@ Resources:
       VpcId:
         Ref: vpcC
     Type: AWS::EC2::Subnet
+  vpcCPrivateSubnet0RouteTableAssociation:
+    DependsOn:
+    - vpcCRouteTable
+    - vpcCPrivateSubnet0
+    Properties:
+      RouteTableId:
+        Ref: vpcCRouteTable
+      SubnetId:
+        Ref: vpcCPrivateSubnet0
+    Type: AWS::EC2::SubnetRouteTableAssociation
   vpcCPrivateSubnet1:
     Properties:
       AvailabilityZone:
@@ -106,6 +119,16 @@ Resources:
       VpcId:
         Ref: vpcC
     Type: AWS::EC2::Subnet
+  vpcCPrivateSubnet1RouteTableAssociation:
+    DependsOn:
+    - vpcCRouteTable
+    - vpcCPrivateSubnet1
+    Properties:
+      RouteTableId:
+        Ref: vpcCRouteTable
+      SubnetId:
+        Ref: vpcCPrivateSubnet1
+    Type: AWS::EC2::SubnetRouteTableAssociation
   vpcCPrivateSubnet2:
     Properties:
       AvailabilityZone:
@@ -125,6 +148,16 @@ Resources:
       VpcId:
         Ref: vpcC
     Type: AWS::EC2::Subnet
+  vpcCPrivateSubnet2RouteTableAssociation:
+    DependsOn:
+    - vpcCRouteTable
+    - vpcCPrivateSubnet2
+    Properties:
+      RouteTableId:
+        Ref: vpcCRouteTable
+      SubnetId:
+        Ref: vpcCPrivateSubnet2
+    Type: AWS::EC2::SubnetRouteTableAssociation
   vpcCPrivateSubnet3:
     Properties:
       AvailabilityZone:
@@ -144,6 +177,16 @@ Resources:
       VpcId:
         Ref: vpcC
     Type: AWS::EC2::Subnet
+  vpcCPrivateSubnet3RouteTableAssociation:
+    DependsOn:
+    - vpcCRouteTable
+    - vpcCPrivateSubnet3
+    Properties:
+      RouteTableId:
+        Ref: vpcCRouteTable
+      SubnetId:
+        Ref: vpcCPrivateSubnet3
+    Type: AWS::EC2::SubnetRouteTableAssociation
   vpcCPrivateSubnet4:
     Properties:
       AvailabilityZone:
@@ -163,6 +206,16 @@ Resources:
       VpcId:
         Ref: vpcC
     Type: AWS::EC2::Subnet
+  vpcCPrivateSubnet4RouteTableAssociation:
+    DependsOn:
+    - vpcCRouteTable
+    - vpcCPrivateSubnet4
+    Properties:
+      RouteTableId:
+        Ref: vpcCRouteTable
+      SubnetId:
+        Ref: vpcCPrivateSubnet4
+    Type: AWS::EC2::SubnetRouteTableAssociation
   vpcCPrivateSubnet5:
     Properties:
       AvailabilityZone:
@@ -182,4 +235,21 @@ Resources:
       VpcId:
         Ref: vpcC
     Type: AWS::EC2::Subnet
+  vpcCPrivateSubnet5RouteTableAssociation:
+    DependsOn:
+    - vpcCRouteTable
+    - vpcCPrivateSubnet5
+    Properties:
+      RouteTableId:
+        Ref: vpcCRouteTable
+      SubnetId:
+        Ref: vpcCPrivateSubnet5
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  vpcCRouteTable:
+    DependsOn:
+    - vpcC
+    Properties:
+      VpcId:
+        Ref: vpcC
+    Type: AWS::EC2::RouteTable
 ...
