@@ -53,9 +53,11 @@ Here is a diagram of the resulting architecture:
 17. launch RDS instance ($ aws rds create-db-instance --db-name koel --db-instance-identifier runningAmazonEC2WorkloadsAtScale --allocated-storage 20 --db-instance-class db.t2.medium --engine mariadb --master-username dbadmin --master-user-password dbpass2018 --vpc-security-group-ids sg-04ce2796f0faae210 --db-subnet-group-name cmp402-r1-dbsubnetgroup-1u9hcxurkaw8j --no-publicly-accessible)
 18. create application load balancer ($ aws elbv2 create-load-balancer --name runningAmazonEC2WorkloadsAtScale --subnets subnet-0fd51594e1c27795e subnet-0071e8aa25445266f --security-groups sg-00c6508e8257c5660)
 19. create target group ($ aws elbv2 create-target-group --name runningAmazonEC2WorkloadsAtScale --protocol HTTP --port 80 --vpc-id vpc-0bfc7d8f2826c853e)
+20. modify target group attributes ($ aws elbv2 modify-target-group-attributes --target-group-arn arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c --attributes Key=deregistration_delay.timeout_seconds,Value=120 Key=stickiness.enabled,Value=true
 20. create listener ($ aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:753949184587:loadbalancer/app/runningAmazonEC2WorkloadsAtScale/e9195569f4f71e10 --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c)
 21. create new version of launch template for prod ($ aws ec2 create-launch-template-version --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description prod --source-version 1 --launch-template-data "{\"TagSpecifications\":[{\"ResourceType\":\"instance\",\"Tags\":[{\"Key\":\"Name\",\"Value\":\"runningAmazonEC2WorkloadsAtScale\"},{\"Key\":\"Env\",\"Value\":\"prod\"}]}]}")
-22. create auto scaling group ($ aws autoscaling create-auto-scaling-group --cli-input-json file://asg.json) 
+22. create auto scaling group ($ aws autoscaling create-auto-scaling-group --cli-input-json file://asg.json)
+23. create prod deployment group ($ aws deploy create-deployment-group --application-name koelAppDev --deployment-group-name koelDepGroupProd --deployment-config-name CodeDeployDefault.OneAtATime --auto-scaling-groups runningAmazonEC2WorkloadsAtScale --service-role-arn arn:aws:iam::753949184587:role/cmp402-r1-codeDeployServiceRole-DA0LS5KGHUXS)
 
 ### 1\. Launch the CloudFormation stack
 

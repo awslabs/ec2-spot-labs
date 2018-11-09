@@ -1,0 +1,2 @@
+CREATE USER 'koel'@'%' IDENTIFIED BY 'SoSecureMuchWow';
+GRANT ALL PRIVILEGES ON koel.* TO 'koel'@'%' WITH GRANT OPTION;
