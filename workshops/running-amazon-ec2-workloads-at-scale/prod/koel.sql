@@ -1,3 +1,7 @@
+CREATE USER 'koel'@'%' IDENTIFIED BY 'SoSecureMuchWow';
+GRANT SELECT,INSERT,UPDATE,DELETE,DROP ON koel.* TO 'koel'@'%';
+
+
 -- MySQL dump 10.16  Distrib 10.2.10-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: koel
