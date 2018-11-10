@@ -18,6 +18,9 @@ hooks:
       timeout: 300
       runas: root
   ApplicationStart:
+    - location: scripts/configure_db.sh
+      timeout: 300
+      runas: root
     - location: scripts/start_services.sh
       timeout: 300
       runas: root

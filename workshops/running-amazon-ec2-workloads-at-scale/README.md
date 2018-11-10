@@ -7,13 +7,13 @@
 This workshop is designed to get you familiar with EC2 Spot Instances by learning how to deploy a simple web app on an EC2 Spot Fleet behind an Elastic Load Balanacing Application Load Balancer and enable automatic scaling to allow it to handle peak demand, as well as handle Spot Instance interruptions.
 
 ## Requirements and notes
-To complete this workshop, have the [AWS CLI](https://aws.amazon.com/cli/) installed and configured, and appropriate permissions to launch EC2 instances and launch CloudFormation stacks within your AWS account.
+1. To complete this workshop, have access to an AWS account with the appropriate permissions to launch AWS CloudFormation stacks. An IAM user with administrator privileges will do nicely.
 
-This workshop is self-paced. The instructions may use both the AWS CLI and AWS Management Console- feel free to use either or both as you are comfortable.
+2. This workshop is self-paced. The instructions will primarily be given using the [AWS Command Line Interface (CLI)](https://aws.amazon.com/cli) - this way the guide will not become outdated as changes or updates are made to the AWS Management Console. However, most steps in the workshop can be done in the AWS Management Console directly. Feel free to use whatever is comfortable for you.
 
-While the workshop provides step by step instructions, please do take a moment to look around and understand what is happening. The workshop is meant as a getting started guide, but you will learn the most by digesting each of the steps.
+3. While the workshop provides step by step instructions, please do take a moment to look around and understand what is happening at each step. The workshop is meant as a getting started guide, but you will learn the most by digesting each of the steps and thinking about how they would apply in your own environment. You might even consider experimenting with the steps to challenge yourself.
 
-> **Note**: This workshop has been designed to run in the AWS Region **us-east-1 (Virginia)**. Please make sure you are operating in this region for all steps.
+4. This workshop has been designed to run in any public AWS Region. If you are attending an event, please run in the region suggested by the facilitators of the workshop.
 
 ## Architecture
 
@@ -35,7 +35,34 @@ Here is a diagram of the resulting architecture:
 
 ## Let's Begin!  
 
-1. Launch the CloudFormation stack
+### 1\. Launch the CloudFormation stack
+
+To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets in two Availability Zones, as well various supporting resources such as IAM policies and roles, security groups, S3 buckets, and a Cloud9 IDE environment for you to run the steps for the workshop in.
+
+1\. Go ahead and launch the CloudFormation stack. You can check it out from GitHub, or grab the [template directly](https://github.com/awslabs/ec2-spot-labs/blob/master/workshops/ec2-spot-fleet-web-app/ec2-spot-fleet-web-app.yaml). I use the stack name “ec2-spot-fleet-web-app“, but feel free to use any name you like. Just remember to change it in the instructions.
+
+```
+$ git clone https://github.com/awslabs/ec2-spot-labs.git
+```
+
+```
+$ aws cloudformation create-stack --stack-name ec2-spot-fleet-web-app --template-body file://ec2-spot-labs/workshops/ec2-spot-fleet-web-app/ec2-spot-fleet-web-app.yaml --capabilities CAPABILITY_IAM --region us-east-1
+```
+
+You should receive a StackId value in return, confirming the stack is launching.
+
+```
+{
+	"StackId": "arn:aws:cloudformation:us-east-1:123456789012:stack/spot-fleet-web-app/083e7ad0-0ade-11e8-9e36-500c219ab02a"
+}
+```
+
+2\. Wait for the status of the CloudFormation stack to move to **CREATE_COMPLETE** before moving on to the next step. You will need to reference the **Output** values from the stack in the next steps.
+
+
+
+
+
 2. Enter the Cloud9 Ide
 3. Clone the GitHub repo ($ git clone https://github.com/awslabs/ec2-spot-labs.git)
 4. cd ec2-spot-labs/workshops/running-amazon-ec2-workloads-at-scale
@@ -58,6 +85,8 @@ Here is a diagram of the resulting architecture:
 21. create new version of launch template for prod ($ aws ec2 create-launch-template-version --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description prod --source-version 1 --launch-template-data "{\"TagSpecifications\":[{\"ResourceType\":\"instance\",\"Tags\":[{\"Key\":\"Name\",\"Value\":\"runningAmazonEC2WorkloadsAtScale\"},{\"Key\":\"Env\",\"Value\":\"prod\"}]}]}")
 22. create auto scaling group ($ aws autoscaling create-auto-scaling-group --cli-input-json file://asg.json)
 23. create prod deployment group ($ aws deploy create-deployment-group --application-name koelAppDev --deployment-group-name koelDepGroupProd --deployment-config-name CodeDeployDefault.OneAtATime --auto-scaling-groups runningAmazonEC2WorkloadsAtScale --service-role-arn arn:aws:iam::753949184587:role/cmp402-r1-codeDeployServiceRole-DA0LS5KGHUXS)
+24. mysql -h runningamazonec2workloadsatscale.ckhifpaueqm7.us-east-1.rds.amazonaws.com -u dbadmin -p -f koel < koel.sql
+25. 
 
 ### 1\. Launch the CloudFormation stack
 
