@@ -72,7 +72,7 @@ You should receive a StackId value in return, confirming the stack is launching.
 7. Create the EC2 Launch Template ($ aws ec2 create-launch-template --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description dev --launch-template-data file://launch-template-data.json)
 8. Launch instance via ec2-fleet ($ aws ec2 create-fleet --cli-input-json file://ec2-fleet.json)
 11. $ git clone https://github.com/phanan/koel.git; $ git checkout v3.7.2
-12. move codedeploy structure and configs in place (appspec.y
+12. move codedeploy dev structure and configs in place
 13. $ aws deploy create-application --application-name koelAppDev
 14. $ aws deploy push --application-name koelAppDev --s3-location s3://cmp402-codedeploybucket-recrh13edl4r/koelAppDev.zip --no-ignore-hidden-files
 15. aws deploy create-deployment-group --application-name koelAppDev --deployment-group-name koelDepGroupDev --deployment-config-name CodeDeployDefault.OneAtATime --ec2-tag-filters Key=Name,Value=runningAmazonEC2WorkloadsAtScale,Type=KEY\_AND\_VALUE Key=Env,Value=dev,Type=KEY\_AND\_VALUE --service-role-arn arn:aws:iam::753949184587:role/cmp402-codeDeployServiceRole-1REL37OJOS88N
@@ -84,9 +84,12 @@ You should receive a StackId value in return, confirming the stack is launching.
 20. create listener ($ aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:753949184587:loadbalancer/app/runningAmazonEC2WorkloadsAtScale/e9195569f4f71e10 --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c)
 21. create new version of launch template for prod ($ aws ec2 create-launch-template-version --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description prod --source-version 1 --launch-template-data "{\"TagSpecifications\":[{\"ResourceType\":\"instance\",\"Tags\":[{\"Key\":\"Name\",\"Value\":\"runningAmazonEC2WorkloadsAtScale\"},{\"Key\":\"Env\",\"Value\":\"prod\"}]}]}")
 22. create auto scaling group ($ aws autoscaling create-auto-scaling-group --cli-input-json file://asg.json)
-23. create prod deployment group ($ aws deploy create-deployment-group --application-name koelAppDev --deployment-group-name koelDepGroupProd --deployment-config-name CodeDeployDefault.OneAtATime --auto-scaling-groups runningAmazonEC2WorkloadsAtScale --service-role-arn arn:aws:iam::753949184587:role/cmp402-r1-codeDeployServiceRole-DA0LS5KGHUXS)
 24. mysql -h runningamazonec2workloadsatscale.ckhifpaueqm7.us-east-1.rds.amazonaws.com -u dbadmin -p -f koel < koel.sql
-25. 
+25. $ aws deploy create-application --application-name koelAppProd
+26. $ aws deploy push --application-name koelAppProd --s3-location s3://cmp402-codedeploybucket-recrh13edl4r/koelAppProd.zip --no-ignore-hidden-files
+26. create prod deployment group ($ aws deploy create-deployment-group --application-name koelAppProd --deployment-group-name koelDepGroupProd --deployment-config-name CodeDeployDefault.OneAtATime --auto-scaling-groups runningAmazonEC2WorkloadsAtScale --service-role-arn arn:aws:iam::753949184587:role/cmp402-r1-codeDeployServiceRole-DA0LS5KGHUXS)
+27. move codedeploy dev structure and configs in place
+
 
 ### 1\. Launch the CloudFormation stack
 
