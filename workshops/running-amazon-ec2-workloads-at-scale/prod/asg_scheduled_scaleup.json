@@ -1,0 +1,8 @@
+{
+    "AutoScalingGroupName": "runningAmazonEC2WorkloadsAtScale",
+    "ScheduledActionName": "scheduledScaleUp",
+    "StartTime": "2018-11-11T12:20:00",
+    "MinSize": 2,
+    "MaxSize": 12,
+    "DesiredCapacity": 6
+}
