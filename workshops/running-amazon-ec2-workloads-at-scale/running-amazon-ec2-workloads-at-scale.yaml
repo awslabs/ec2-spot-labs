@@ -54,6 +54,10 @@ Outputs:
     Description: Events rule
     Value:
       Ref: eventRule
+  fileSystem:
+    Description: Elastic file system
+    Value:
+      Ref: fileSystem
   instanceProfile:
     Description: Instance profile ARN
     Value:
@@ -72,6 +76,10 @@ Outputs:
     Description: Load Balancer security group
     Value:
       Ref: loadBalancerSecurityGroup
+  mediaBucket:
+    Description: Media S3 bucket
+    Value:
+      Ref: mediaBucket
   publicSubnet1:
     Description: Public subnet 1
     Value:
@@ -181,6 +189,33 @@ Resources:
         Id:
           Ref: lambdaFunction
     Type: AWS::Events::Rule
+  fileSystem:
+    Properties:
+      FileSystemTags:
+      - Key: Name
+        Value: Running Amazon EC2 Workloads at Scale - file system
+    Type: AWS::EFS::FileSystem
+  fileSystemSecurityGroup:
+    DependsOn:
+    - vpc
+    Properties:
+      GroupDescription: Allow nfs (2049)
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::SecurityGroup
+  fileSystemSecurityGroupIngress:
+    DependsOn:
+    - instanceSecurityGroup
+    - fileSystemSecurityGroup
+    Properties:
+      FromPort: 2049
+      GroupId:
+        Ref: fileSystemSecurityGroup
+      IpProtocol: tcp
+      SourceSecurityGroupId:
+        Ref: instanceSecurityGroup
+      ToPort: 2049
+    Type: AWS::EC2::SecurityGroupIngress
   instanceProfile:
     DependsOn:
     - instanceRole
@@ -213,6 +248,11 @@ Resources:
               - ''
               - - 'arn:aws:s3:::'
                 - Ref: codeDeployBucket
+                - /*
+            - Fn::Join:
+              - ''
+              - - 'arn:aws:s3:::'
+                - Ref: mediaBucket
                 - /*
             - arn:aws:s3:::aws-codedeploy-us-east-2/*
             - arn:aws:s3:::aws-codedeploy-us-east-1/*
@@ -342,6 +382,40 @@ Resources:
       VpcId:
         Ref: vpc
     Type: AWS::EC2::SecurityGroup
+  mediaBucket:
+    Properties:
+      CorsConfiguration:
+        CorsRules:
+        - AllowedHeaders:
+          - Authorization
+          AllowedMethods:
+          - GET
+          AllowedOrigins:
+          - '*'
+          MaxAge: 3000
+    Type: AWS::S3::Bucket
+  mountTargetPublicSubnet1:
+    DependsOn:
+    - fileSystem
+    Properties:
+      FileSystemId:
+        Ref: fileSystem
+      SecurityGroups:
+      - Ref: fileSystemSecurityGroup
+      SubnetId:
+        Ref: publicSubnet1
+    Type: AWS::EFS::MountTarget
+  mountTargetPublicSubnet2:
+    DependsOn:
+    - fileSystem
+    Properties:
+      FileSystemId:
+        Ref: fileSystem
+      SecurityGroups:
+      - Ref: fileSystemSecurityGroup
+      SubnetId:
+        Ref: publicSubnet2
+    Type: AWS::EFS::MountTarget
   publicRoute:
     DependsOn:
     - publicRouteTable

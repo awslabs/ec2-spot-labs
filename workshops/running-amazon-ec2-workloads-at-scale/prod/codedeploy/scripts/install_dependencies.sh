@@ -4,14 +4,14 @@ yum -y remove php* node
 
 yum -y update
 
-amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+amazon-linux-extras install -y php7.2
 
 yum -y install \
   php-mbstring \
   php-xml \
   php-zip \
   httpd \
-  mariadb-server
+  amazon-efs-utils
 
 curl --silent --location https://rpm.nodesource.com/setup_8.x | bash -
 curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
