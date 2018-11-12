@@ -91,7 +91,8 @@ You should receive a StackId value in return, confirming the stack is launching.
 26. $ aws deploy push --application-name koelAppProd --s3-location s3://cmp402-r1-codedeploybucket-sgu4s6uv7i46/koelAppProd.zip --no-ignore-hidden-files
 26. create prod deployment group ($ aws deploy create-deployment-group --application-name koelAppProd --deployment-group-name koelDepGroupProd --deployment-config-name CodeDeployDefault.OneAtATime --auto-scaling-groups runningAmazonEC2WorkloadsAtScale --service-role-arn arn:aws:iam::753949184587:role/cmp402-r1-codeDeployServiceRole-DA0LS5KGHUXS)
 27. aws deploy create-deployment --application-name koelAppProd --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name koelDepGroupProd --s3-location bucket=cmp402-r1-codedeploybucket-sgu4s6uv7i46,bundleType=zip,key=koelAppProd.zip
-28. 
+28. aws autoscaling put-scheduled-update-group-action --cli-input-json file://asg_scheduled_scaleup.json
+29. 
 
 
 ### 1\. Launch the CloudFormation stack

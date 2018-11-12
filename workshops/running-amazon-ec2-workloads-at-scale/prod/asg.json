@@ -7,7 +7,7 @@
     "MinSize": 2, 
     "MaxSize": 10, 
     "DesiredCapacity": 2, 
-    "DefaultCooldown": 60,
+    "DefaultCooldown": 180,
     "TargetGroupARNs": [
         "arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c"
     ], 
