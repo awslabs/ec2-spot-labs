@@ -1,0 +1,132 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Spot instances auto-deregister from ECS cluster'
+
+Resources:
+  EventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Spot Instance Interruption Warning
+      EventPattern: 
+        source: 
+          - "aws.ec2"
+        detail-type: 
+          - "EC2 Spot Instance Interruption Warning"
+      State: "ENABLED"
+      Targets:
+        - 
+          Arn: !GetAtt LambdaFunction.Arn
+          Id: "TargetFunctionV1"
+
+  PermissionForEventsToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref LambdaFunction
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt EventRule.Arn
+
+  LambdaFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: "index.handler"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code: 
+        ZipFile: |
+          import boto3
+          import logging
+          import os
+
+          region = os.getenv('AWS_DEFAULT_REGION')
+          logger = logging.getLogger()
+          logger.setLevel(logging.INFO)
+
+
+          class ECS():
+
+              def __init__(self, region):
+                  self.cl = boto3.client('ecs', region_name=region)
+
+              def get_cluster_arns(self):
+                  cluster_arns = []
+                  res = self.cl.list_clusters(maxResults=100)
+                  cluster_arns += res['clusterArns']
+                  while True:
+                      if 'nextToken' in res:
+                          res = self.cl.list_clusters(nextToken=res['nextToken'], maxResults=100)
+                          cluster_arns += res['clusterArns']
+                      else:
+                          break
+                  return cluster_arns
+
+              def deregister(self, instance_id):
+                  container_instance_arn = None  # default
+                  cluster_arns = self.get_cluster_arns()
+                  logger.info('Get all ecs clusters)
+
+                  for cluster_arn in cluster_arns:
+                      res = self.cl.list_container_instances(
+                          cluster=cluster_arn,
+                          filter='ec2InstanceId=={}'.format(instance_id),
+                          maxResults=1,
+                      )
+                      if len(res['containerInstanceArns']) == 1:
+                          container_instance_arn = res['containerInstanceArns'][0]
+                          logger.info('{0} is used in {0}'.format(instance_id, cluster_arn))
+                      else:
+                          logger.debug('{0} is not used in {1}'.format(instance_id, cluster_arn))
+                  if container_instance_arn:
+                      res = self.cl.deregister_container_instance(
+                          cluster=cluster_arn,
+                          containerInstance=container_instance_arn,
+                          force=True
+                      )
+                      logger.info(res)
+                  else:
+                      logger.warning('{0} is not used in all ecs clusters'.format(instance_id))
+
+
+          def handler(event, context):
+              instance_id = event['detail']['instance-id']
+              logger.info('{0} will be terminated in 2 minutes'.format(instance_id))
+              ecs = ECS(region)
+              ecs.deregister(instance_id)
+
+      Runtime: "python3.6"
+      Timeout: "10"
+
+  LambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "lambda.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies: 
+        - 
+          PolicyName: "ecsDeregisterContainerInstance"
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement:
+              - 
+                Effect: "Allow"
+                Action: "ecs:ListClusters"
+                Resource: "*"
+              - 
+                Effect: "Allow"
+                Action: "ecs:ListContainerInstances"
+                Resource: !Sub "arn:aws:ecs:${AWS::Region}:*:cluster/*"
+              - 
+                Effect: "Allow"
+                Action: "ecs:DeregisterContainerInstance"
+                Resource: !Sub "arn:aws:ecs:${AWS::Region}:*:cluster/*"
+
