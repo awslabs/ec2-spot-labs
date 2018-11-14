@@ -135,7 +135,7 @@ In order to execute the steps in the workshop, you'll need to clone the workshop
 
 1. Feel free to browse around. You can also browse the directory structure in the **Environment** tab.
 
-### 4\. Create the Amazon EC2 Launch Template
+### 4\. Create an Amazon EC2 Launch Template
 
 EC2 Launch Templates reduce the number of steps required to create an instance by capturing all launch parameters within one resource. 
 
@@ -172,7 +172,7 @@ You can create a launch template that contains the configuration information to 
 	```
 1. Browse to the Launch Templates console at [https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId](https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId) and check out your newly created launch template.
 
-### 5\. Launch the dev environment with Amazon EC2 Fleet
+### 5\. Launch the development environment Amazon EC2 Spot Instance with Amazon EC2 Fleet
 
 Amazon EC2 Fleet is an API that simplifies the provisioning of Amazon EC2 capacity across different Amazon EC2 instance types, Availability Zones and across On-Demand, Amazon EC2 Reserved Instances (RI) and Amazon EC2 Spot purchase models. With a single API call, now you can provision capacity across EC2 instance types and across purchase models to achieve desired scale, performance and cost.
 
@@ -193,7 +193,7 @@ You'll now launch an EC2 Fleet for your dev environment. The EC2 Fleet will cons
 	```
 1. Browse to the EC2 Spot console at [https://console.aws.amazon.com/ec2sp/v1/spot/home](https://console.aws.amazon.com/ec2sp/v1/spot/home) and check out your newly created EC2 Spot Instance.
 
-### 6\. Deploy the dev environment with AWS CodeDeploy
+### 6\. Deploy the development environment application with AWS CodeDeploy
 
 AWS CodeDeploy is a fully managed deployment service that automates software deployments to a variety of compute services such as Amazon EC2, AWS Lambda, and your on-premises servers. AWS CodeDeploy makes it easier for you to rapidly release new features, helps you avoid downtime during application deployment, and handles the complexity of updating your applications. You can use AWS CodeDeploy to automate software deployments, eliminating the need for error-prone manual operations. The service scales to match your deployment needs, from a single Lambda function to thousands of EC2 instances.
 
@@ -236,7 +236,7 @@ You will now deploy a dev environment of Koel to the Spot Instance launched by E
 1. Create the CodeDeploy deployment group by editing **deployment-group.json** and replacing the value of **%codeDeployServiceRole%** from the CloudFormation stack outputs, and then running:
 
 	```
-	$ aws deploy create-deployment-group --cli-input-json deployment-group.json
+	$ aws deploy create-deployment-group --cli-input-json file://deployment-group.json
 	```
 	
 1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/home](https://console.aws.amazon.com/codesuite/codedeploy/home) to check out your newly created deployment group.	
@@ -244,7 +244,7 @@ You will now deploy a dev environment of Koel to the Spot Instance launched by E
 1. Finally, deploy the application by editing **deployment.json** and replacing the value of **%codeDeployBucket%** from the CloudFormation stack outputs, and then running:
 
 	```
-	$ aws deploy create-deployment --cli-input-json deployment.json
+	$ aws deploy create-deployment --cli-input-json file://deployment.json
 	```
 1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/home](https://console.aws.amazon.com/codesuite/codedeploy/home) to monitor your application deployment.
 
@@ -252,11 +252,53 @@ You will now deploy a dev environment of Koel to the Spot Instance launched by E
 
 1. Once the deploy is complete, browse to the URL of the dev Spot Instance launched by EC2 Fleet and login. The default email address is **'admin@example.com'** and default password is **'admin-pass'**.
 
-1. Under **MANAGE**, click on **Settings**. The click on **Scan**. Play around and enjoy some tunes on your music service.
+1. Under **MANAGE**, click on **Settings**. Click on **Scan**. Play around and enjoy some tunes on your music service.
 
-### 7\. Deploy the prod environment with AWS CodeDeploy
+### 7\. Deploy the production environment database with Amazon RDS
 
+In the development environment, you installed a mariadb database server on the local development instance. In production, you'll want to install to a shared database server so that you can scale your instances behind a load balancer.
 
+Amazon Relational Database Service (Amazon RDS) makes it easy to set up, operate, and scale a relational database in the cloud. It provides cost-efficient and resizable capacity while automating time-consuming administration tasks such as hardware provisioning, database setup, patching and backups. It frees you to focus on your applications so you can give them the fast performance, high availability, security and compatibility they need.
+
+1. Change into the **prod** directory and edit the file **rds.json**. Update the values **%dbSecurityGroup%** and **%dbSubnetGroup%**.
+
+1. Note the **MasterUsername** and **MasterUserPassword**, as you'll need them in a later step.
+
+1. Save the file and create the RDS instance:
+
+	```
+	$ aws rds create-db-instance --cli-input-json file://rds.json
+	```
+	
+1. Browse to the Amazon RDS console at [https://console.aws.amazon.com/rds/home](https://console.aws.amazon.com/rds/home) to monitor your database deployment.
+
+### 7\. Deploy the production environment load balancer with Elastic Load Balancing
+
+In the development environment, you didn't need a load balancer since you were just deploying to a single instance. In production, you'll want to install a load balancer so that you can scale your instances behind it.
+
+A load balancer serves as the single point of contact for clients. The load balancer distributes incoming application traffic across multiple targets, such as EC2 instances, in multiple Availability Zones. This increases the availability of your application. You add one or more listeners to your load balancer.
+
+A listener checks for connection requests from clients, using the protocol and port that you configure, and forwards requests to one or more target groups, based on the rules that you define. Each rule specifies a target group, condition, and priority. When the condition is met, the traffic is forwarded to the target group. You must define a default rule for each listener, and you can add rules that specify different target groups based on the content of the request (also known as content-based routing).
+
+Each target group routes requests to one or more registered targets, such as EC2 instances, using the protocol and port number that you specify. You can register a target with multiple target groups. You can configure health checks on a per target group basis. Health checks are performed on all targets registered to a target group that is specified in a listener rule for your load balancer.
+
+1. Edit **application-load-balancer.json** and update the values of **%publicSubnet1%**, **%publicSubnet2%**, and **%loadBalancerSecurityGroup%** from the CloudFormation stack outputs. Save the file. Create the application load balancer:
+
+	```
+	$ aws elbv2 create-load-balancer --cli-input-json file://application-load-balancer.json
+	```
+
+1. 	Edit **target-group.json** and update the value of **%vpc%** from the CloudFormation stack outputs. Save the file. Create the target group:
+
+	```
+	$ aws elbv2 create-target-group --cli-input-json file://target-group.json
+	```
+
+1. Make sure to note the ARN of the target group you just created in the last step. Edit **modify-target-group.json** and update the value of **%TargetGroupArn%** with the ARN. Save the file. Modify the target group:
+
+	```
+	$ aws elbv2 modify-target-group-attributes --cli-input-json file://modify-target-group.json
+	```
 
 15. aws deploy create-deployment-group --application-name koelAppDev --deployment-group-name koelDepGroupDev --deployment-config-name CodeDeployDefault.OneAtATime --ec2-tag-filters Key=Name,Value=runningAmazonEC2WorkloadsAtScale,Type=KEY\_AND\_VALUE Key=Env,Value=dev,Type=KEY\_AND\_VALUE --service-role-arn arn:aws:iam::753949184587:role/cmp402-codeDeployServiceRole-1REL37OJOS88N
 16. aws deploy create-deployment --application-name koelAppDev --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name koelDepGroupDev --s3-location bucket=cmp402-codedeploybucket-recrh13edl4r,bundleType=zip,key=koelAppDev.zip
@@ -274,189 +316,13 @@ You will now deploy a dev environment of Koel to the Spot Instance launched by E
 26. $ aws deploy push --application-name koelAppProd --s3-location s3://cmp402-r1-codedeploybucket-sgu4s6uv7i46/koelAppProd.zip --no-ignore-hidden-files
 26. create prod deployment group ($ aws deploy create-deployment-group --application-name koelAppProd --deployment-group-name koelDepGroupProd --deployment-config-name CodeDeployDefault.OneAtATime --auto-scaling-groups runningAmazonEC2WorkloadsAtScale --service-role-arn arn:aws:iam::753949184587:role/cmp402-r1-codeDeployServiceRole-DA0LS5KGHUXS)
 27. aws deploy create-deployment --application-name koelAppProd --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name koelDepGroupProd --s3-location bucket=cmp402-r1-codedeploybucket-sgu4s6uv7i46,bundleType=zip,key=koelAppProd.zip
-28. aws autoscaling put-scheduled-update-group-action --cli-input-json file://asg_scheduled_scaleup.json
-29. aws autoscaling put-scaling-policy --cli-input-json file://asg_automatic_scaling.json
+28. aws autoscaling put-scheduled-update-group-action --cli-input-json file://asg-scheduled-scaleup.json
+29. aws autoscaling put-scaling-policy --cli-input-json file://asg-automatic-scaling.json
 30. aws ssm send-command --cli-input-json file://ssm-stress.json
 31. cleanup
 
 
 
-
-### 3\. Launch an EC2 Spot Fleet and associate the Load Balancing Target Group with it
-
-In this section, we'll launch an EC2 Spot Fleet and have the Spot Instances automatically associate themselves with the load balancer we created in the previous step.
-
-1\. Head to **Spot Requests** in the EC2 console navigation pane.
-
-2\. Click on **Request Spot Instances**.
-
-3\. Select **Request and Maintain** under **Request type**. This requests a fleet of Spot instances to maintain your target capacity.
- 
-4\. Under **Amount**, set the **Total target capacity** = *2*, and leave the **Optional On-Demand portion** = *0*.
-
-5\. We'll make a few changes under **Requirements**. First, leave the **AMI** with the default **Amazon Linux AMI**.
-
-6\. Let's add an additional Instance type by clicking **Select**, and then checking both **c3.large** and **c4.large**. This will allow the Spot Fleet to be flexible across both instance types when it is requesting Spot capacity. Click **Select** to save your changes.
-
-7\. For **Network**, make sure to select the same **VPC** you used when creating the Application Load Balancer.
-
-8\. Then check the same **Availability Zones** and **Subnets** you selected when creating the Application Load Balancer.
-
-9\. Check **Replace unhealthy instances** at **Health check**.
-
-10\. Check the **default** Security group.
-
-11\. Select a **Key pair** name if you'd like to enable ssh access to your instances *(not required for this workshop)*.
-
-12\. In the **User data** field, enter the following data as text:
-
-```
-#!/bin/bash
-yum -y update
-yum -y install httpd
-chkconfig httpd on
-instanceid=$(curl http://169.254.169.254/latest/meta-data/instance-id)
-echo "hello from $instanceid" > /var/www/html/index.html
-service httpd start
-```
-
->For this next step, you'll need the full Target group ARN you noted earlier in step 2.16.
-
-13\. You'll need to add an **instance tag** that includes the name of the load balancer target group ARN created in the load balancer creation step earlier. Click **add new tag** and set **key** = *loadBalancerTargetGroup*, **value** = *[FULL-TARGET-GROUP-ARN]*
-
->Example Target group ARN:
-
-```arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/aa/cdbe5f2266d41909```
-
-14\. Under **Load balancing**, check the **Load balancing** box to receive traffic from one or more load balancers. Select the Target group you created in the earlier step of creating the Application Load Balancer.
-
-15\. Under **Spot request fulfillment**, change **Allocation strategy** to **Diversified**, and leave the rest of the settings as **default** options.
-
->Note: When you use the Amazon EC2 console to create a Spot Fleet, it creates a role named aws-ec2-spot-fleet-tagging-role that grants the Spot Fleet permission to request, launch, terminate, and tag instances on your behalf. This role is selected when you create your Spot Fleet request. 
-
-16\. Click **Launch**.
-
-Example return:
-
-```
-Spot request with id: sfr-d1f3c0cc-db37-45b6-88ec-a8b2d8f1520d successfully created.
-```
-
-17\. Take a moment to review the Spot Fleet request in the Spot console. You should see *2* Spot Instance requests being fulfilled. Click around to get a good feel for the Spot console.
-
-18\. Head back to **Target Groups** in the EC2 console navigation pane and select your Target group. Select the **Targets** tab below and note the Spot Instances becoming available in the **Registered targets** and **Availability Zones**.
-
-### 4\. Configure Automatic Scaling for the Spot Fleet
-
-In this section, we'll configure automatic scaling for the Spot Fleet so it can scale based on the Application Load Balancer Request Count Per Target.
-
-1\. Head back to **Spot Requests** in the EC2 console navigation pane.
-
-2\. Select the **Spot Fleet Request Id** that you just launched.
-
-3\. In the **lower section details** click on the **Auto Scaling** tab. Click the **Configure** button.
-
-4\. You can now select details for how your Spot Fleet will scale. Set the **Scale capacity** between *2* and *10* instances.
-
->Note: When using the AWS Management Console to enable automatic scaling for your Spot Fleet, it creates a role named aws-ec2-spot-fleet-autoscale-role that grants Amazon EC2 Auto Scaling permission to describe the alarms for your policies, monitor the current capacity of the fleet, and modify the capacity of the fleet. 
-
-5\. In **Scaling policies**, change the **Target metric** to *Application Load Balancer Request Count Per Target*.
-
-6\. This will show a new field **ALB target group**. Select the **Target Group** created in the earlier step.
-
-7\. Leave the rest of the settings as **default**.
-
-8\. Click **Save**.
-
-You have now attached a target based automatic scaling policy to your Spot Fleet to allow it to scale for peak demand. You can check out the associated CloudWatch alarms in the [CloudWatch console](https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#).
-
-### 5\. Test the web app
-
-Now that everything is deployed, we can test the simple web application by browsing to the public URL of the Application Load Balancer.
-
-1\. Choose **Load Balancers** in the EC2 console navigation pane. This page shows a list of load balancer types to choose from.
-
-2\. Select your load balancer.
-
-3\. In the **Description** tab below, find the **DNS name** in the **Basic Configuration**, and copy/paste it into a web browser.
-
-4\. The web app should return a simple message such as:
-
-```hello from i-0bc7e523b09c177cc```
-
-5\. Refresh the web browser a few times and you should see the message bouncing between the EC2 Spot Instances behind the load balancer.
-
-If you were to put enough stress on the web app, the automatic scaling policy you configured in the previous step would automatically scale up (and back down) the number of Spot Instances in the Spot Fleet to handle the load.
-
-### 6\. Enable the Spot Instance interruption notice handler Lambda function
-
-Now let's take advantage of the two-minute Spot Instance interruption notice by tuning the Elastic Load Balancing target group deregistration timeout delay to match. When a target is deregistered from the target group, it is put into connection draining mode for the length of the timeout delay:  120 seconds to equal the two-minute notice.
-
-1\. Click on **Target Groups** in the EC2 console navigation pane.
-
-2\. Select your **Target group**.
-
-3\. In the **Description** tab below, scroll down to **Attributes** and click on **Edit attributes**.
-
-4\. Change the **Deregistration delay** to *120 seconds*. Click **Save**.
-
-To capture the Spot Instance interruption notice being published to CloudWatch Events, we'll use a rule with two targets that was created in the CloudFormation stack. The two targets are a Lambda function and an SNS topic.
-
-5\. Go to the [Lambda console](https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions) by choosing **Lambda** under **Compute** in the AWS Management Console.
-
-6\. Find the name of the Lambda function created in the CloudFormation stack and select it.
-
-7\. Scroll down to the **Function code** where you can edit the code inline. Replace the existing code for **index.py** with the following:
-
-```
-import boto3
-def handler(event, context):
-  instanceId = event['detail']['instance-id']
-  instanceAction = event['detail']['instance-action']
-  try:
-    ec2client = boto3.client('ec2')
-    describeTags = ec2client.describe_tags(Filters=[{'Name': 'resource-id','Values':[instanceId],'Name':'key','Values':['loadBalancerTargetGroup']}])
-  except:
-    print("No action being taken. Unable to describe tags for instance id:", instanceId)
-    return
-  try:
-    elbv2client = boto3.client('elbv2')
-    deregisterTargets = elbv2client.deregister_targets(TargetGroupArn=describeTags['Tags'][0]['Value'],Targets=[{'Id':instanceId}])
-  except:
-    print("No action being taken. Unable to deregister targets for instance id:", instanceId)
-    return
-  print("Detaching instance from target:")
-  print(instanceId, describeTags['Tags'][0]['Value'], deregisterTargets, sep=",")
-  return
-```
-
-8\. Click **Save** in the upper right-hand corner.
-
-The Lambda function does the heavy lifting for you. The details of the CloudWatch event are published to the Lambda function, which then uses [boto3](https://boto3.readthedocs.io/en/latest/) to make a couple of AWS API calls. The first call is to describe the EC2 tags for the Spot Instance, filtering on a key of “TargetGroupArn”. If this tag is found, the instance is then deregistered from the target group ARN stored as the value of the tag.
-
-### 7\. Test the Spot Instance interruption notice handler
-
-In order to test, you can take advantage of the fact that any interruption action that Spot Fleet takes on a Spot Instance results in a Spot Instance interruption notice being provided. Therefore, you can simply decrease the target size of your Spot Fleet from 2 to 1. The instance that is interrupted receives the Spot Instance interruption notice.
-
-1\. Head to **Spot Requests** in the EC2 console navigation pane.
-
-2\. Select your **Spot Fleet request**. 
-
-3\. At the top in the **Actions** dropdown, select **Modify target capacity**.
-
-4\. Set the **New target capacity** to *1*, and click **Submit**. This will now reduce the size of the Spot Fleet request target capacity from *2* to *1*.
-
-5\. Let's watch the Lambda function in action. Click on **Target Groups** in the EC2 console navigation pane.
-
-6\. Select your **Target group**.
-
-7\. Click on the **Targets** tab below.
-
-8\. In a few moments, you should see one of the Registered targets change status to **Draining** (you may have to refresh a few times). This is the Spot Instance that is being artificially interrupted by reducing the Spot Fleet target capacity. It will stay in **Draining** state for *120 seconds* based on the configuration set earlier to match the Spot Instance 2 minute interruption notice.
-
-### 8\. Extra credit - configure the SNS topic
-
-1\. If time permits, try configuring the SNS topic that was deployed via the CloudFormation stack. The SNS topic is also configured as a target for the CloudWatch Event rule firing on Spot Instance interruption notices (***hint***: have it send you an email or an SMS message).
 
 * * *
 

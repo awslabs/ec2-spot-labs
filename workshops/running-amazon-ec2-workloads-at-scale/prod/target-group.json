@@ -1,0 +1,12 @@
+{
+    "Name": "runningAmazonEC2WorkloadsAtScale",
+    "Protocol": "TCP",
+    "Port": 80,
+    "VpcId": "%vpc%",
+    "HealthCheckProtocol": "TCP",
+    "HealthCheckPath": "/",
+    "HealthCheckIntervalSeconds": 30,
+    "HealthCheckTimeoutSeconds": 5,
+    "HealthyThresholdCount": 5,
+    "UnhealthyThresholdCount": 2
+}

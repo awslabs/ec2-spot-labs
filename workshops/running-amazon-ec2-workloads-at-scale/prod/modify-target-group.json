@@ -1,0 +1,13 @@
+{
+    "TargetGroupArn": "%TargetGroupArn%",
+    "Attributes": [
+        {
+            "Key": "deregistration_delay.timeout_seconds",
+            "Value": "120"
+        },
+        {
+            "Key": "stickiness.enabled",
+            "Value": "true"
+        }
+    ]
+}
