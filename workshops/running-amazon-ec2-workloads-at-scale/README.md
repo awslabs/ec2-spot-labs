@@ -153,7 +153,7 @@ You can create a launch template that contains the configuration information to 
 
 1. Update the following values from the CloudFormation stack outputs: **%instanceProfile%** and **%instanceSecurityGroup%**.
 
-1. Update **%ami-id%** with the AMI ID for the latest version of Amazon Linux 2 in the AWS region you launched.
+1. Update **%ami-id%** with the AMI ID for the latest version of Amazon Linux 2 in the AWS region you launched. You can find the AMI ID by running the following command:
 
 	```
 	aws ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn2-ami-hvm-2.0.????????-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
