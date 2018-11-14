@@ -254,7 +254,7 @@ You will now deploy a dev environment of Koel to the Spot Instance launched by E
 
 1. Under **MANAGE**, click on **Settings**. The click on **Scan**. Play around and enjoy some tunes on your music service.
 
-
+### 7\. Deploy the prod environment with AWS CodeDeploy
 
 
 
