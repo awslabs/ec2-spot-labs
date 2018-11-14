@@ -1,0 +1,11 @@
+{
+  "LoadBalancerArn": "%LoadBalancerArn%",
+  "Protocol": "HTTP",
+  "Port": 80,
+  "DefaultActions": [
+    {
+      "Type": "forward",
+      "TargetGroupArn": "%TargetGroupArn%"
+    }
+  ]
+}

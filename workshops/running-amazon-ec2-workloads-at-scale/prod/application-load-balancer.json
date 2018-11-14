@@ -1,18 +1,18 @@
 {
-    "Name": "runningAmazonEC2WorkloadsAtScale",
-    "Subnets": [
-        "%publicSubnet1%",
-        "%publicSubnet2%"
-    ],
-    "SecurityGroups": [
-        "%loadBalancerSecurityGroup%"
-    ],
-    "Scheme": "internet-facing",
-    "Tags": [
-        {
-            "Key": "Name",
-            "Value": "runningAmazonEC2WorkloadsAtScale"
-        }
-    ],
-    "Type": "application"
+  "Name": "runningAmazonEC2WorkloadsAtScale",
+  "Subnets": [
+    "%publicSubnet1%",
+    "%publicSubnet2%"
+  ],
+  "SecurityGroups": [
+    "%loadBalancerSecurityGroup%"
+  ],
+  "Scheme": "internet-facing",
+  "Tags": [
+    {
+      "Key": "Name",
+      "Value": "runningAmazonEC2WorkloadsAtScale"
+    }
+  ],
+  "Type": "application"
 }
