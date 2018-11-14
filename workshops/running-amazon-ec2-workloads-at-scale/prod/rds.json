@@ -1,0 +1,22 @@
+{
+    "DBName": "koel",
+    "DBInstanceIdentifier": "runningAmazonEC2WorkloadsAtScale",
+    "AllocatedStorage": 20,
+    "DBInstanceClass": "db.t2.medium",
+    "Engine": "mariadb",
+    "MasterUsername": "dbadmin",
+    "MasterUserPassword": "db-pass-2020",
+    "VpcSecurityGroupIds": [
+        "%dbSecurityGroup%"
+    ],
+    "DBSubnetGroupName": "%dbSubnetGroup%",
+    "PreferredMaintenanceWindow": "",
+    "MultiAZ": false,
+    "PubliclyAccessible": false,
+    "Tags": [
+        {
+            "Key": "Name",
+            "Value": "runningAmazonEC2WorkloadsAtScale"
+        }
+    ]
+}
