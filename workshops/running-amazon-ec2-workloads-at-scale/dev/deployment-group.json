@@ -1,0 +1,18 @@
+{
+  "applicationName": "koelAppDev",
+  "deploymentGroupName": "koelDepGroupDev",
+  "deploymentConfigName": "CodeDeployDefault.OneAtATime",
+  "ec2TagFilters": [
+    {
+      "Key": "Name",
+      "Value": "runningAmazonEC2WorkloadsAtScale",
+      "Type": "KEY_AND_VALUE"
+    },
+    {
+      "Key": "Env",
+      "Value": "dev",
+      "Type": "KEY_AND_VALUE"
+    }
+  ],
+  "serviceRoleArn": "%codeDeployServiceRole%"
+}

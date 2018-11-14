@@ -11,17 +11,19 @@ Amazon EC2 Auto Scaling has support for multiple instance types. You can run On-
 ## Requirements, notes, and legal
 1. To complete this workshop, have access to an AWS account with administrative permissions. An IAM user with administrator access (_arn:aws:iam::aws:policy/AdministratorAccess_) will do nicely.
 
-2. This workshop is self-paced. The instructions will primarily be given using the [AWS Command Line Interface (CLI)](https://aws.amazon.com/cli) - this way the guide will not become outdated as changes or updates are made to the AWS Management Console. However, most steps in the workshop can be done in the AWS Management Console directly. Feel free to use whatever is comfortable for you.
+1. This workshop is self-paced. The instructions will primarily be given using the [AWS Command Line Interface (CLI)](https://aws.amazon.com/cli) - this way the guide will not become outdated as changes or updates are made to the AWS Management Console. However, most steps in the workshop can be done in the AWS Management Console directly. Feel free to use whatever is comfortable for you.
 
-3. While the workshop provides step by step instructions, please do take a moment to look around and understand what is happening at each step. The workshop is meant as a getting started guide, but you will learn the most by digesting each of the steps and thinking about how they would apply in your own environment. You might even consider experimenting with the steps to challenge yourself.
+1. While the workshop provides step by step instructions, please do take a moment to look around and understand what is happening at each step. The workshop is meant as a getting started guide, but you will learn the most by digesting each of the steps and thinking about how they would apply in your own environment. You might even consider experimenting with the steps to challenge yourself.
 
-4. This workshop has been designed to run in any public AWS Region.
+1. This workshop has been designed to run in any public AWS Region.
 >Note: If you are attending an event, please run in the region suggested by the facilitators of the workshop.
 
-5. During this workshop, you will install software (and dependencies) on the Amazon EC2 instances launched in your account. The software packages and/or sources you will install will be from the [Amazon Linux 2](https://aws.amazon.com/amazon-linux-2/) distribution as well as from third party repositories and sites. Please review and decide your comfort with installing these before continuing.
-
-6. Make sure you have a valid Amazon EC2 key pair and record the key pair name before you begin. To see your key pairs, open the Amazon EC2 console, then click Key Pairs in the navigation pane.
+1. Make sure you have a valid Amazon EC2 key pair and record the key pair name in the region you are operating in before you begin. To see your key pairs, open the Amazon EC2 console, then click Key Pairs in the navigation pane.
 >Note: If you don't have an Amazon EC2 key pair, you must create the key pair in the same region where you are creating the stack. For information about creating a key pair, see [Getting an SSH Key Pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair) in the Amazon EC2 User Guide for Linux Instances. 
+
+1. During this workshop, you will install software (and dependencies) on the Amazon EC2 instances launched in your account. The software packages and/or sources you will install will be from the [Amazon Linux 2](https://aws.amazon.com/amazon-linux-2/) distribution as well as from third party repositories and sites. Please review and decide your comfort with installing these before continuing.
+
+
 
 ## [need to UPDATE]
 ## Architecture
@@ -47,7 +49,7 @@ Here is a diagram of the resulting architecture:
 
 ### 1\. Launch the CloudFormation stack
 
-To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets in two Availability Zones, as well various supporting resources such as IAM policies and roles, security groups, S3 buckets, and a Cloud9 IDE environment for you to run the steps for the workshop in.
+To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets in two Availability Zones, as well various supporting resources such as IAM policies and roles, security groups, S3 buckets, an EFS file system, and a Cloud9 IDE environment for you to run the steps for the workshop in.
 
 #### To create the stack
 
@@ -168,6 +170,7 @@ You can create a launch template that contains the configuration information to 
 	```
 	$ aws ec2 create-launch-template --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description dev --launch-template-data file://launch-template-data.json
 	```
+1. Browse to the Launch Templates console at [https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId](https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId) and check out your newly created launch template.
 
 ### 5\. Launch the dev environment with Amazon EC2 Fleet
 
@@ -188,6 +191,7 @@ You'll now launch an EC2 Fleet for your dev environment. The EC2 Fleet will cons
 	```
 	$ aws ec2 create-fleet --cli-input-json file://ec2-fleet.json
 	```
+1. Browse to the EC2 Spot console at [https://console.aws.amazon.com/ec2sp/v1/spot/home](https://console.aws.amazon.com/ec2sp/v1/spot/home) and check out your newly created EC2 Spot Instance.
 
 ### 6\. Deploy the dev environment with AWS CodeDeploy
 
@@ -202,26 +206,58 @@ You will now deploy a dev environment of Koel to the Spot Instance launched by E
 	$ cd koel && git checkout v3.7.2
 	```
 	
-1. Next, copy the CodeDeploy configs into place:
+1. Next, copy the CodeDeploy configs into the root level of the application directory:
 
 	```
 	$ cp -avr codedeploy/* koel/
 	```
 
+1. The CodeDeploy configs do not need any modification to use them. However, you should take the opportunity to review them to understand the structure and contents. Open and review **appspec.yml**, and all corresponding files in the **scripts/** directory: **build\_and\_install.sh**, **configure_db.sh**, **configure\_httpd\_php.sh**, **install_dependencies.sh**, **start_services.sh**, and **stop_services.sh**.
+
+1. A couple of additional supporting config files were also copied into place: **koel.conf**, which is the Apache virtual host config, and **koel.sql**, which is a seed of the Koel database. Please take a moment to review them as well. 
+
+1. After reviewing and getting comfortable with the CodeDeploy configs, go ahead and Create the CodeDeploy application:
+
+	```
+	$ aws deploy create-application --application-name koelAppDev
+	```
+
+1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/home](https://console.aws.amazon.com/codesuite/codedeploy/home) to check out your newly created application.
+	
+1. Next, push the application to the CodeDeploy S3 bucket. Be sure to replace **%codeDeployBucket%** with the value in the CloudFormation stack outputs:
+
+	```
+	$ cd koel
+	$ aws deploy push --application-name koelAppDev --s3-location s3://%codeDeployBucket%/koelAppDev.zip --no-ignore-hidden-files
+	```
+
+1. Browse to the S3 console at [https://s3.console.aws.amazon.com/s3/home](https://s3.console.aws.amazon.com/s3/home) to check out your newly created application bundle.
+
+1. Create the CodeDeploy deployment group by editing **deployment-group.json** and replacing the value of **%codeDeployServiceRole%** from the CloudFormation stack outputs, and then running:
+
+	```
+	$ aws deploy create-deployment-group --cli-input-json deployment-group.json
+	```
+	
+1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/home](https://console.aws.amazon.com/codesuite/codedeploy/home) to check out your newly created deployment group.	
+
+1. Finally, deploy the application by editing **deployment.json** and replacing the value of **%codeDeployBucket%** from the CloudFormation stack outputs, and then running:
+
+	```
+	$ aws deploy create-deployment --cli-input-json deployment.json
+	```
+1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/home](https://console.aws.amazon.com/codesuite/codedeploy/home) to monitor your application deployment.
+
+1. Find some mp3s on the interwebs and upload them to **/var/www/media** on the dev instance. 
+
+1. Once the deploy is complete, browse to the URL of the dev Spot Instance launched by EC2 Fleet and login. The default email address is **'admin@example.com'** and default password is **'admin-pass'**.
+
+1. Under **MANAGE**, click on **Settings**. The click on **Scan**. Play around and enjoy some tunes on your music service.
 
 
-2. Enter the Cloud9 Ide
-3. Clone the GitHub repo ($ git clone https://github.com/awslabs/ec2-spot-labs.git)
-4. cd ec2-spot-labs/workshops/running-amazon-ec2-workloads-at-scale
-4. Update user-data.txt
-5. Create base64 user-data ($ base64 --wrap=0 user-data.txt > user-data.base64.txt)
-6. Update the EC2 Launch Template
-7. Create the EC2 Launch Template ($ aws ec2 create-launch-template --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description dev --launch-template-data file://launch-template-data.json)
-8. Launch instance via ec2-fleet ($ aws ec2 create-fleet --cli-input-json file://ec2-fleet.json)
-11. $ git clone https://github.com/phanan/koel.git; $ git checkout v3.7.2
-12. move codedeploy dev structure and configs in place
-13. $ aws deploy create-application --application-name koelAppDev
-14. $ aws deploy push --application-name koelAppDev --s3-location s3://cmp402-codedeploybucket-recrh13edl4r/koelAppDev.zip --no-ignore-hidden-files
+
+
+
 15. aws deploy create-deployment-group --application-name koelAppDev --deployment-group-name koelDepGroupDev --deployment-config-name CodeDeployDefault.OneAtATime --ec2-tag-filters Key=Name,Value=runningAmazonEC2WorkloadsAtScale,Type=KEY\_AND\_VALUE Key=Env,Value=dev,Type=KEY\_AND\_VALUE --service-role-arn arn:aws:iam::753949184587:role/cmp402-codeDeployServiceRole-1REL37OJOS88N
 16. aws deploy create-deployment --application-name koelAppDev --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name koelDepGroupDev --s3-location bucket=cmp402-codedeploybucket-recrh13edl4r,bundleType=zip,key=koelAppDev.zip
 17. launch RDS instance ($ aws rds create-db-instance --db-name koel --db-instance-identifier runningAmazonEC2WorkloadsAtScale --allocated-storage 20 --db-instance-class db.t2.medium --engine mariadb --master-username dbadmin --master-user-password dbpass2018 --vpc-security-group-ids sg-04ce2796f0faae210 --db-subnet-group-name cmp402-r1-dbsubnetgroup-1u9hcxurkaw8j --no-publicly-accessible)
@@ -241,74 +277,10 @@ You will now deploy a dev environment of Koel to the Spot Instance launched by E
 28. aws autoscaling put-scheduled-update-group-action --cli-input-json file://asg_scheduled_scaleup.json
 29. aws autoscaling put-scaling-policy --cli-input-json file://asg_automatic_scaling.json
 30. aws ssm send-command --cli-input-json file://ssm-stress.json
-31. 
+31. cleanup
 
 
-### 1\. Launch the CloudFormation stack
 
-To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets in two Availability Zones, as well as the IAM policies and roles, and security groups.
-
-1\. Go ahead and launch the CloudFormation stack. You can check it out from GitHub, or grab the [template directly](https://github.com/awslabs/ec2-spot-labs/blob/master/workshops/ec2-spot-fleet-web-app/ec2-spot-fleet-web-app.yaml). I use the stack name “ec2-spot-fleet-web-app“, but feel free to use any name you like. Just remember to change it in the instructions.
-
-```
-$ git clone https://github.com/awslabs/ec2-spot-labs.git
-```
-
-```
-$ aws cloudformation create-stack --stack-name ec2-spot-fleet-web-app --template-body file://ec2-spot-labs/workshops/ec2-spot-fleet-web-app/ec2-spot-fleet-web-app.yaml --capabilities CAPABILITY_IAM --region us-east-1
-```
-
-You should receive a StackId value in return, confirming the stack is launching.
-
-```
-{
-	"StackId": "arn:aws:cloudformation:us-east-1:123456789012:stack/spot-fleet-web-app/083e7ad0-0ade-11e8-9e36-500c219ab02a"
-}
-```
-
-2\. Wait for the status of the CloudFormation stack to move to **CREATE_COMPLETE** before moving on to the next step. You will need to reference the **Output** values from the stack in the next steps.
-
-### 2\. Deploy the Application Load Balancer
-
-To deploy your Application Load Balancer and Spot Fleet in your AWS account, you will begin by signing in to the AWS Management Console with your user name and password. 
-
-1\. Go to the EC2 console by choosing **EC2** under **Compute**.
-
-2\. Next, choose **Load Balancers** in the navigation pane. This page shows a list of load balancer types to choose from.
-
-3\. Click **Create Load Balancer** at the top, and then choose **Create** in the **Application Load Balancer** box. 
-
-4\. Give your load balancer a **Name**.
-
-5\. You can leave the rest of the **Basic Configuration** and **Listeners** options as **default** for the purposes of this workshop.
-
-6\. Under **Availability Zones**, you'll need to select the **VPC** created by the CloudFormation stack you launched in the previous step, and then select both **Availability Zones** for the Application Load Balancer to route traffic to. Best practices for both load balancing and Spot Fleet are to select at least two Availability Zones - ideally you should select as many as possible. Remember that you can specify only one subnet per Availability Zone.
-
-7\. Once done, click on **Next: Configure Security Settings**.
-
->**Note**: Since this is a demonstration, we will continue without configuring a secure listener. However, if this was a production load balancer, it is recommended to configure a secure listener if your traffic to the load balancer needs to be secure.
-
-8\. Go ahead and click on **Next: Configure Security Groups**. Choose **Select an existing security group**, then select both the **default** security group, and the security group created in the CloudFormation stack.
-
-9\. Click on **Next: Configure Routing**.
-
-10\. In the **Configure Routing section**, we'll configure a **Target group**. Your load balancer routes requests to the targets in this target group using the protocol and port that you specify, and performs health checks on the targets using these health check settings. Give your Target group a **Name**, and leave the rest of the options as **defaults** under **Target group**, **Health checks**, and **Advanced health check settings**.
-
-11\. Click on **Next: Register Targets**. On the **Register Targets** section, we don't need to register any targets or instances at this point because we will do this when we configure the EC2 Spot Fleet.
-
-12\. Click on **Next: Review**.
-
-13\. Here you can review your settings. Once you are done reviewing, click **Create**.
-
-14\. You should get a return that your Application Load Balancer was successfully created.
-
-15\. Click **Close**.
-
-16\. You'll need to make a note of the ARN of the Target group you created, as you'll be using it a few times in the following steps. Back on the EC2 console, choose **Target Groups** in the navigation pane. This page shows a list of Target groups to choose from. Select the Target group you just created, and copy/paste the full ARN of the Target group listed below in the **Basic Configuration** of the **Description** tab somewhere for easy access in the later steps (or simply know where to refer back when you need it).
-
->Example Target group ARN:
-
-```arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/aa/cdbe5f2266d41909```
 
 ### 3\. Launch an EC2 Spot Fleet and associate the Load Balancing Target Group with it
 
