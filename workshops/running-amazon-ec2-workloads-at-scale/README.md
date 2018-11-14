@@ -6,7 +6,7 @@ Amazon EC2 Auto Scaling helps you maintain application availability and allows y
 
 Amazon EC2 Auto Scaling has support for multiple instance types. You can run On-Demand or Spot Instances inside an Amazon EC2 Auto Scaling group, including those inside your virtual private cloud (VPC).
 
-[UPDATE] This workshop is designed to get you familiar with EC2 Spot Instances by learning how to deploy a simple web app on an EC2 Spot Fleet behind an Elastic Load Balanacing Application Load Balancer and enable automatic scaling to allow it to handle peak demand, as well as handle Spot Instance interruptions. [/UPDATE]
+[UPDATE] This workshop is designed to get you familiar with...[/UPDATE]
 
 ## Requirements, notes, and legal
 1. To complete this workshop, have access to an AWS account with administrative permissions. An IAM user with administrator access (_arn:aws:iam::aws:policy/AdministratorAccess_) will do nicely.
@@ -24,9 +24,7 @@ Amazon EC2 Auto Scaling has support for multiple instance types. You can run On-
 1. During this workshop, you will install software (and dependencies) on the Amazon EC2 instances launched in your account. The software packages and/or sources you will install will be from the [Amazon Linux 2](https://aws.amazon.com/amazon-linux-2/) distribution as well as from third party repositories and sites. Please review and decide your comfort with installing these before continuing.
 
 
-
-## [need to UPDATE]
-## Architecture
+## [NEED TO UPDATE] Architecture
 
 In this workshop, you will deploy the following:
 
@@ -43,7 +41,7 @@ When any of the Spot Instances receives an interruption notice, Spot Fleet sends
 Here is a diagram of the resulting architecture:
 
 ![](images/interruption_notices_arch_diagram.jpg)
-## [/need to UPDATE]
+## [/NEED TO UPDATE]
 
 ## Let's Begin!  
 
@@ -53,7 +51,7 @@ To save time on the initial setup, a CloudFormation template will be used to cre
 
 #### To create the stack
 
-1. You can view and download the CloudFormation temlate from GitHub [here](https://github.com/awslabs/ec2-spot-labs/blob/master/workshops/running-amazon-ec2-workloads-at-scale/running-amazon-ec2-workloads-at-scale.yaml).
+1. You can view and download the CloudFormation temlate from GitHub [here](https://raw.githubusercontent.com/awslabs/ec2-spot-labs/master/workshops/running-amazon-ec2-workloads-at-scale/running-amazon-ec2-workloads-at-scale.yaml).
 
 1. Take a moment to review the CloudFormation template so you understand the resources it will be creating.
 
@@ -110,13 +108,13 @@ AWS Cloud9 comes with a terminal that includes sudo privileges to the managed Am
 
 An AWS Cloud9 environment was launched as a part of the CloudFormation stack (you may have noticed a second CloudFormation stack created by Cloud9). You'll be using this Cloud9 environment to execute the steps in the workshop.
 
-1. Find the name of the AWS Cloud9 environment that was launched as a part of the CloudFormation stack in the Outputs tab.
+1. Find the name of the AWS Cloud9 environment that was launched as a part of the CloudFormation stack outputs.
 
 1. Sign in to the AWS Cloud9 console at [https://console.aws.amazon.com/cloud9/](https://console.aws.amazon.com/cloud9/).
 
 1. Find the Cloud9 environment in **Your environments**, and click **Open IDE**.
 
-1. Take a moment to get familiar with the Cloud9 environment. You can even take a quick tour [here](https://docs.aws.amazon.com/cloud9/latest/user-guide/tutorial.html#tutorial-tour-ide) if you'd like.
+1. Take a moment to get familiar with the Cloud9 environment. You can even take a quick tour of Cloud9 [here](https://docs.aws.amazon.com/cloud9/latest/user-guide/tutorial.html#tutorial-tour-ide) if you'd like.
 
 ### 3\. Clone the workshop GitHub repo
 
@@ -133,9 +131,9 @@ In order to execute the steps in the workshop, you'll need to clone the workshop
 	$ cd ec2-spot-labs/workshops/running-amazon-ec2-workloads-at-scale
 	```
 
-1. Feel free to browse around. You can also browse the directory structure in the **Environment** tab.
+1. Feel free to browse around. You can also browse the directory structure in the **Environment** tab, and even edit files directly there.
 
-### 4\. Create an Amazon EC2 Launch Template
+### 4\. Create the development environment Amazon EC2 Launch Template
 
 EC2 Launch Templates reduce the number of steps required to create an instance by capturing all launch parameters within one resource. 
 
@@ -178,15 +176,11 @@ Amazon EC2 Fleet is an API that simplifies the provisioning of Amazon EC2 capaci
 
 You'll now launch an EC2 Fleet for your dev environment. The EC2 Fleet will consist of a single EC2 Spot Instance, and the fleet will be able to find capacity in any of the 6 available capacity pools.
 
-1. Open **ec2-fleet.json**.
+1. Edit **ec2-fleet.json**.
 
 1. Take a moment to review the config and understand the options.
 
-1. Update all references of **%publicSubnet1%** and **%publicSubnet2%** (3 each) with the outputs from the CloudFormation stack.
-
-1. Save the file.
-
-1. Launch the EC2 Fleet:
+1. Update all references of **%publicSubnet1%** and **%publicSubnet2%** (3 each) with the values from the CloudFormation stack outputs. Save the file. Create the EC2 Fleet:
 
 	```
 	$ aws ec2 create-fleet --cli-input-json file://ec2-fleet.json
@@ -288,17 +282,39 @@ Each target group routes requests to one or more registered targets, such as EC2
 	$ aws elbv2 create-load-balancer --cli-input-json file://application-load-balancer.json
 	```
 
+	>Make sure to note the ARN of the application load balancer for use in an upcoming step.
+
+1. Browse to the Load Balancer console at [https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName) to check out your newly created load balancer.
+
 1. 	Edit **target-group.json** and update the value of **%vpc%** from the CloudFormation stack outputs. Save the file. Create the target group:
 
 	```
 	$ aws elbv2 create-target-group --cli-input-json file://target-group.json
 	```
 
-1. Make sure to note the ARN of the target group you just created in the last step. Edit **modify-target-group.json** and update the value of **%TargetGroupArn%** with the ARN. Save the file. Modify the target group:
+	>Make sure to note the ARN of the target group for use in an upcoming step.
+
+1. Edit **modify-target-group.json** and update the value of **%TargetGroupArn%** with the ARN. Save the file. Modify the target group:
 
 	```
 	$ aws elbv2 modify-target-group-attributes --cli-input-json file://modify-target-group.json
 	```
+
+1. Browse to the Target Group console at [https://console.aws.amazon.com/ec2/v2/home#TargetGroups:sort=targetGroupName](https://console.aws.amazon.com/ec2/v2/home#TargetGroups:sort=targetGroupName) to check out your newly created target group.
+
+1. Edit **listener.json** and update the values of **%LoadBalancerArn%** and **%TargetGroupArn%** from the previous steps. Save the file. Create the listener:
+
+	```
+	$ aws elbv2 create-listener --cli-input-json file://listener.json
+	```
+
+1. Browse to the Load Balancer console at [https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName) to check out your newly created listener.
+
+### 8\. Create a new version of the Amazon EC2 Launch Template for the production environment
+
+For each launch template, you can create one or more numbered launch template versions. Each version can have different launch parameters. When you launch an instance from a launch template, you can use any version of the launch template. If you do not specify a version, the default version is used. You can set any version of the launch template as the default version—by default, it's the first version of the launch template.
+
+1. 
 
 15. aws deploy create-deployment-group --application-name koelAppDev --deployment-group-name koelDepGroupDev --deployment-config-name CodeDeployDefault.OneAtATime --ec2-tag-filters Key=Name,Value=runningAmazonEC2WorkloadsAtScale,Type=KEY\_AND\_VALUE Key=Env,Value=dev,Type=KEY\_AND\_VALUE --service-role-arn arn:aws:iam::753949184587:role/cmp402-codeDeployServiceRole-1REL37OJOS88N
 16. aws deploy create-deployment --application-name koelAppDev --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name koelDepGroupDev --s3-location bucket=cmp402-codedeploybucket-recrh13edl4r,bundleType=zip,key=koelAppDev.zip
