@@ -8,7 +8,7 @@ packages:
   - curl
 
 runcmd:
-  - [ sh, -c, "curl https://aws-codedeploy-us-east-1.s3.amazonaws.com/latest/install -o /home/ec2-user/install"]
+  - [ sh, -c, "curl https://aws-codedeploy-%awsRegionId%.s3.amazonaws.com/latest/install -o /home/ec2-user/install"]
   - [ sh, -c, "chmod +x /home/ec2-user/install"]
   - [ sh, -c, "./home/ec2-user/install auto"]
   - [ sh, -c, "systemctl enable codedeploy-agent.service"]

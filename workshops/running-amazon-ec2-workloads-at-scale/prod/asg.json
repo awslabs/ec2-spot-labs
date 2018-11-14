@@ -5,7 +5,7 @@
         "Version": "2"
     }, 
     "MinSize": 2, 
-    "MaxSize": 10, 
+    "MaxSize": 12, 
     "DesiredCapacity": 2, 
     "DefaultCooldown": 180,
     "TargetGroupARNs": [

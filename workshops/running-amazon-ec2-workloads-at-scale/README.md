@@ -2,19 +2,28 @@
   
   
 ## Overview
-[Amazon EC2 Spot Instances](https://aws.amazon.com/ec2/spot/) are spare compute capacity in the AWS cloud available to you at steep discounts compared to On-Demand prices. EC2 Spot enables you to optimize your costs on the AWS cloud and scale your application's throughput up to 10X for the same budget. By simply selecting Spot when launching EC2 instances, you can save up-to 90% on On-Demand prices.
+Amazon EC2 Auto Scaling helps you maintain application availability and allows you to dynamically scale your Amazon EC2 capacity up or down automatically according to conditions you define. You can use Amazon EC2 Auto Scaling for fleet management of EC2 instances to help maintain the health and availability of your fleet and ensure that you are running your desired number of Amazon EC2 instances. You can also use Amazon EC2 Auto Scaling for dynamic scaling of EC2 instances in order to automatically increase the number of Amazon EC2 instances during demand spikes to maintain performance and decrease capacity during lulls to reduce costs. Amazon EC2 Auto Scaling is well suited both to applications that have stable demand patterns or that experience hourly, daily, or weekly variability in usage.
 
-This workshop is designed to get you familiar with EC2 Spot Instances by learning how to deploy a simple web app on an EC2 Spot Fleet behind an Elastic Load Balanacing Application Load Balancer and enable automatic scaling to allow it to handle peak demand, as well as handle Spot Instance interruptions.
+Amazon EC2 Auto Scaling has support for multiple instance types. You can run On-Demand or Spot Instances inside an Amazon EC2 Auto Scaling group, including those inside your virtual private cloud (VPC).
 
-## Requirements and notes
-1. To complete this workshop, have access to an AWS account with the appropriate permissions to launch AWS CloudFormation stacks. An IAM user with administrator privileges will do nicely.
+[UPDATE] This workshop is designed to get you familiar with EC2 Spot Instances by learning how to deploy a simple web app on an EC2 Spot Fleet behind an Elastic Load Balanacing Application Load Balancer and enable automatic scaling to allow it to handle peak demand, as well as handle Spot Instance interruptions. [/UPDATE]
+
+## Requirements, notes, and legal
+1. To complete this workshop, have access to an AWS account with administrative permissions. An IAM user with administrator access (_arn:aws:iam::aws:policy/AdministratorAccess_) will do nicely.
 
 2. This workshop is self-paced. The instructions will primarily be given using the [AWS Command Line Interface (CLI)](https://aws.amazon.com/cli) - this way the guide will not become outdated as changes or updates are made to the AWS Management Console. However, most steps in the workshop can be done in the AWS Management Console directly. Feel free to use whatever is comfortable for you.
 
 3. While the workshop provides step by step instructions, please do take a moment to look around and understand what is happening at each step. The workshop is meant as a getting started guide, but you will learn the most by digesting each of the steps and thinking about how they would apply in your own environment. You might even consider experimenting with the steps to challenge yourself.
 
-4. This workshop has been designed to run in any public AWS Region. If you are attending an event, please run in the region suggested by the facilitators of the workshop.
+4. This workshop has been designed to run in any public AWS Region.
+>Note: If you are attending an event, please run in the region suggested by the facilitators of the workshop.
 
+5. During this workshop, you will install software (and dependencies) on the Amazon EC2 instances launched in your account. The software packages and/or sources you will install will be from the [Amazon Linux 2](https://aws.amazon.com/amazon-linux-2/) distribution as well as from third party repositories and sites. Please review and decide your comfort with installing these before continuing.
+
+6. Make sure you have a valid Amazon EC2 key pair and record the key pair name before you begin. To see your key pairs, open the Amazon EC2 console, then click Key Pairs in the navigation pane.
+>Note: If you don't have an Amazon EC2 key pair, you must create the key pair in the same region where you are creating the stack. For information about creating a key pair, see [Getting an SSH Key Pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair) in the Amazon EC2 User Guide for Linux Instances. 
+
+## [need to UPDATE]
 ## Architecture
 
 In this workshop, you will deploy the following:
@@ -32,6 +41,7 @@ When any of the Spot Instances receives an interruption notice, Spot Fleet sends
 Here is a diagram of the resulting architecture:
 
 ![](images/interruption_notices_arch_diagram.jpg)
+## [/need to UPDATE]
 
 ## Let's Begin!  
 
@@ -39,27 +49,164 @@ Here is a diagram of the resulting architecture:
 
 To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets in two Availability Zones, as well various supporting resources such as IAM policies and roles, security groups, S3 buckets, and a Cloud9 IDE environment for you to run the steps for the workshop in.
 
-1\. Go ahead and launch the CloudFormation stack. You can check it out from GitHub, or grab the [template directly](https://github.com/awslabs/ec2-spot-labs/blob/master/workshops/ec2-spot-fleet-web-app/ec2-spot-fleet-web-app.yaml). I use the stack name “ec2-spot-fleet-web-app“, but feel free to use any name you like. Just remember to change it in the instructions.
+#### To create the stack
 
-```
-$ git clone https://github.com/awslabs/ec2-spot-labs.git
-```
+1. You can view and download the CloudFormation temlate from GitHub [here](https://github.com/awslabs/ec2-spot-labs/blob/master/workshops/running-amazon-ec2-workloads-at-scale/running-amazon-ec2-workloads-at-scale.yaml).
 
-```
-$ aws cloudformation create-stack --stack-name ec2-spot-fleet-web-app --template-body file://ec2-spot-labs/workshops/ec2-spot-fleet-web-app/ec2-spot-fleet-web-app.yaml --capabilities CAPABILITY_IAM --region us-east-1
-```
+1. Take a moment to review the CloudFormation template so you understand the resources it will be creating.
 
-You should receive a StackId value in return, confirming the stack is launching.
+1. Sign in to the AWS Management Console and open the AWS CloudFormation console at [https://console.aws.amazon.com/cloudformation](https://console.aws.amazon.com/cloudformation).
+>Note: Make sure you are in the right region!
 
-```
-{
-	"StackId": "arn:aws:cloudformation:us-east-1:123456789012:stack/spot-fleet-web-app/083e7ad0-0ade-11e8-9e36-500c219ab02a"
-}
-```
+1. Click **Create Stack**.
 
-2\. Wait for the status of the CloudFormation stack to move to **CREATE_COMPLETE** before moving on to the next step. You will need to reference the **Output** values from the stack in the next steps.
+1. In the **Specify template** section, select **Upload a template file**. Click **Choose file** and, select the template you downloaded in step 1.
 
+1. Click **Next**.
 
+1. In the **Specify stack details** section, enter a **Stack name**. For example, use *runningAmazonEC2WorkloadsAtScale*. The stack name cannot contain spaces.
+
+1. [Optional] In the **Parameters** section, optionally change the **sourceCidr** to restrict instance ssh/http access and load balancer http access.
+
+1. Click **Next**.
+
+1. In **Configure stack options**, leave the default settings.
+
+1. Click **Next**.
+
+1. Review the information for the stack. At the bottom under **Capabilities**, select **I acknowledge that AWS CloudFormation might create IAM resources**. When you're satisfied with the settings, click **Create stack**.
+
+Your stack might take several minutes to create—but you probably don't want to just sit around waiting. After you complete the Create Stack wizard, AWS CloudFormation begins creating the resources that are specified in the template. Your new stack appears in the list at the top portion of the CloudFormation console. Its status should be **CREATE\_IN\_PROGRESS**. You can see detailed status for a stack by viewing its events.
+
+#### Monitor the progress of stack creation
+
+1. On the AWS CloudFormation console, select the stack in the list.
+
+1. In the stack details pane, click the **Events** tab. The console automatically refreshes the event list with the most recent events every 60 seconds.
+
+The **Events** tab displays each major step in the creation of the stack sorted by the time of each event, with latest events on top.
+
+The **CREATE\_IN\_PROGRESS** event is logged when AWS CloudFormation reports that it has begun to create the resource. The **CREATE_COMPLETE** event is logged when the resource is successfully created.
+
+When AWS CloudFormation has successfully created the stack, you will see the following event at the top of the Events tab:
+
+2018-04-24 19:17 UTC-7 **CREATE_COMPLETE** AWS::CloudFormation::Stack
+
+#### Use your stack resources
+
+In this workshop, you'll need to reference the resources created by the CloudFormation stack.
+
+1. On the AWS CloudFormation console, select the stack in the list.
+
+1. In the stack details pane, click the **Outputs** tab.
+
+It is recommended that you keep this window open so you can easily refer to the outputs and resources throughout the workshop.
+
+### 2\. Get familiar with the AWS Cloud9 environment
+
+AWS Cloud9 comes with a terminal that includes sudo privileges to the managed Amazon EC2 instance that is hosting your development environment and a preauthenticated AWS Command Line Interface. This makes it easy for you to quickly run commands and directly access AWS services.
+
+An AWS Cloud9 environment was launched as a part of the CloudFormation stack (you may have noticed a second CloudFormation stack created by Cloud9). You'll be using this Cloud9 environment to execute the steps in the workshop.
+
+1. Find the name of the AWS Cloud9 environment that was launched as a part of the CloudFormation stack in the Outputs tab.
+
+1. Sign in to the AWS Cloud9 console at [https://console.aws.amazon.com/cloud9/](https://console.aws.amazon.com/cloud9/).
+
+1. Find the Cloud9 environment in **Your environments**, and click **Open IDE**.
+
+1. Take a moment to get familiar with the Cloud9 environment. You can even take a quick tour [here](https://docs.aws.amazon.com/cloud9/latest/user-guide/tutorial.html#tutorial-tour-ide) if you'd like.
+
+### 3\. Clone the workshop GitHub repo
+
+In order to execute the steps in the workshop, you'll need to clone the workshop GitHub repo.
+
+1. In the Cloud9 IDE terminal, run the following command:
+
+	```
+	$ git clone https://github.com/awslabs/ec2-spot-labs.git
+	```
+1. Change into the workshop directory
+
+	```
+	$ cd ec2-spot-labs/workshops/running-amazon-ec2-workloads-at-scale
+	```
+
+1. Feel free to browse around. You can also browse the directory structure in the **Environment** tab.
+
+### 4\. Create the Amazon EC2 Launch Template
+
+EC2 Launch Templates reduce the number of steps required to create an instance by capturing all launch parameters within one resource. 
+
+You can create a launch template that contains the configuration information to launch an instance. Launch templates enable you to store launch parameters so that you do not have to specify them every time you launch an instance. For example, a launch template can contain the AMI ID, instance type, and network settings that you typically use to launch instances. When you launch an instance using the Amazon EC2 console, an AWS SDK, or a command line tool, you can specify the launch template to use.
+
+1. You'll use the **UserData** field of a launch template to install the AWS CodeDeploy agent on instances launched from the launch template. Change into the **dev** directory and edit the file **user-data.txt**. Review how it will install packages and then update **%awsRegionId%** with the value from the CloudFormation stack outputs. Save the file.
+
+1. Convert the file to base64 for use in the launch template:
+
+	```
+	$ base64 --wrap=0 user-data.txt > user-data.base64.txt
+	```
+	
+1. Next, edit **launch-template-data.json**.
+
+1. Update the following values from the CloudFormation stack outputs: **%instanceProfile%** and **%instanceSecurityGroup%**.
+
+1. Update **%ami-id%** with the AMI ID for the latest version of Amazon Linux 2 in the AWS region you launched.
+
+	```
+	aws ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn2-ami-hvm-2.0.????????-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
+	```
+
+1. Update **%KeyName%** with your ssh key pair name.
+
+1. Update **%UserData%** with the contents of **user-data.base64.txt**.
+
+1. Save the file.
+
+1. Create the launch template from the launch template config you just saved.
+
+	```
+	$ aws ec2 create-launch-template --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description dev --launch-template-data file://launch-template-data.json
+	```
+
+### 5\. Launch the dev environment with Amazon EC2 Fleet
+
+Amazon EC2 Fleet is an API that simplifies the provisioning of Amazon EC2 capacity across different Amazon EC2 instance types, Availability Zones and across On-Demand, Amazon EC2 Reserved Instances (RI) and Amazon EC2 Spot purchase models. With a single API call, now you can provision capacity across EC2 instance types and across purchase models to achieve desired scale, performance and cost.
+
+You'll now launch an EC2 Fleet for your dev environment. The EC2 Fleet will consist of a single EC2 Spot Instance, and the fleet will be able to find capacity in any of the 6 available capacity pools.
+
+1. Open **ec2-fleet.json**.
+
+1. Take a moment to review the config and understand the options.
+
+1. Update all references of **%publicSubnet1%** and **%publicSubnet2%** (3 each) with the outputs from the CloudFormation stack.
+
+1. Save the file.
+
+1. Launch the EC2 Fleet:
+
+	```
+	$ aws ec2 create-fleet --cli-input-json file://ec2-fleet.json
+	```
+
+### 6\. Deploy the dev environment with AWS CodeDeploy
+
+AWS CodeDeploy is a fully managed deployment service that automates software deployments to a variety of compute services such as Amazon EC2, AWS Lambda, and your on-premises servers. AWS CodeDeploy makes it easier for you to rapidly release new features, helps you avoid downtime during application deployment, and handles the complexity of updating your applications. You can use AWS CodeDeploy to automate software deployments, eliminating the need for error-prone manual operations. The service scales to match your deployment needs, from a single Lambda function to thousands of EC2 instances.
+
+You will now deploy a dev environment of Koel to the Spot Instance launched by EC2 Fleet.
+
+1. From the **dev** directory, first clone the Koel GitHub repo:
+
+	```
+	$ git clone https://github.com/phanan/koel.git
+	$ cd koel && git checkout v3.7.2
+	```
+	
+1. Next, copy the CodeDeploy configs into place:
+
+	```
+	$ cp -avr codedeploy/* koel/
+	```
 
 
 
@@ -92,7 +239,9 @@ You should receive a StackId value in return, confirming the stack is launching.
 26. create prod deployment group ($ aws deploy create-deployment-group --application-name koelAppProd --deployment-group-name koelDepGroupProd --deployment-config-name CodeDeployDefault.OneAtATime --auto-scaling-groups runningAmazonEC2WorkloadsAtScale --service-role-arn arn:aws:iam::753949184587:role/cmp402-r1-codeDeployServiceRole-DA0LS5KGHUXS)
 27. aws deploy create-deployment --application-name koelAppProd --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name koelDepGroupProd --s3-location bucket=cmp402-r1-codedeploybucket-sgu4s6uv7i46,bundleType=zip,key=koelAppProd.zip
 28. aws autoscaling put-scheduled-update-group-action --cli-input-json file://asg_scheduled_scaleup.json
-29. 
+29. aws autoscaling put-scaling-policy --cli-input-json file://asg_automatic_scaling.json
+30. aws ssm send-command --cli-input-json file://ssm-stress.json
+31. 
 
 
 ### 1\. Launch the CloudFormation stack

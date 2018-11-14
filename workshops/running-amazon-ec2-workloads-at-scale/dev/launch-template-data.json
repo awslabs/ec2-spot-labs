@@ -1,12 +1,12 @@
 {
   "IamInstanceProfile": {
-    "Arn": "arn:aws:iam::753949184587:instance-profile/cmp402-instanceProfile-5B7U6IRGFNVI"
+    "Arn": "%instanceProfile%"
   },
-  "ImageId": "ami-0922553b7b0369273",
+  "ImageId": "%ami-id%",
   "InstanceType": "c4.large",
-  "KeyName": "schmutze@amazon-ec2",
+  "KeyName": "%KeyName%",
   "SecurityGroupIds": [
-    "sg-06bf99bbd9e2f1d27"
+    "%instanceSecurityGroup%"
   ],
   "TagSpecifications": [
     {
@@ -23,5 +23,5 @@
       ]
     }
   ],
-  "UserData": "I2Nsb3VkLWNvbmZpZwpyZXBvX3VwZGF0ZTogdHJ1ZQpyZXBvX3VwZ3JhZGU6IGFsbAoKcGFja2FnZXM6CiAgLSB3Z2V0CiAgLSBydWJ5CiAgLSBjdXJsCgpydW5jbWQ6CiAgLSBbIHNoLCAtYywgImN1cmwgaHR0cHM6Ly9hd3MtY29kZWRlcGxveS11cy1lYXN0LTEuczMuYW1hem9uYXdzLmNvbS9sYXRlc3QvaW5zdGFsbCAtbyAvaG9tZS9lYzItdXNlci9pbnN0YWxsIl0KICAtIFsgc2gsIC1jLCAiY2htb2QgK3ggL2hvbWUvZWMyLXVzZXIvaW5zdGFsbCJdCiAgLSBbIHNoLCAtYywgIi4vaG9tZS9lYzItdXNlci9pbnN0YWxsIGF1dG8iXQogIC0gWyBzaCwgLWMsICJzeXN0ZW1jdGwgZW5hYmxlIGNvZGVkZXBsb3ktYWdlbnQuc2VydmljZSJdCiAgLSBbIHNoLCAtYywgInN5c3RlbWN0bCBzdGFydCBjb2RlZGVwbG95LWFnZW50LnNlcnZpY2UiXQoKCg=="
+  "UserData": "%UserData%"
 }
