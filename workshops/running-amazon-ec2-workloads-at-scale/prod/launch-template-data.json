@@ -1,122 +1,22 @@
 {
-    "DryRun": true,
-    "ClientToken": "",
-    "LaunchTemplateId": "",
-    "LaunchTemplateName": "",
-    "SourceVersion": "",
-    "VersionDescription": "",
-    "LaunchTemplateData": {
-        "KernelId": "",
-        "EbsOptimized": true,
-        "IamInstanceProfile": {
-            "Arn": "",
-            "Name": ""
-        },
-        "BlockDeviceMappings": [
-            {
-                "DeviceName": "",
-                "VirtualName": "",
-                "Ebs": {
-                    "Encrypted": true,
-                    "DeleteOnTermination": true,
-                    "Iops": 0,
-                    "KmsKeyId": "",
-                    "SnapshotId": "",
-                    "VolumeSize": 0,
-                    "VolumeType": "io1"
-                },
-                "NoDevice": ""
-            }
-        ],
-        "NetworkInterfaces": [
-            {
-                "AssociatePublicIpAddress": true,
-                "DeleteOnTermination": true,
-                "Description": "",
-                "DeviceIndex": 0,
-                "Groups": [
-                    ""
-                ],
-                "Ipv6AddressCount": 0,
-                "Ipv6Addresses": [
-                    {
-                        "Ipv6Address": ""
-                    }
-                ],
-                "NetworkInterfaceId": "",
-                "PrivateIpAddress": "",
-                "PrivateIpAddresses": [
-                    {
-                        "Primary": true,
-                        "PrivateIpAddress": ""
-                    }
-                ],
-                "SecondaryPrivateIpAddressCount": 0,
-                "SubnetId": ""
-            }
-        ],
-        "ImageId": "",
-        "InstanceType": "m5d.large",
-        "KeyName": "",
-        "Monitoring": {
-            "Enabled": true
-        },
-        "Placement": {
-            "AvailabilityZone": "",
-            "Affinity": "",
-            "GroupName": "",
-            "HostId": "",
-            "Tenancy": "dedicated",
-            "SpreadDomain": ""
-        },
-        "RamDiskId": "",
-        "DisableApiTermination": true,
-        "InstanceInitiatedShutdownBehavior": "terminate",
-        "UserData": "",
-        "TagSpecifications": [
-            {
-                "ResourceType": "customer-gateway",
-                "Tags": [
-                    {
-                        "Key": "",
-                        "Value": ""
-                    }
-                ]
-            }
-        ],
-        "ElasticGpuSpecifications": [
-            {
-                "Type": ""
-            }
-        ],
-        "SecurityGroupIds": [
-            ""
-        ],
-        "SecurityGroups": [
-            ""
-        ],
-        "InstanceMarketOptions": {
-            "MarketType": "spot",
-            "SpotOptions": {
-                "MaxPrice": "",
-                "SpotInstanceType": "persistent",
-                "BlockDurationMinutes": 0,
-                "ValidUntil": "1970-01-01T00:00:00",
-                "InstanceInterruptionBehavior": "stop"
-            }
-        },
-        "CreditSpecification": {
-            "CpuCredits": ""
-        },
-        "CpuOptions": {
-            "CoreCount": 0,
-            "ThreadsPerCore": 0
-        },
-        "CapacityReservationSpecification": {
-            "CapacityReservationPreference": "none",
-            "CapacityReservationTarget": {
-                "CapacityReservationId": ""
-            }
-        }
-    }
+  "LaunchTemplateName": "runningAmazonEC2WorkloadsAtScale",
+  "SourceVersion": "1",
+  "VersionDescription": "prod",
+  "LaunchTemplateData": {
+    "TagSpecifications": [
+      {
+        "ResourceType": "instance",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "runningAmazonEC2WorkloadsAtScale"
+          },
+          {
+            "Key": "Env",
+            "Value": "prod"
+          }
+        ]
+      }
+    ]
+  }
 }
