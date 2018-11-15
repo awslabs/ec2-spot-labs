@@ -430,13 +430,55 @@ You will now deploy a production environment of Koel to the EC2 instances launch
 
 ### 11\. Scale the application with a scheduled scaling action in the production environment
 
-1. aws autoscaling put-scheduled-update-group-action --cli-input-json file://asg-scheduled-scaling.json
+Scaling based on a schedule allows you to scale your application in response to predictable load changes. For example, every week the traffic to your web application starts to increase on Wednesday, remains high on Thursday, and starts to decrease on Friday. You can plan your scaling activities based on the predictable traffic patterns of your web application.
 
-### 12\. Scale the application with an automatic scaling policy in the production environment
+To configure your Auto Scaling group to scale based on a schedule, you create a scheduled action, which tells Amazon EC2 Auto Scaling to perform a scaling action at specified times. To create a scheduled scaling action, you specify the start time when the scaling action should take effect, and the new minimum, maximum, and desired sizes for the scaling action. At the specified time, Amazon EC2 Auto Scaling updates the group with the values for minimum, maximum, and desired size specified by the scaling action.
 
-1. aws autoscaling put-scaling-policy --cli-input-json file://asg-automatic-scaling.json
+1. Edit **asg-scheduled-scaling.json** and replace **%StartTime%** with a UTC timestamp in about 10 minutes from now. For example: **2018-11-11T12:20:00**. You can use this [site](https://timestampgenerator.com/) to help. Look for the **Atom** format. Save the file.
 
-1. aws ssm send-command --cli-input-json file://ssm-stress.json
+1. Schedule the scaling action:
+
+	```
+	aws autoscaling put-scheduled-update-group-action --cli-input-json file://asg-scheduled-scaling.json
+	```
+
+1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created scheduled scaling action. Wait for the time you chose, and take a look at the instances it has deployed.
+
+1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/deployments](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment. Notice that CodeDeploy will automatically deploy the application to new instances launched by the auto scaling group.
+
+### 12\. Dynamically scale the application with an automatic scaling policy in the production environment
+
+When you configure dynamic scaling, you must define how to scale in response to changing demand. For example, you have a web application that currently runs on two instances and you do not want the CPU utilization of the Auto Scaling group to exceed 70 percent. You can configure your Auto Scaling group to scale automatically to meet this need. The policy type determines how the scaling action is performed.
+
+Target tracking scaling policies simplify how you configure dynamic scaling. You select a predefined metric or configure a customized metric, and set a target value. Amazon EC2 Auto Scaling creates and manages the CloudWatch alarms that trigger the scaling policy and calculates the scaling adjustment based on the metric and the target value. The scaling policy adds or removes capacity as required to keep the metric at, or close to, the specified target value. In addition to keeping the metric close to the target value, a target tracking scaling policy also adjusts to the fluctuations in the metric due to a fluctuating load pattern and minimizes rapid fluctuations in the capacity of the Auto Scaling group.
+
+1. Review **asg-automatic-scaling.json** to understand the options. There are no changes to be made. Then go ahead and apply the scaling policy:
+
+	```
+	aws autoscaling put-scaling-policy --cli-input-json file://asg-automatic-scaling.json
+	```
+
+1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created scaling policy. Notice that in a few minutes, it will begin to scale down the instances that were previously scaled up by the scheduled scaling action in order to satisfy the target tracking metrics defined in the automatic scaling policy.
+
+### 12\. Stress the application with AWS Systems Manager to trigger the automatic scaling policy in the production environment
+
+AWS Systems Manager provides you safe, secure remote management of your instances at scale without logging into your servers, replacing the need for bastion hosts, SSH, or remote PowerShell. It provides a simple way of automating common administrative tasks across groups of instances such as registry edits, user management, and software and patch installations. Through integration with AWS Identity and Access Management (IAM), you can apply granular permissions to control the actions users can perform on instances. All actions taken with Systems Manager are recorded by AWS CloudTrail, allowing you to audit changes throughout your environment.
+
+You will now emulate CPU stress on the instances in your automatic scaling group by issuing a remote command to each instance.
+
+1. Review **ssm-stress.json** to understand the options. There are no changes to be made. Then go ahead and send the command:
+
+	```
+	aws ssm send-command --cli-input-json file://ssm-stress.json
+	```
+
+1. Browse to the AWS Systems Manager console at [https://console.aws.amazon.com/systems-manager/run-command/executing-commands](https://console.aws.amazon.com/systems-manager/run-command/executing-commands) to monitor the status of your run  commands.
+
+1. Browse to the CloudWatch console at [https://console.aws.amazon.com/cloudwatch/home?#alarm:alarmFilter=ANY](https://console.aws.amazon.com/cloudwatch/home?#alarm:alarmFilter=ANY) to monitor the status of your alarms configured by the target tracking policy.
+
+1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and watch the activity history. Notice that in a few minutes, it will begin to scale up the instances according to the CloudWatch alarms the target tracking policy has configured for you.
+
+1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/deployments](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment. Notice that CodeDeploy will automatically deploy the application to new instances launched by the auto scaling group.
 
 * * *
 
