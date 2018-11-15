@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mount -t efs fs-f0d9aaba:/ /var/www/media
+mount -t efs %fileSystem%:/ /var/www/media
 
 cd /var/www/koel && php artisan koel:init
 

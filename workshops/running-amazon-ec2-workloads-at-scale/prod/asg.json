@@ -1,16 +1,16 @@
 {
-    "AutoScalingGroupName": "runningAmazonEC2WorkloadsAtScale", 
-    "LaunchTemplate": {
-        "LaunchTemplateName": "runningAmazonEC2WorkloadsAtScale", 
-        "Version": "2"
-    }, 
-    "MinSize": 2, 
-    "MaxSize": 12, 
-    "DesiredCapacity": 2, 
-    "DefaultCooldown": 180,
-    "TargetGroupARNs": [
-        "arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c"
-    ], 
-    "HealthCheckType": "EC2", 
-    "VPCZoneIdentifier": "subnet-0fd51594e1c27795e,subnet-0071e8aa25445266f"
+  "AutoScalingGroupName": "runningAmazonEC2WorkloadsAtScale", 
+  "LaunchTemplate": {
+    "LaunchTemplateName": "runningAmazonEC2WorkloadsAtScale", 
+    "Version": "2"
+  }, 
+  "MinSize": 2, 
+  "MaxSize": 12, 
+  "DesiredCapacity": 2, 
+  "DefaultCooldown": 180,
+  "TargetGroupARNs": [
+    "%TargetGroupARN%"
+  ], 
+  "HealthCheckType": "EC2", 
+  "VPCZoneIdentifier": "%publicSubnet1%,%publicSubnet2%"
 }

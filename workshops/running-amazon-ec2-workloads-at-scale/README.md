@@ -2,10 +2,6 @@
   
   
 ## Overview
-Amazon EC2 Auto Scaling helps you maintain application availability and allows you to dynamically scale your Amazon EC2 capacity up or down automatically according to conditions you define. You can use Amazon EC2 Auto Scaling for fleet management of EC2 instances to help maintain the health and availability of your fleet and ensure that you are running your desired number of Amazon EC2 instances. You can also use Amazon EC2 Auto Scaling for dynamic scaling of EC2 instances in order to automatically increase the number of Amazon EC2 instances during demand spikes to maintain performance and decrease capacity during lulls to reduce costs. Amazon EC2 Auto Scaling is well suited both to applications that have stable demand patterns or that experience hourly, daily, or weekly variability in usage.
-
-Amazon EC2 Auto Scaling has support for multiple instance types. You can run On-Demand or Spot Instances inside an Amazon EC2 Auto Scaling group, including those inside your virtual private cloud (VPC).
-
 [UPDATE] This workshop is designed to get you familiar with...[/UPDATE]
 
 ## Requirements, notes, and legal
@@ -125,15 +121,15 @@ In order to execute the steps in the workshop, you'll need to clone the workshop
 	```
 	$ git clone https://github.com/awslabs/ec2-spot-labs.git
 	```
-1. Change into the workshop directory
+1. Change into the workshop directory:
 
 	```
 	$ cd ec2-spot-labs/workshops/running-amazon-ec2-workloads-at-scale
 	```
 
-1. Feel free to browse around. You can also browse the directory structure in the **Environment** tab, and even edit files directly there.
+1. Feel free to browse around. You can also browse the directory structure in the **Environment** tab, and even edit files directly there. Note there is a **dev** directory and a **prod** directory. You'll be using these in the steps below.
 
-### 4\. Create the development environment Amazon EC2 Launch Template
+### 4\. Create the launch template for the development environment
 
 EC2 Launch Templates reduce the number of steps required to create an instance by capturing all launch parameters within one resource. 
 
@@ -168,30 +164,30 @@ You can create a launch template that contains the configuration information to 
 	```
 	$ aws ec2 create-launch-template --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description dev --launch-template-data file://launch-template-data.json
 	```
+	
 1. Browse to the Launch Templates console at [https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId](https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId) and check out your newly created launch template.
 
-### 5\. Launch the development environment Amazon EC2 Spot Instance with Amazon EC2 Fleet
+### 5\. Launch EC2 Spot Instance with EC2 Fleet for the development environment
 
 Amazon EC2 Fleet is an API that simplifies the provisioning of Amazon EC2 capacity across different Amazon EC2 instance types, Availability Zones and across On-Demand, Amazon EC2 Reserved Instances (RI) and Amazon EC2 Spot purchase models. With a single API call, now you can provision capacity across EC2 instance types and across purchase models to achieve desired scale, performance and cost.
 
 You'll now launch an EC2 Fleet for your dev environment. The EC2 Fleet will consist of a single EC2 Spot Instance, and the fleet will be able to find capacity in any of the 6 available capacity pools.
 
-1. Edit **ec2-fleet.json**.
-
-1. Take a moment to review the config and understand the options.
+1. Edit **ec2-fleet.json**. Take a moment to review the config and understand the options.
 
 1. Update all references of **%publicSubnet1%** and **%publicSubnet2%** (3 each) with the values from the CloudFormation stack outputs. Save the file. Create the EC2 Fleet:
 
 	```
 	$ aws ec2 create-fleet --cli-input-json file://ec2-fleet.json
 	```
+	
 1. Browse to the EC2 Spot console at [https://console.aws.amazon.com/ec2sp/v1/spot/home](https://console.aws.amazon.com/ec2sp/v1/spot/home) and check out your newly created EC2 Spot Instance.
 
-### 6\. Deploy the development environment application with AWS CodeDeploy
+### 6\. Deploy the application with CodeDeploy in the development environment
 
 AWS CodeDeploy is a fully managed deployment service that automates software deployments to a variety of compute services such as Amazon EC2, AWS Lambda, and your on-premises servers. AWS CodeDeploy makes it easier for you to rapidly release new features, helps you avoid downtime during application deployment, and handles the complexity of updating your applications. You can use AWS CodeDeploy to automate software deployments, eliminating the need for error-prone manual operations. The service scales to match your deployment needs, from a single Lambda function to thousands of EC2 instances.
 
-You will now deploy a dev environment of Koel to the Spot Instance launched by EC2 Fleet.
+You will now deploy a development environment of Koel to the Spot Instance launched by EC2 Fleet.
 
 1. From the **dev** directory, first clone the Koel GitHub repo:
 
@@ -199,11 +195,12 @@ You will now deploy a dev environment of Koel to the Spot Instance launched by E
 	$ git clone https://github.com/phanan/koel.git
 	$ cd koel && git checkout v3.7.2
 	```
+	>Note: you'll get an update about being in 'detached HEAD' state. This is normal.
 	
 1. Next, copy the CodeDeploy configs into the root level of the application directory:
 
 	```
-	$ cp -avr codedeploy/* koel/
+	$ cp -avr ../codedeploy/* .
 	```
 
 1. The CodeDeploy configs do not need any modification to use them. However, you should take the opportunity to review them to understand the structure and contents. Open and review **appspec.yml**, and all corresponding files in the **scripts/** directory: **build\_and\_install.sh**, **configure_db.sh**, **configure\_httpd\_php.sh**, **install_dependencies.sh**, **start_services.sh**, and **stop_services.sh**.
@@ -216,7 +213,7 @@ You will now deploy a dev environment of Koel to the Spot Instance launched by E
 	$ aws deploy create-application --application-name koelAppDev
 	```
 
-1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/home](https://console.aws.amazon.com/codesuite/codedeploy/home) to check out your newly created application.
+1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/applications](https://console.aws.amazon.com/codesuite/codedeploy/applications) to check out your newly created application.
 	
 1. Next, push the application to the CodeDeploy S3 bucket. Be sure to replace **%codeDeployBucket%** with the value in the CloudFormation stack outputs:
 
@@ -225,7 +222,7 @@ You will now deploy a dev environment of Koel to the Spot Instance launched by E
 	$ aws deploy push --application-name koelAppDev --s3-location s3://%codeDeployBucket%/koelAppDev.zip --no-ignore-hidden-files
 	```
 
-1. Browse to the S3 console at [https://s3.console.aws.amazon.com/s3/home](https://s3.console.aws.amazon.com/s3/home) to check out your newly created application bundle.
+1. Browse to the S3 console at [https://s3.console.aws.amazon.com/s3/home](https://s3.console.aws.amazon.com/s3/home) to check out your newly created application bundle. The bucket name is the **codeDeployBucket** value in the CloudFormation stack outputs.
 
 1. Create the CodeDeploy deployment group by editing **deployment-group.json** and replacing the value of **%codeDeployServiceRole%** from the CloudFormation stack outputs, and then running:
 
@@ -233,18 +230,21 @@ You will now deploy a dev environment of Koel to the Spot Instance launched by E
 	$ aws deploy create-deployment-group --cli-input-json file://deployment-group.json
 	```
 	
-1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/home](https://console.aws.amazon.com/codesuite/codedeploy/home) to check out your newly created deployment group.	
+	>Note: CodeDeploy knows which instances to deploy to by filtering on EC2 instance tags. The tags are configured in the launch template and filtered on in the deployment group.
+	
+1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/applications](https://console.aws.amazon.com/codesuite/codedeploy/applications) to check out your newly created deployment group.
 
 1. Finally, deploy the application by editing **deployment.json** and replacing the value of **%codeDeployBucket%** from the CloudFormation stack outputs, and then running:
 
 	```
 	$ aws deploy create-deployment --cli-input-json file://deployment.json
 	```
-1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/home](https://console.aws.amazon.com/codesuite/codedeploy/home) to monitor your application deployment.
-
-1. Find some mp3s on the interwebs and upload them to **/var/www/media** on the dev instance. 
+	
+1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/deployments](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment.
 
 1. Once the deploy is complete, browse to the URL of the dev Spot Instance launched by EC2 Fleet and login. The default email address is **'admin@example.com'** and default password is **'admin-pass'**.
+
+1. Find some mp3s on the interwebs and upload them to **/var/www/media** on the dev instance. *****THIS STEP NEEDS MORE DETAILS*****
 
 1. Under **MANAGE**, click on **Settings**. Click on **Scan**. Play around and enjoy some tunes on your music service.
 
@@ -256,7 +256,7 @@ Amazon Relational Database Service (Amazon RDS) makes it easy to set up, operate
 
 1. Change into the **prod** directory and edit the file **rds.json**. Update the values **%dbSecurityGroup%** and **%dbSubnetGroup%**.
 
-1. Note the **MasterUsername** and **MasterUserPassword**, as you'll need them in a later step.
+	>Please note the **MasterUsername** and **MasterUserPassword**, as you'll need them in a later step.
 
 1. Save the file and create the RDS instance:
 
@@ -264,9 +264,18 @@ Amazon Relational Database Service (Amazon RDS) makes it easy to set up, operate
 	$ aws rds create-db-instance --cli-input-json file://rds.json
 	```
 	
-1. Browse to the Amazon RDS console at [https://console.aws.amazon.com/rds/home](https://console.aws.amazon.com/rds/home) to monitor your database deployment.
+1. Browse to the Amazon RDS console at [https://console.aws.amazon.com/rds/home?#dbinstances:](https://console.aws.amazon.com/rds/home?#dbinstances:) to monitor your database deployment. Wait for the **DB instance status** to become **available**.
 
-### 7\. Deploy the production environment load balancer with Elastic Load Balancing
+	> Please note the **Endpoint** of the database instance (e.g. **runningamazonec2workloadsatscale.ckhifpaueqm7.us-east-1.rds.amazonaws.com**
+).
+
+1. Seed the database for the production environment. Replace **%endpoint%** with the database instance endpoint noted in the last step, and use the **MasterUserPassword** noted above when prompted:
+
+	```
+	mysql -h %endpoint% -u dbadmin -p -f koel < koel.sql
+	```
+
+### 7\. Deploy the load balancer for the production environment
 
 In the development environment, you didn't need a load balancer since you were just deploying to a single instance. In production, you'll want to install a load balancer so that you can scale your instances behind it.
 
@@ -282,7 +291,7 @@ Each target group routes requests to one or more registered targets, such as EC2
 	$ aws elbv2 create-load-balancer --cli-input-json file://application-load-balancer.json
 	```
 
-	>Make sure to note the ARN of the application load balancer for use in an upcoming step.
+	>Plese note the ARN of the application load balancer for use in an upcoming step.
 
 1. Browse to the Load Balancer console at [https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName) to check out your newly created load balancer.
 
@@ -292,7 +301,7 @@ Each target group routes requests to one or more registered targets, such as EC2
 	$ aws elbv2 create-target-group --cli-input-json file://target-group.json
 	```
 
-	>Make sure to note the ARN of the target group for use in an upcoming step.
+	>Please note the ARN of the target group for use in an upcoming step.
 
 1. Edit **modify-target-group.json** and update the value of **%TargetGroupArn%** with the ARN. Save the file. Modify the target group:
 
@@ -310,11 +319,99 @@ Each target group routes requests to one or more registered targets, such as EC2
 
 1. Browse to the Load Balancer console at [https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName) to check out your newly created listener.
 
-### 8\. Create a new version of the Amazon EC2 Launch Template for the production environment
+### 8\. Create a new version of the launch template for the production environment
 
 For each launch template, you can create one or more numbered launch template versions. Each version can have different launch parameters. When you launch an instance from a launch template, you can use any version of the launch template. If you do not specify a version, the default version is used. You can set any version of the launch template as the default version—by default, it's the first version of the launch template.
 
-1. 
+You'll make a new version of the launch template for use in the production environment.
+
+1. Review **launch-template-data.json**. There are no changes to be made, but note that you are referencing the previous version of the launch template and making updates to the tags.
+
+1. Create a new version of the launch template:
+
+	```
+	$ aws ec2 create-launch-template-version --cli-input-json file://launch-template-data.json
+	```
+	
+1. Browse to the Launch Templates console at [https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId](https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId) and check out the new version of your launch template.
+
+### 8\. Create an auto scaling group for the production environment
+
+In the development environment, you didn't need an auto scaling group since you were just deploying to a single instance. In production, you'll want an auto scaling group so that you can scale your instances with it.
+
+Amazon EC2 Auto Scaling helps you maintain application availability and allows you to dynamically scale your Amazon EC2 capacity up or down automatically according to conditions you define. You can use Amazon EC2 Auto Scaling for fleet management of EC2 instances to help maintain the health and availability of your fleet and ensure that you are running your desired number of Amazon EC2 instances. You can also use Amazon EC2 Auto Scaling for dynamic scaling of EC2 instances in order to automatically increase the number of Amazon EC2 instances during demand spikes to maintain performance and decrease capacity during lulls to reduce costs. Amazon EC2 Auto Scaling is well suited both to applications that have stable demand patterns or that experience hourly, daily, or weekly variability in usage.
+
+1. Edit **asg.json** update the values of **%TargetGroupArn%** from the previous steps.
+
+1. Update the values of **%publicSubnet1%** and **%publicSubnet2%** from the CloudFormat stack outputs.
+
+1. Save the file and create the auto scaling group:
+
+	```
+	$ aws autoscaling create-auto-scaling-group --cli-input-json file://asg.json
+	```
+	
+1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created auto scaling group. Take a look at the instances it has deployed.
+
+### 9\. Deploy the application with CodeDeploy in the production environment
+
+You will now deploy a production environment of Koel to the EC2 instances launched by the auto scaling group.
+
+1. From the **prod** directory, first clone the Koel GitHub repo:
+
+	```
+	$ git clone https://github.com/phanan/koel.git
+	$ cd koel && git checkout v3.7.2
+	```
+	
+1. Next, copy the CodeDeploy configs into the root level of the koel application directory:
+
+	```
+	$ cp -avr ../codedeploy/* .
+	```
+
+1. For the production environment, you'll need to modify the deployment scripts in order to implement using the RDS database instance and the EFS file system. First edit **scripts/configure_db.sh**. Replace **%endpoint%** with the **Endpoint** of the database instance (e.g. **runningamazonec2workloadsatscale.ckhifpaueqm7.us-east-1.rds.amazonaws.com**
+). Save the file.
+
+1. Edit **scripts/start_services.sh** and replace **%fileSystem%** with the value in the CloudFormation stack outputs. Save the file.
+
+1. After reviewing and getting comfortable with the CodeDeploy configs, go ahead and create the CodeDeploy application:
+
+	```
+	$ aws deploy create-application --application-name koelAppProd
+	```
+
+1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/applications](https://console.aws.amazon.com/codesuite/codedeploy/applications) to check out your newly created application.
+	
+1. Next, push the application to the CodeDeploy S3 bucket. Be sure to replace **%codeDeployBucket%** with the value in the CloudFormation stack outputs:
+
+	```
+	$ cd koel
+	$ aws deploy push --application-name koelAppDev --s3-location s3://%codeDeployBucket%/koelAppProd.zip --no-ignore-hidden-files
+	```
+
+1. Browse to the S3 console at [https://s3.console.aws.amazon.com/s3/home](https://s3.console.aws.amazon.com/s3/home) to check out your newly created application bundle in the 
+
+1. Create the CodeDeploy deployment group by editing **deployment-group.json** and replacing the value of **%codeDeployServiceRole%** from the CloudFormation stack outputs, and then running:
+
+	```
+	$ aws deploy create-deployment-group --cli-input-json file://deployment-group.json
+	```
+	
+	>Notice this time CodeDeploy is deploying to the auto scaling group instead of filtering by EC2 instance tags.
+
+1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/applications](https://console.aws.amazon.com/codesuite/codedeploy/applications) to check out your newly created deployment group.
+
+1. Finally, deploy the application by editing **deployment.json** and replacing the value of **%codeDeployBucket%** from the CloudFormation stack outputs, and then running:
+
+	```
+	$ aws deploy create-deployment --cli-input-json file://deployment.json
+	```
+	
+1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/deployments](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment.
+
+
+
 
 15. aws deploy create-deployment-group --application-name koelAppDev --deployment-group-name koelDepGroupDev --deployment-config-name CodeDeployDefault.OneAtATime --ec2-tag-filters Key=Name,Value=runningAmazonEC2WorkloadsAtScale,Type=KEY\_AND\_VALUE Key=Env,Value=dev,Type=KEY\_AND\_VALUE --service-role-arn arn:aws:iam::753949184587:role/cmp402-codeDeployServiceRole-1REL37OJOS88N
 16. aws deploy create-deployment --application-name koelAppDev --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name koelDepGroupDev --s3-location bucket=cmp402-codedeploybucket-recrh13edl4r,bundleType=zip,key=koelAppDev.zip
