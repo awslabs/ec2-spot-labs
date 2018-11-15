@@ -140,6 +140,8 @@ You can create a launch template that contains the configuration information to 
 1. Convert the file to base64 for use in the launch template:
 
 	```
+	cd dev
+	
 	base64 --wrap=0 user-data.txt > user-data.base64.txt
 	```
 	
@@ -285,7 +287,7 @@ Amazon Relational Database Service (Amazon RDS) makes it easy to set up, operate
 	mysql -h %endpoint% -u dbadmin -p -f koel < koel.sql
 	```
 
-### 7\. Deploy the load balancer for the production environment
+### 8\. Deploy the load balancer for the production environment
 
 In the development environment, you didn't need a load balancer since you were just deploying to a single instance. In production, you'll want to install a load balancer so that you can scale your instances behind it.
 
@@ -329,7 +331,7 @@ Each target group routes requests to one or more registered targets, such as EC2
 
 1. Browse to the Load Balancer console at [https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName) to check out your newly created listener.
 
-### 8\. Create a new version of the launch template for the production environment
+### 9\. Create a new version of the launch template for the production environment
 
 For each launch template, you can create one or more numbered launch template versions. Each version can have different launch parameters. When you launch an instance from a launch template, you can use any version of the launch template. If you do not specify a version, the default version is used. You can set any version of the launch template as the default version—by default, it's the first version of the launch template.
 
@@ -345,7 +347,7 @@ You'll make a new version of the launch template for use in the production envir
 	
 1. Browse to the Launch Templates console at [https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId](https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId) and check out the new version of your launch template.
 
-### 9\. Create an auto scaling group for the production environment
+### 10\. Create an auto scaling group for the production environment
 
 In the development environment, you didn't need an auto scaling group since you were just deploying to a single instance. In production, you'll want an auto scaling group so that you can scale your instances with it.
 
@@ -363,7 +365,7 @@ Amazon EC2 Auto Scaling helps you maintain application availability and allows y
 	
 1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created auto scaling group. Take a look at the instances it has deployed.
 
-### 10\. Deploy the application with CodeDeploy in the production environment
+### 11\. Deploy the application with CodeDeploy in the production environment
 
 You will now deploy a production environment of Koel to the EC2 instances launched by the auto scaling group.
 
@@ -428,7 +430,7 @@ You will now deploy a production environment of Koel to the EC2 instances launch
 
 1. Under **MANAGE**, click on **Settings**. Click on **Scan**. Play around and enjoy some tunes on your music service.
 
-### 11\. Scale the application with a scheduled scaling action in the production environment
+### 12\. Scale the application with a scheduled scaling action in the production environment
 
 Scaling based on a schedule allows you to scale your application in response to predictable load changes. For example, every week the traffic to your web application starts to increase on Wednesday, remains high on Thursday, and starts to decrease on Friday. You can plan your scaling activities based on the predictable traffic patterns of your web application.
 
@@ -446,7 +448,7 @@ To configure your Auto Scaling group to scale based on a schedule, you create a 
 
 1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/deployments](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment. Notice that CodeDeploy will automatically deploy the application to new instances launched by the auto scaling group.
 
-### 12\. Dynamically scale the application with an automatic scaling policy in the production environment
+### 13\. Dynamically scale the application with an automatic scaling policy in the production environment
 
 When you configure dynamic scaling, you must define how to scale in response to changing demand. For example, you have a web application that currently runs on two instances and you do not want the CPU utilization of the Auto Scaling group to exceed 70 percent. You can configure your Auto Scaling group to scale automatically to meet this need. The policy type determines how the scaling action is performed.
 
@@ -460,7 +462,7 @@ Target tracking scaling policies simplify how you configure dynamic scaling. You
 
 1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created scaling policy. Notice that in a few minutes, it will begin to scale down the instances that were previously scaled up by the scheduled scaling action in order to satisfy the target tracking metrics defined in the automatic scaling policy.
 
-### 12\. Stress the application with AWS Systems Manager to trigger the automatic scaling policy in the production environment
+### 14\. Stress the application with AWS Systems Manager to trigger the automatic scaling policy in the production environment
 
 AWS Systems Manager provides you safe, secure remote management of your instances at scale without logging into your servers, replacing the need for bastion hosts, SSH, or remote PowerShell. It provides a simple way of automating common administrative tasks across groups of instances such as registry edits, user management, and software and patch installations. Through integration with AWS Identity and Access Management (IAM), you can apply granular permissions to control the actions users can perform on instances. All actions taken with Systems Manager are recorded by AWS CloudTrail, allowing you to audit changes throughout your environment.
 
