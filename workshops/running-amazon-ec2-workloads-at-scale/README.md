@@ -11,8 +11,8 @@
 
 1. While the workshop provides step by step instructions, please do take a moment to look around and understand what is happening at each step. The workshop is meant as a getting started guide, but you will learn the most by digesting each of the steps and thinking about how they would apply in your own environment. You might even consider experimenting with the steps to challenge yourself.
 
-1. This workshop has been designed to run in any public AWS Region.
-	>Note: If you are attending an event, please run in the region suggested by the facilitators of the workshop.
+1. This workshop has been designed to run in any public AWS Region that supports AWS Cloud9. See [Regional Products and Services](https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/) for details.
+	>**Note: If you are attending an event, please run in the region suggested by the facilitators of the workshop.**
 
 1. Make sure you have a valid Amazon EC2 key pair and record the key pair name in the region you are operating in before you begin. To see your key pairs, open the Amazon EC2 console, then click Key Pairs in the navigation pane.
 	>Note: If you don't have an Amazon EC2 key pair, you must create the key pair in the same region where you are creating the stack. For information about creating a key pair, see [Getting an SSH Key Pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair) in the Amazon EC2 User Guide for Linux Instances. 
