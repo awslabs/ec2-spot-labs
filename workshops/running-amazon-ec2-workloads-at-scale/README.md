@@ -264,7 +264,7 @@ Amazon Relational Database Service (Amazon RDS) makes it easy to set up, operate
 	cd prod
 	```
 
-1. Edit the file **rds.json**. Update the values **%dbSecurityGroup%** and **%dbSubnetGroup%**.
+1. Edit the file **rds.json**. Update the values **%dbSecurityGroup%** and **%dbSubnetGroup%** from the CloudFormation stack outputs.
 
 	>Please note the **MasterUsername** and **MasterUserPassword**, as you'll need them in a later step.
 
