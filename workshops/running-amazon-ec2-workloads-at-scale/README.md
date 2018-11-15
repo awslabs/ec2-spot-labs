@@ -415,6 +415,7 @@ You will now deploy a production environment of Koel to the EC2 instances launch
 1. Find some mp3s on the interwebs and upload them to **/var/www/media** on the dev instance. *****THIS STEP NEEDS MORE DETAILS*****
 
 1. Under **MANAGE**, click on **Settings**. Click on **Scan**. Play around and enjoy some tunes on your music service.
+
 ### 11\. Scale the application with a scheduled scaling action in the production environment
 
 1. aws autoscaling put-scheduled-update-group-action --cli-input-json file://asg-scheduled-scaling.json

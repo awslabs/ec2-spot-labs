@@ -1,12 +1,13 @@
 {
-    "applicationName": "koelAppDev",
-    "deploymentGroupName": "koelDepGroupDev",
-    "revision": {
-        "s3Location": {
-            "bucket": "%codeDeployBucket%",
-            "key": "koelAppDev.zip",
-            "bundleType": "zip"
-        }
-    },
-    "deploymentConfigName": "CodeDeployDefault.OneAtATime"
+  "applicationName": "koelAppDev",
+  "deploymentGroupName": "koelDepGroupDev",
+  "revision": {
+    "revisionType": "S3",
+    "s3Location": {
+      "bucket": "%codeDeployBucket%",
+      "key": "koelAppDev.zip",
+      "bundleType": "zip"
+    }
+  },
+  "deploymentConfigName": "CodeDeployDefault.OneAtATime"
 }
