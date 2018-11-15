@@ -5,7 +5,7 @@
 [UPDATE] This workshop is designed to get you familiar with...[/UPDATE]
 
 ## Requirements, notes, and legal
-1. To complete this workshop, have access to an AWS account with administrative permissions. An IAM user with administrator access (_arn:aws:iam::aws:policy/AdministratorAccess_) will do nicely.
+1. To complete this workshop, have access to an AWS account with administrative permissions. An IAM user with administrator access (**arn:aws:iam::aws:policy/AdministratorAccess**) will do nicely.
 
 1. This workshop is self-paced. The instructions will primarily be given using the [AWS Command Line Interface (CLI)](https://aws.amazon.com/cli) - this way the guide will not become outdated as changes or updates are made to the AWS Management Console. However, most steps in the workshop can be done in the AWS Management Console directly. Feel free to use whatever is comfortable for you.
 
@@ -242,7 +242,7 @@ You will now deploy a development environment of Koel to the Spot Instance launc
 	
 1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/deployments](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment.
 
-1. Once the deploy is complete, browse to the URL of the dev Spot Instance launched by EC2 Fleet and login. The default email address is **'admin@example.com'** and default password is **'admin-pass'**.
+1. Once the deploy is complete, browse to the URL of the dev Spot Instance launched by EC2 Fleet and login. The default email address is **admin@example.com** and default password is **admin-pass**.
 
 1. Find some mp3s on the interwebs and upload them to **/var/www/media** on the dev instance. *****THIS STEP NEEDS MORE DETAILS*****
 
@@ -335,7 +335,7 @@ You'll make a new version of the launch template for use in the production envir
 	
 1. Browse to the Launch Templates console at [https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId](https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId) and check out the new version of your launch template.
 
-### 8\. Create an auto scaling group for the production environment
+### 9\. Create an auto scaling group for the production environment
 
 In the development environment, you didn't need an auto scaling group since you were just deploying to a single instance. In production, you'll want an auto scaling group so that you can scale your instances with it.
 
@@ -353,7 +353,7 @@ Amazon EC2 Auto Scaling helps you maintain application availability and allows y
 	
 1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created auto scaling group. Take a look at the instances it has deployed.
 
-### 9\. Deploy the application with CodeDeploy in the production environment
+### 10\. Deploy the application with CodeDeploy in the production environment
 
 You will now deploy a production environment of Koel to the EC2 instances launched by the auto scaling group.
 
@@ -410,46 +410,30 @@ You will now deploy a production environment of Koel to the EC2 instances launch
 	
 1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/deployments](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment.
 
+1. Once the deploy is complete, browse to the DNS of the load balancer (e.g. http://runningAmazonEC2WorkloadsAtScale-115077449.us-east-1.elb.amazonaws.com) and login. The default email address is **admin@example.com** and default password is **admin-pass**.
 
+1. Find some mp3s on the interwebs and upload them to **/var/www/media** on the dev instance. *****THIS STEP NEEDS MORE DETAILS*****
 
+1. Under **MANAGE**, click on **Settings**. Click on **Scan**. Play around and enjoy some tunes on your music service.
+### 11\. Scale the application with a scheduled scaling action in the production environment
 
-15. aws deploy create-deployment-group --application-name koelAppDev --deployment-group-name koelDepGroupDev --deployment-config-name CodeDeployDefault.OneAtATime --ec2-tag-filters Key=Name,Value=runningAmazonEC2WorkloadsAtScale,Type=KEY\_AND\_VALUE Key=Env,Value=dev,Type=KEY\_AND\_VALUE --service-role-arn arn:aws:iam::753949184587:role/cmp402-codeDeployServiceRole-1REL37OJOS88N
-16. aws deploy create-deployment --application-name koelAppDev --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name koelDepGroupDev --s3-location bucket=cmp402-codedeploybucket-recrh13edl4r,bundleType=zip,key=koelAppDev.zip
-17. launch RDS instance ($ aws rds create-db-instance --db-name koel --db-instance-identifier runningAmazonEC2WorkloadsAtScale --allocated-storage 20 --db-instance-class db.t2.medium --engine mariadb --master-username dbadmin --master-user-password dbpass2018 --vpc-security-group-ids sg-04ce2796f0faae210 --db-subnet-group-name cmp402-r1-dbsubnetgroup-1u9hcxurkaw8j --no-publicly-accessible)
-18. create application load balancer ($ aws elbv2 create-load-balancer --name runningAmazonEC2WorkloadsAtScale --subnets subnet-0fd51594e1c27795e subnet-0071e8aa25445266f --security-groups sg-00c6508e8257c5660)
-19. create target group ($ aws elbv2 create-target-group --name runningAmazonEC2WorkloadsAtScale --protocol HTTP --port 80 --vpc-id vpc-0bfc7d8f2826c853e)
-20. modify target group attributes ($ aws elbv2 modify-target-group-attributes --target-group-arn arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c --attributes Key=deregistration_delay.timeout_seconds,Value=120 Key=stickiness.enabled,Value=true
-20. create listener ($ aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:753949184587:loadbalancer/app/runningAmazonEC2WorkloadsAtScale/e9195569f4f71e10 --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c)
-21. create new version of launch template for prod ($ aws ec2 create-launch-template-version --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description prod --source-version 1 --launch-template-data "{\"TagSpecifications\":[{\"ResourceType\":\"instance\",\"Tags\":[{\"Key\":\"Name\",\"Value\":\"runningAmazonEC2WorkloadsAtScale\"},{\"Key\":\"Env\",\"Value\":\"prod\"}]}]}")
-22. create auto scaling group ($ aws autoscaling create-auto-scaling-group --cli-input-json file://asg.json)
-24. mysql -h runningamazonec2workloadsatscale.ckhifpaueqm7.us-east-1.rds.amazonaws.com -u dbadmin -p -f koel < koel.sql
-25. $ git clone https://github.com/phanan/koel.git; $ git checkout v3.7.2
-25. move codedeploy prod structure and configs in place
-25. $ aws deploy create-application --application-name koelAppProd
-26. $ aws deploy push --application-name koelAppProd --s3-location s3://cmp402-r1-codedeploybucket-sgu4s6uv7i46/koelAppProd.zip --no-ignore-hidden-files
-26. create prod deployment group ($ aws deploy create-deployment-group --application-name koelAppProd --deployment-group-name koelDepGroupProd --deployment-config-name CodeDeployDefault.OneAtATime --auto-scaling-groups runningAmazonEC2WorkloadsAtScale --service-role-arn arn:aws:iam::753949184587:role/cmp402-r1-codeDeployServiceRole-DA0LS5KGHUXS)
-27. aws deploy create-deployment --application-name koelAppProd --deployment-config-name CodeDeployDefault.OneAtATime --deployment-group-name koelDepGroupProd --s3-location bucket=cmp402-r1-codedeploybucket-sgu4s6uv7i46,bundleType=zip,key=koelAppProd.zip
-28. aws autoscaling put-scheduled-update-group-action --cli-input-json file://asg-scheduled-scaleup.json
-29. aws autoscaling put-scaling-policy --cli-input-json file://asg-automatic-scaling.json
-30. aws ssm send-command --cli-input-json file://ssm-stress.json
-31. cleanup
+1. aws autoscaling put-scheduled-update-group-action --cli-input-json file://asg-scheduled-scaling.json
 
+### 12\. Scale the application with an automatic scaling policy in the production environment
 
+1. aws autoscaling put-scaling-policy --cli-input-json file://asg-automatic-scaling.json
 
+1. aws ssm send-command --cli-input-json file://ssm-stress.json
 
 * * *
 
 ## Finished!  
 Congratulations on completing the workshop...*or at least giving it a good go*!  This is the workshop's permananent home, so feel free to revisit as often as you'd like.  In typical Amazon fashion, we'll be listening to your feedback and iterating to make it better.  If you have feedback, we're all ears!  Make sure you clean up after the workshop, so you don't have any unexpected charges on your next monthly bill.  
 
-* * *
-
 ## Workshop Cleanup
 
 1. Working backwards, delete all manually created resources.
 3. Delete the CloudFormation stack launched at the beginning of the workshop.
-
-* * *
 
 ## Appendix  
 
