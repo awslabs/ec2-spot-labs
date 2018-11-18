@@ -41,7 +41,7 @@
       "OnDemandBaseCapacity": 2,
       "OnDemandPercentageAboveBaseCapacity": 0,
       "SpotAllocationStrategy": "lowest-price",
-      "SpotInstancePools": 4,
+      "SpotInstancePools": 4
     }
   },
   "MinSize": 2,
