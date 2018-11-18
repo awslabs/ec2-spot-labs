@@ -1,11 +1,11 @@
 {
-  "applicationName": "koelAppDev",
-  "deploymentGroupName": "koelDepGroupProd",
+  "applicationName": "koelApp",
+  "deploymentGroupName": "koelDepGroup",
   "revision": {
     "revisionType": "S3",
     "s3Location": {
       "bucket": "%codeDeployBucket%",
-      "key": "koelAppDev.zip",
+      "key": "koelApp.zip",
       "bundleType": "zip"
     }
   },

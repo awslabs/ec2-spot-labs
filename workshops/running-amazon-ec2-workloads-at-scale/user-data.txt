@@ -17,6 +17,6 @@ runcmd:
   - [ sh, -c, "mkdir -p /var/www/media" ]
   - [ sh, -c, "echo '%fileSystem%:/ /var/www/media efs tls,_netdev' >> /etc/fstab" ]
   - [ sh, -c, "mount -a -t efs defaults" ]
-  - [ sh, -c, "chown -R ec2-user.apache /var/www/media" ]
+  - [ sh, -c, "chown -R ec2-user. /var/www/media" ]
 
 

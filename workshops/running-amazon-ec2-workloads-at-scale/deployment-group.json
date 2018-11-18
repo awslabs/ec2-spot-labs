@@ -1,6 +1,6 @@
 {
-  "applicationName": "koelAppProd",
-  "deploymentGroupName": "koelDepGroupProd",
+  "applicationName": "koelApp",
+  "deploymentGroupName": "koelDepGroup",
   "deploymentConfigName": "CodeDeployDefault.OneAtATime",
   "autoScalingGroups": [
     "runningAmazonEC2WorkloadsAtScale"

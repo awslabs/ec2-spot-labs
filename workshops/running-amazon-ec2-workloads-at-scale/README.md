@@ -24,15 +24,17 @@
 
 In this workshop, you will deploy the following:
 
-* An Amazon Virtual Private Cloud (Amazon VPC) with subnets in two Availability Zones
+* An AWS CloudFormation stack, which will include:
+	* An Amazon Virtual Private Cloud (Amazon VPC) with subnets in two Availability Zones
+	* An AWS Cloud9 environment
+	* Supporting IAM policies and roles
+	* Supporting security groups
+	* An Amazon EFS file system
+	* An Amazon S3 bucket to use with AWS CodeDeploy
+* An Amazon EC2 launch template
+* An Amazon RDS database instance
 * An Application Load Balancer (ALB) with a listener and target group
-* An Amazon CloudWatch Events rule
-* An AWS Lambda function
-* An Amazon Simple Notification Service (SNS) topic
-* Associated IAM policies and roles for all of the above
-* An Amazon EC2 Spot Fleet request diversified across both Availability Zones using a couple of recent Spot Fleet features: Elastic Load Balancing integration and Tagging Spot Fleet Instances
 
-When any of the Spot Instances receives an interruption notice, Spot Fleet sends the event to CloudWatch Events. The CloudWatch Events rule then notifies both targets, the Lambda function and SNS topic. The Lambda function detaches the Spot Instance from the Application Load Balancer target group, taking advantage of a full two minutes of connection draining before the instance is interrupted. The SNS topic also receives a message, and is provided as an example for the reader to use as an exercise (***hint***: have it send you an email or an SMS message).
 
 Here is a diagram of the resulting architecture:
 
@@ -43,7 +45,7 @@ Here is a diagram of the resulting architecture:
 
 ### 1\. Launch the CloudFormation stack
 
-To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets in two Availability Zones, as well as various supporting resources including IAM policies and roles, security groups, S3 buckets, an EFS file system, and a Cloud9 IDE environment for you to run the steps for the workshop in.
+To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets in two Availability Zones, as well as various supporting resources including IAM policies and roles, security groups, an S3 bucket, an EFS file system, and a Cloud9 IDE environment for you to run the steps for the workshop in.
 
 #### To create the stack
 
@@ -73,6 +75,8 @@ To save time on the initial setup, a CloudFormation template will be used to cre
 1. Review the information for the stack. At the bottom under **Capabilities**, select **I acknowledge that AWS CloudFormation might create IAM resources**. When you're satisfied with the settings, click **Create stack**.
 
 #### Monitor the progress of stack creation
+
+It will take roughly 5 minutes for the stack creation to complete.
 
 1. On the AWS CloudFormation console, select the stack in the list.
 
@@ -124,7 +128,7 @@ An AWS Cloud9 environment was launched as a part of the CloudFormation stack (yo
 	sudo yum -y install jq amazon-efs-utils
 	```
 
-### 3\. Clone the workshop GitHub repo
+### 4\. Clone the workshop GitHub repo
 
 In order to execute the steps in the workshop, you'll need to clone the workshop GitHub repo.
 
@@ -142,7 +146,7 @@ In order to execute the steps in the workshop, you'll need to clone the workshop
 
 1. Feel free to browse around. You can also browse the directory structure in the **Environment** tab on the left, and even edit files directly there by double clicking on them.
 
-### 4\. Create an EC2 launch template
+### 5\. Create an EC2 launch template
 
 EC2 Launch Templates reduce the number of steps required to create an instance by capturing all launch parameters within one resource. 
 
@@ -182,13 +186,13 @@ You'll use a launch template to specify configuration parameters for launching i
 	
 1. Browse to the Launch Templates console at [https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId](https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId) and check out your newly created launch template.
 
-### 5\. Deploy the database with Amazon RDS
+### 6\. Deploy the database with Amazon RDS
 
 Amazon Relational Database Service (Amazon RDS) makes it easy to set up, operate, and scale a relational database in the cloud. It provides cost-efficient and resizable capacity while automating time-consuming administration tasks such as hardware provisioning, database setup, patching and backups. It frees you to focus on your applications so you can give them the fast performance, high availability, security and compatibility they need.
 
-1. Edit the file **rds.json**. Update the values **%dbSecurityGroup%** and **%dbSubnetGroup%** from the CloudFormation stack outputs.
+1. Edit the file **rds.json**. Update the values **%dbSecurityGroup%** and **%dbSubnetGroup%** from the CloudFormation stack outputs. Save the file.
 
-1. Save the file and create the RDS instance:
+1. Create the RDS instance:
 
 	```
 	aws rds create-db-instance --cli-input-json file://rds.json
@@ -196,7 +200,7 @@ Amazon Relational Database Service (Amazon RDS) makes it easy to set up, operate
 	
 1. Browse to the Amazon RDS console at [https://console.aws.amazon.com/rds/home?#dbinstances:](https://console.aws.amazon.com/rds/home?#dbinstances:) to monitor your database deployment. Creating the database will take a few minutes. To save time, you can move onto the next step. You'll come back to check on the database creation in a later step.
 
-### 6\. Deploy the load balancer for the production environment
+### 7\. Deploy the load balancer
 
 A load balancer serves as the single point of contact for clients. The load balancer distributes incoming application traffic across multiple targets, such as EC2 instances, in multiple Availability Zones. This increases the availability of your application. You add one or more listeners to your load balancer.
 
@@ -238,7 +242,7 @@ Each target group routes requests to one or more registered targets, such as EC2
 
 1. Browse to the Load Balancer console at [https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName) to check out your newly created listener.
 
-### 6\. Create an auto scaling group and associate it with the load balancer
+### 8\. Create an auto scaling group and associate it with the load balancer
 
 Amazon EC2 Auto Scaling helps you maintain application availability and allows you to dynamically scale your Amazon EC2 capacity up or down automatically according to conditions you define. You can use Amazon EC2 Auto Scaling for fleet management of EC2 instances to help maintain the health and availability of your fleet and ensure that you are running your desired number of Amazon EC2 instances. You can also use Amazon EC2 Auto Scaling for dynamic scaling of EC2 instances in order to automatically increase the number of Amazon EC2 instances during demand spikes to maintain performance and decrease capacity during lulls to reduce costs. Amazon EC2 Auto Scaling is well suited both to applications that have stable demand patterns or that experience hourly, daily, or weekly variability in usage.
 
@@ -254,24 +258,24 @@ Amazon EC2 Auto Scaling helps you maintain application availability and allows y
 	
 1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created auto scaling group. Take a look at the instances it has deployed.
 
-### 7\. Seed the database with application data
+### 9\. Seed the database with application data
 
 1. Browse to the Amazon RDS console at [https://console.aws.amazon.com/rds/home?#dbinstances:](https://console.aws.amazon.com/rds/home?#dbinstances:) to monitor your database deployment. Click on your database name. Under **Summary**, the **DB instance status** should be **available**. If it isn't quite ready (perhaps still doing the initial backup), you can hit refresh every couple of minutes and wait for it to be in the **available** state.
 
 1. In the **Connect** section, find the **Endpoint** of the database instance (e.g. **runningamazonec2workloadsatscale.ckhifpaueqm7.us-east-1.rds.amazonaws.com**
 ).
 
-1. Seed the database for the production environment. Replace **%endpoint%** with the database instance endpoint noted in the last step:
+1. Seed the database for the application environment. Replace **%endpoint%** with the database instance endpoint noted in the last step:
 
 	```
 	mysql -h %endpoint% -u dbadmin --password db-pass-2020 -f koel < koel.sql
 	```
 
-### 11\. Deploy the application with CodeDeploy in the production environment
+### 10\. Deploy the application to the automatic scaling group with CodeDeploy
 
-You will now deploy a production environment of Koel to the EC2 instances launched by the auto scaling group.
+You will now deploy your application to the EC2 instances launched by the auto scaling group.
 
-1. From the **prod** directory, first clone the Koel GitHub repo:
+1. First clone the Koel GitHub repo:
 
 	```
 	git clone https://github.com/phanan/koel.git
@@ -286,15 +290,13 @@ You will now deploy a production environment of Koel to the EC2 instances launch
 	cp -avr ../codedeploy/* .
 	```
 
-1. For the production environment, you'll need to modify the deployment scripts in order to implement using the RDS database instance and the EFS file system. First edit **scripts/configure_db.sh**. Replace **%endpoint%** with the **Endpoint** of the database instance (e.g. **runningamazonec2workloadsatscale.ckhifpaueqm7.us-east-1.rds.amazonaws.com**
+1. You'll need to modify the deployment scripts in order to implement using the RDS database instance. Edit **scripts/configure_db.sh**. Replace **%endpoint%** with the **Endpoint** of the database instance (e.g. **runningamazonec2workloadsatscale.ckhifpaueqm7.us-east-1.rds.amazonaws.com**
 ). Save the file.
-
-1. Edit **scripts/start_services.sh** and replace **%fileSystem%** with the value in the CloudFormation stack outputs. Save the file.
 
 1. After reviewing and getting comfortable with the CodeDeploy configs, go ahead and create the CodeDeploy application:
 
 	```
-	aws deploy create-application --application-name koelAppProd
+	aws deploy create-application --application-name koelApp
 	```
 
 1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/applications](https://console.aws.amazon.com/codesuite/codedeploy/applications) to check out your newly created application.
@@ -302,7 +304,7 @@ You will now deploy a production environment of Koel to the EC2 instances launch
 1. Next, push the application to the CodeDeploy S3 bucket. Be sure to replace **%codeDeployBucket%** with the value in the CloudFormation stack outputs:
 
 	```
-	aws deploy push --application-name koelAppProd --s3-location s3://%codeDeployBucket%/koelAppProd.zip --no-ignore-hidden-files
+	aws deploy push --application-name koelApp --s3-location s3://%codeDeployBucket%/koelApp.zip --no-ignore-hidden-files
 	```
 
 1. Browse to the S3 console at [https://s3.console.aws.amazon.com/s3/home](https://s3.console.aws.amazon.com/s3/home) to check out your newly created application bundle in the 
@@ -333,7 +335,7 @@ You will now deploy a production environment of Koel to the EC2 instances launch
 
 1. Under **MANAGE**, click on **Settings**. Click on **Scan**. Play around and enjoy some tunes on your music service.
 
-### 12\. Scale the application with a scheduled scaling action in the production environment
+### 11\. Scale the application with a scheduled scaling action
 
 Scaling based on a schedule allows you to scale your application in response to predictable load changes. For example, every week the traffic to your web application starts to increase on Wednesday, remains high on Thursday, and starts to decrease on Friday. You can plan your scaling activities based on the predictable traffic patterns of your web application.
 
@@ -351,7 +353,7 @@ To configure your Auto Scaling group to scale based on a schedule, you create a 
 
 1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/deployments](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment. Notice that CodeDeploy will automatically deploy the application to new instances launched by the auto scaling group.
 
-### 13\. Dynamically scale the application with an automatic scaling policy in the production environment
+### 12\. Dynamically scale the application with an automatic scaling policy
 
 When you configure dynamic scaling, you must define how to scale in response to changing demand. For example, you have a web application that currently runs on two instances and you do not want the CPU utilization of the Auto Scaling group to exceed 70 percent. You can configure your Auto Scaling group to scale automatically to meet this need. The policy type determines how the scaling action is performed.
 
@@ -365,7 +367,7 @@ Target tracking scaling policies simplify how you configure dynamic scaling. You
 
 1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created scaling policy. Notice that in a few minutes, it will begin to scale down the instances that were previously scaled up by the scheduled scaling action in order to satisfy the target tracking metrics defined in the automatic scaling policy.
 
-### 14\. Stress the application with AWS Systems Manager to trigger the automatic scaling policy in the production environment
+### 13\. Stress the application with AWS Systems Manager to trigger the automatic scaling policy
 
 AWS Systems Manager provides you safe, secure remote management of your instances at scale without logging into your servers, replacing the need for bastion hosts, SSH, or remote PowerShell. It provides a simple way of automating common administrative tasks across groups of instances such as registry edits, user management, and software and patch installations. Through integration with AWS Identity and Access Management (IAM), you can apply granular permissions to control the actions users can perform on instances. All actions taken with Systems Manager are recorded by AWS CloudTrail, allowing you to audit changes throughout your environment.
 
@@ -396,6 +398,16 @@ Congratulations on completing the workshop...*or at least giving it a good go*! 
 
 	```
 	aws autoscaling delete-auto-scaling-group --auto-scaling-group-name runningAmazonEC2WorkloadsAtScale --force-delete
+	
+	aws deploy delete-deployment-group --application-name koelApp --deployment-group-name koelDepGroup
+	
+	aws elbv2 delete-listener --listener-arn arn:aws:elasticloadbalancing:us-east-1:753949184587:listener/app/runningAmazonEC2WorkloadsAtScale/e9195569f4f71e10/9b8ad643e5f4c638
+	
+	aws elbv2 delete-target-group --target-group-arn arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c
+	
+	aws elbv2 delete-load-balancer --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:753949184587:loadbalancer/app/runningAmazonEC2WorkloadsAtScale/e9195569f4f71e10
+	
+	aws rds delete-db-instance --db-instance-identifier runningAmazonEC2WorkloadsAtScale --skip-final-snapshot
 	```
 
 3. Delete the CloudFormation stack launched at the beginning of the workshop.
