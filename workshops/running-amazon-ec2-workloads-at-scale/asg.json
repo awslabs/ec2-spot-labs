@@ -8,7 +8,31 @@
       },
       "Overrides": [
         {
-          "InstanceType": ""
+          "InstanceType": "c3.large"
+        },
+        {
+          "InstanceType": "c4.large"
+        },
+        {
+          "InstanceType": "c5.large"
+        },
+        {
+          "InstanceType": "m3.large"
+        },
+        {
+          "InstanceType": "m4.large"
+        },
+        {
+          "InstanceType": "m5.large"
+        },
+        {
+          "InstanceType": "r3.large"
+        },
+        {
+          "InstanceType": "r4.large"
+        },
+        {
+          "InstanceType": "r5.large"
         }
       ]
     },
