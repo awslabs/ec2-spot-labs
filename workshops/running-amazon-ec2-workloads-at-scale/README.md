@@ -43,7 +43,7 @@ Here is a diagram of the resulting architecture:
 
 ### 1\. Launch the CloudFormation stack
 
-To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets in two Availability Zones, as well various supporting resources such as IAM policies and roles, security groups, S3 buckets, an EFS file system, and a Cloud9 IDE environment for you to run the steps for the workshop in.
+To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets in two Availability Zones, as well as various supporting resources including IAM policies and roles, security groups, S3 buckets, an EFS file system, and a Cloud9 IDE environment for you to run the steps for the workshop in.
 
 #### To create the stack
 
@@ -52,9 +52,9 @@ To save time on the initial setup, a CloudFormation template will be used to cre
 1. Take a moment to review the CloudFormation template so you understand the resources it will be creating.
 
 1. Sign in to the AWS Management Console and open the AWS CloudFormation console at [https://console.aws.amazon.com/cloudformation](https://console.aws.amazon.com/cloudformation).
->Note: Make sure you are in the right region!
+>Note: Make sure you are in AWS Region designated by the facilitators of the workshop!
 
-1. Click **Create Stack**.
+1. Click **Create stack**.
 
 1. In the **Specify template** section, select **Upload a template file**. Click **Choose file** and, select the template you downloaded in step 1.
 
@@ -66,28 +66,26 @@ To save time on the initial setup, a CloudFormation template will be used to cre
 
 1. Click **Next**.
 
-1. In **Configure stack options**, leave the default settings.
+1. In **Configure stack options**, you don't need to make any changes.
 
 1. Click **Next**.
 
 1. Review the information for the stack. At the bottom under **Capabilities**, select **I acknowledge that AWS CloudFormation might create IAM resources**. When you're satisfied with the settings, click **Create stack**.
 
-Your stack might take several minutes to create—but you probably don't want to just sit around waiting. After you complete the Create Stack wizard, AWS CloudFormation begins creating the resources that are specified in the template. Your new stack appears in the list at the top portion of the CloudFormation console. Its status should be **CREATE\_IN\_PROGRESS**. You can see detailed status for a stack by viewing its events.
-
 #### Monitor the progress of stack creation
 
 1. On the AWS CloudFormation console, select the stack in the list.
 
-1. In the stack details pane, click the **Events** tab. The console automatically refreshes the event list with the most recent events every 60 seconds.
-
+1. In the stack details pane, click the **Events** tab. You can click the refresh button to update the events in the stack creation.
+ 
 The **Events** tab displays each major step in the creation of the stack sorted by the time of each event, with latest events on top.
 
 The **CREATE\_IN\_PROGRESS** event is logged when AWS CloudFormation reports that it has begun to create the resource. The **CREATE_COMPLETE** event is logged when the resource is successfully created.
 
 When AWS CloudFormation has successfully created the stack, you will see the following event at the top of the Events tab:
 
-2018-04-24 19:17 UTC-7 **CREATE_COMPLETE** AWS::CloudFormation::Stack
-
+	17 Nov 2018 06:17:21	runningAmazonEC2WorkloadsAtScale	CREATE_COMPLETE
+	
 #### Use your stack resources
 
 In this workshop, you'll need to reference the resources created by the CloudFormation stack.
@@ -104,7 +102,7 @@ AWS Cloud9 comes with a terminal that includes sudo privileges to the managed Am
 
 An AWS Cloud9 environment was launched as a part of the CloudFormation stack (you may have noticed a second CloudFormation stack created by Cloud9). You'll be using this Cloud9 environment to execute the steps in the workshop.
 
-1. Find the name of the AWS Cloud9 environment that was launched as a part of the CloudFormation stack outputs.
+1. Find the name of the AWS Cloud9 environment by checking the value of **cloud9Environment** in the CloudFormation stack outputs.
 
 1. Sign in to the AWS Cloud9 console at [https://console.aws.amazon.com/cloud9/](https://console.aws.amazon.com/cloud9/).
 
@@ -121,27 +119,28 @@ In order to execute the steps in the workshop, you'll need to clone the workshop
 	```
 	git clone https://github.com/awslabs/ec2-spot-labs.git
 	```
+	
 1. Change into the workshop directory:
 
 	```
 	cd ec2-spot-labs/workshops/running-amazon-ec2-workloads-at-scale
 	```
 
-1. Feel free to browse around. You can also browse the directory structure in the **Environment** tab, and even edit files directly there. Note there is a **dev** directory and a **prod** directory. You'll be using these in the steps below.
+1. Feel free to browse around. You can also browse the directory structure in the **Environment** tab on the left, and even edit files directly there by double clicking on them.
 
-### 4\. Create the launch template for the development environment
+### 4\. Create an EC2 launch template
 
 EC2 Launch Templates reduce the number of steps required to create an instance by capturing all launch parameters within one resource. 
 
 You can create a launch template that contains the configuration information to launch an instance. Launch templates enable you to store launch parameters so that you do not have to specify them every time you launch an instance. For example, a launch template can contain the AMI ID, instance type, and network settings that you typically use to launch instances. When you launch an instance using the Amazon EC2 console, an AWS SDK, or a command line tool, you can specify the launch template to use.
 
-1. You'll use the **UserData** field of a launch template to install the AWS CodeDeploy agent on instances launched from the launch template. Change into the **dev** directory and edit the file **user-data.txt**. Review how it will install packages and then update **%awsRegionId%** with the value from the CloudFormation stack outputs. Save the file.
+You'll use a launch template to specify configuration parameters for launching instances in this workshop.
+
+1. Edit the file **user-data.txt**. Review how it will install dependency packages and then run commands to install and configure the CodeDeploy agent. Update **%awsRegionId%** with the value from the CloudFormation stack outputs. Save the file.
 
 1. Convert the file to base64 for use in the launch template:
 
 	```
-	cd dev
-	
 	base64 --wrap=0 user-data.txt > user-data.base64.txt
 	```
 	
@@ -171,104 +170,11 @@ You can create a launch template that contains the configuration information to 
 	
 1. Browse to the Launch Templates console at [https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId](https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId) and check out your newly created launch template.
 
-### 5\. Launch EC2 Spot Instance with EC2 Fleet for the development environment
-
-Amazon EC2 Fleet is an API that simplifies the provisioning of Amazon EC2 capacity across different Amazon EC2 instance types, Availability Zones and across On-Demand, Amazon EC2 Reserved Instances (RI) and Amazon EC2 Spot purchase models. With a single API call, now you can provision capacity across EC2 instance types and across purchase models to achieve desired scale, performance and cost.
-
-You'll now launch an EC2 Fleet for your dev environment. The EC2 Fleet will consist of a single EC2 Spot Instance, and the fleet will be able to find capacity in any of the 6 available capacity pools.
-
-1. Edit **ec2-fleet.json**. Take a moment to review the config and understand the options.
-
-1. Update all references of **%publicSubnet1%** and **%publicSubnet2%** (3 each) with the values from the CloudFormation stack outputs. Save the file. Create the EC2 Fleet:
-
-	```
-	aws ec2 create-fleet --cli-input-json file://ec2-fleet.json
-	```
-	
-1. Browse to the EC2 Spot console at [https://console.aws.amazon.com/ec2sp/v1/spot/home](https://console.aws.amazon.com/ec2sp/v1/spot/home) and check out your newly created EC2 Spot Instance.
-
-### 6\. Deploy the application with CodeDeploy in the development environment
-
-AWS CodeDeploy is a fully managed deployment service that automates software deployments to a variety of compute services such as Amazon EC2, AWS Lambda, and your on-premises servers. AWS CodeDeploy makes it easier for you to rapidly release new features, helps you avoid downtime during application deployment, and handles the complexity of updating your applications. You can use AWS CodeDeploy to automate software deployments, eliminating the need for error-prone manual operations. The service scales to match your deployment needs, from a single Lambda function to thousands of EC2 instances.
-
-You will now deploy a development environment of Koel to the Spot Instance launched by EC2 Fleet.
-
-1. From the **dev** directory, first clone the Koel GitHub repo:
-
-	```
-	git clone https://github.com/phanan/koel.git
-	
-	cd koel && git checkout v3.7.2
-	```
-	>Note: you'll get an update about being in 'detached HEAD' state. This is normal.
-	
-1. Next, copy the CodeDeploy configs into the root level of the application directory:
-
-	```
-	cp -avr ../codedeploy/* .
-	```
-
-1. The CodeDeploy configs do not need any modification to use them. However, you should take the opportunity to review them to understand the structure and contents. Open and review **appspec.yml**, and all corresponding files in the **scripts/** directory: **build\_and\_install.sh**, **configure_db.sh**, **configure\_httpd\_php.sh**, **install_dependencies.sh**, **start_services.sh**, and **stop_services.sh**.
-
-1. A couple of additional supporting config files were also copied into place: **koel.conf**, which is the Apache virtual host config, and **koel.sql**, which is a seed of the Koel database. Please take a moment to review them as well. 
-
-1. After reviewing and getting comfortable with the CodeDeploy configs, go ahead and Create the CodeDeploy application:
-
-	```
-	aws deploy create-application --application-name koelAppDev
-	```
-
-1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/applications](https://console.aws.amazon.com/codesuite/codedeploy/applications) to check out your newly created application.
-	
-1. Next, push the application to the CodeDeploy S3 bucket. Be sure to replace **%codeDeployBucket%** with the value in the CloudFormation stack outputs:
-
-	```
-	aws deploy push --application-name koelAppDev --s3-location s3://%codeDeployBucket%/koelAppDev.zip --no-ignore-hidden-files
-	```
-
-1. Browse to the S3 console at [https://s3.console.aws.amazon.com/s3/home](https://s3.console.aws.amazon.com/s3/home) to check out your newly created application bundle. The bucket name is the **codeDeployBucket** value in the CloudFormation stack outputs.
-
-1. Create the CodeDeploy deployment group by editing **deployment-group.json** and replacing the value of **%codeDeployServiceRole%** from the CloudFormation stack outputs, and then running:
-
-	```
-	cd ..
-	
-	aws deploy create-deployment-group --cli-input-json file://deployment-group.json
-	```
-	
-	>Note: CodeDeploy knows which instances to deploy to by filtering on EC2 instance tags. The tags are configured in the launch template and filtered on in the deployment group.
-	
-1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/applications](https://console.aws.amazon.com/codesuite/codedeploy/applications) to check out your newly created deployment group.
-
-1. Finally, deploy the application by editing **deployment.json** and replacing the value of **%codeDeployBucket%** from the CloudFormation stack outputs, and then running:
-
-	```
-	aws deploy create-deployment --cli-input-json file://deployment.json
-	```
-	
-1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/deployments](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment.
-
-1. Once the deploy is complete, browse to the public DNS of the dev Spot Instance launched by EC2 Fleet and login. The default email address is **admin@example.com** and default password is **admin-pass**.
-
-1. Find some mp3s on the interwebs and upload them to **/var/www/media** on the dev instance. *****THIS STEP NEEDS MORE DETAILS*****
-
-1. Under **MANAGE**, click on **Settings**. Click on **Scan**. Play around and enjoy some tunes on your music service.
-
-### 7\. Deploy the production environment database with Amazon RDS
-
-In the development environment, you installed a mariadb database server on the local development instance. In production, you'll want to install to a shared database server so that you can scale your instances behind a load balancer.
+### 5\. Deploy the database with Amazon RDS
 
 Amazon Relational Database Service (Amazon RDS) makes it easy to set up, operate, and scale a relational database in the cloud. It provides cost-efficient and resizable capacity while automating time-consuming administration tasks such as hardware provisioning, database setup, patching and backups. It frees you to focus on your applications so you can give them the fast performance, high availability, security and compatibility they need.
 
-1. Change into the **prod** directory
-
-	```
-	cd prod
-	```
-
 1. Edit the file **rds.json**. Update the values **%dbSecurityGroup%** and **%dbSubnetGroup%** from the CloudFormation stack outputs.
-
-	>Please note the **MasterUsername** and **MasterUserPassword**, as you'll need them in a later step.
 
 1. Save the file and create the RDS instance:
 
@@ -276,20 +182,9 @@ Amazon Relational Database Service (Amazon RDS) makes it easy to set up, operate
 	aws rds create-db-instance --cli-input-json file://rds.json
 	```
 	
-1. Browse to the Amazon RDS console at [https://console.aws.amazon.com/rds/home?#dbinstances:](https://console.aws.amazon.com/rds/home?#dbinstances:) to monitor your database deployment. Wait for the **DB instance status** to become **available**.
+1. Browse to the Amazon RDS console at [https://console.aws.amazon.com/rds/home?#dbinstances:](https://console.aws.amazon.com/rds/home?#dbinstances:) to monitor your database deployment. Creating the database will take a few minutes. To save time, you can move onto the next step. You'll come back to check on the database creation in a later step.
 
-	> Please note the **Endpoint** of the database instance (e.g. **runningamazonec2workloadsatscale.ckhifpaueqm7.us-east-1.rds.amazonaws.com**
-).
-
-1. Seed the database for the production environment. Replace **%endpoint%** with the database instance endpoint noted in the last step, and use the **MasterUserPassword** noted above when prompted:
-
-	```
-	mysql -h %endpoint% -u dbadmin -p -f koel < koel.sql
-	```
-
-### 8\. Deploy the load balancer for the production environment
-
-In the development environment, you didn't need a load balancer since you were just deploying to a single instance. In production, you'll want to install a load balancer so that you can scale your instances behind it.
+### 6\. Deploy the load balancer for the production environment
 
 A load balancer serves as the single point of contact for clients. The load balancer distributes incoming application traffic across multiple targets, such as EC2 instances, in multiple Availability Zones. This increases the availability of your application. You add one or more listeners to your load balancer.
 
@@ -331,25 +226,7 @@ Each target group routes requests to one or more registered targets, such as EC2
 
 1. Browse to the Load Balancer console at [https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName) to check out your newly created listener.
 
-### 9\. Create a new version of the launch template for the production environment
-
-For each launch template, you can create one or more numbered launch template versions. Each version can have different launch parameters. When you launch an instance from a launch template, you can use any version of the launch template. If you do not specify a version, the default version is used. You can set any version of the launch template as the default version—by default, it's the first version of the launch template.
-
-You'll make a new version of the launch template for use in the production environment.
-
-1. Review **launch-template-data.json**. There are no changes to be made, but note that you are referencing the previous version of the launch template and making updates to the tags.
-
-1. Create a new version of the launch template:
-
-	```
-	aws ec2 create-launch-template-version --cli-input-json file://launch-template-data.json
-	```
-	
-1. Browse to the Launch Templates console at [https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId](https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId) and check out the new version of your launch template.
-
-### 10\. Create an auto scaling group for the production environment
-
-In the development environment, you didn't need an auto scaling group since you were just deploying to a single instance. In production, you'll want an auto scaling group so that you can scale your instances with it.
+### 6\. Create an auto scaling group and associate it with the load balancer
 
 Amazon EC2 Auto Scaling helps you maintain application availability and allows you to dynamically scale your Amazon EC2 capacity up or down automatically according to conditions you define. You can use Amazon EC2 Auto Scaling for fleet management of EC2 instances to help maintain the health and availability of your fleet and ensure that you are running your desired number of Amazon EC2 instances. You can also use Amazon EC2 Auto Scaling for dynamic scaling of EC2 instances in order to automatically increase the number of Amazon EC2 instances during demand spikes to maintain performance and decrease capacity during lulls to reduce costs. Amazon EC2 Auto Scaling is well suited both to applications that have stable demand patterns or that experience hourly, daily, or weekly variability in usage.
 
@@ -365,6 +242,19 @@ Amazon EC2 Auto Scaling helps you maintain application availability and allows y
 	
 1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created auto scaling group. Take a look at the instances it has deployed.
 
+### 7\. Seed the database with application data
+
+1. Browse to the Amazon RDS console at [https://console.aws.amazon.com/rds/home?#dbinstances:](https://console.aws.amazon.com/rds/home?#dbinstances:) to monitor your database deployment. Click on your database name. Under **Summary**, the **DB instance status** should be **available**. If it isn't quite ready (perhaps still doing the initial backup), you can hit refresh every couple of minutes and wait for it to be in the **available** state.
+
+1. In the **Connect** section, find the **Endpoint** of the database instance (e.g. **runningamazonec2workloadsatscale.ckhifpaueqm7.us-east-1.rds.amazonaws.com**
+).
+
+1. Seed the database for the production environment. Replace **%endpoint%** with the database instance endpoint noted in the last step:
+
+	```
+	mysql -h %endpoint% -u dbadmin --password db-pass-2020 -f koel < koel.sql
+	```
+
 ### 11\. Deploy the application with CodeDeploy in the production environment
 
 You will now deploy a production environment of Koel to the EC2 instances launched by the auto scaling group.
@@ -376,6 +266,7 @@ You will now deploy a production environment of Koel to the EC2 instances launch
 	
 	cd koel && git checkout v3.7.2
 	```
+	>Note: you'll get an update about being in 'detached HEAD' state. This is normal.
 	
 1. Next, copy the CodeDeploy configs into the root level of the koel application directory:
 
@@ -399,7 +290,7 @@ You will now deploy a production environment of Koel to the EC2 instances launch
 1. Next, push the application to the CodeDeploy S3 bucket. Be sure to replace **%codeDeployBucket%** with the value in the CloudFormation stack outputs:
 
 	```
-	aws deploy push --application-name koelAppDev --s3-location s3://%codeDeployBucket%/koelAppProd.zip --no-ignore-hidden-files
+	aws deploy push --application-name koelAppProd --s3-location s3://%codeDeployBucket%/koelAppProd.zip --no-ignore-hidden-files
 	```
 
 1. Browse to the S3 console at [https://s3.console.aws.amazon.com/s3/home](https://s3.console.aws.amazon.com/s3/home) to check out your newly created application bundle in the 

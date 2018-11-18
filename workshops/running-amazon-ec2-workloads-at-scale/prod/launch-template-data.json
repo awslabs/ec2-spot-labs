@@ -1,22 +1,27 @@
 {
-  "LaunchTemplateName": "runningAmazonEC2WorkloadsAtScale",
-  "SourceVersion": "1",
-  "VersionDescription": "prod",
-  "LaunchTemplateData": {
-    "TagSpecifications": [
-      {
-        "ResourceType": "instance",
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "runningAmazonEC2WorkloadsAtScale"
-          },
-          {
-            "Key": "Env",
-            "Value": "prod"
-          }
-        ]
-      }
-    ]
-  }
+  "IamInstanceProfile": {
+    "Arn": "%instanceProfile%"
+  },
+  "ImageId": "%ami-id%",
+  "InstanceType": "c4.large",
+  "KeyName": "%KeyName%",
+  "SecurityGroupIds": [
+    "%instanceSecurityGroup%"
+  ],
+  "TagSpecifications": [
+    {
+      "ResourceType": "instance",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "runningAmazonEC2WorkloadsAtScale"
+        },
+        {
+          "Key": "Env",
+          "Value": "prod"
+        }
+      ]
+    }
+  ],
+  "UserData": "%UserData%"
 }

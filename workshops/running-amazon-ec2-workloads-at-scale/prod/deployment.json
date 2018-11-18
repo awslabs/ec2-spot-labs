@@ -1,6 +1,6 @@
 {
   "applicationName": "koelAppDev",
-  "deploymentGroupName": "koelDepGroupDev",
+  "deploymentGroupName": "koelDepGroupProd",
   "revision": {
     "revisionType": "S3",
     "s3Location": {

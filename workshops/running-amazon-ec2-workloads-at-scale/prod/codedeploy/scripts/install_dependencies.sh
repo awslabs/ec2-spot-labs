@@ -11,7 +11,6 @@ yum -y install \
   php-xml \
   php-zip \
   httpd \
-  amazon-efs-utils \
   stress-ng
 
 curl --silent --location https://rpm.nodesource.com/setup_8.x | bash -

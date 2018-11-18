@@ -31,7 +31,9 @@ Outputs:
   cloud9Environment:
     Description: Cloud9 environment
     Value:
-      Ref: cloud9Environment
+      Fn::GetAtt:
+      - cloud9Environment
+      - Name
   codeDeployBucket:
     Description: CodeDeploy S3 bucket
     Value:
@@ -113,6 +115,12 @@ Resources:
       VpcId:
         Ref: vpc
     Type: AWS::EC2::VPCGatewayAttachment
+  autoScalingServiceLinkedRole:
+    Properties:
+      AWSServiceName: autoscaling.amazonaws.com
+      Description: Default Service-Linked Role enables access to AWS Services and Resources
+        used or managed by Auto Scaling
+    Type: AWS::IAM::ServiceLinkedRole
   cloud9Environment:
     DependsOn:
     - publicSubnet1
@@ -146,7 +154,10 @@ Resources:
       GroupDescription: Allow mysql (3306)
       SecurityGroupIngress:
       - CidrIp:
-          Ref: sourceCidr
+          Fn::FindInMap:
+          - CidrMappings
+          - vpc
+          - CIDR
         FromPort: 3306
         IpProtocol: tcp
         ToPort: 3306
@@ -164,6 +175,11 @@ Resources:
       - Key: Name
         Value: Running Amazon EC2 Workloads at Scale - RDS database subnet group
     Type: AWS::RDS::DBSubnetGroup
+  ec2FleetServiceLinkedRole:
+    Properties:
+      AWSServiceName: ec2fleet.amazonaws.com
+      Description: Default EC2 Fleet Service Linked Role
+    Type: AWS::IAM::ServiceLinkedRole
   eventRule:
     DependsOn:
     - snsTopic
