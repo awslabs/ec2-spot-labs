@@ -15,7 +15,7 @@ runcmd:
   - [ sh, -c, "systemctl enable codedeploy-agent.service" ]
   - [ sh, -c, "systemctl start codedeploy-agent.service" ]
   - [ sh, -c, "mkdir -p /var/www/media" ]
-  - [ sh, -c, "echo %fileSystem%:/ /var/www/media efs tls,_netdev" >> /etc/fstab" ]
+  - [ sh, -c, "echo '%fileSystem%:/ /var/www/media efs tls,_netdev' >> /etc/fstab" ]
   - [ sh, -c, "mount -a -t efs defaults" ]
   - [ sh, -c, "chown -R ec2-user.apache /var/www/media" ]
 

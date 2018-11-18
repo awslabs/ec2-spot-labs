@@ -110,6 +110,20 @@ An AWS Cloud9 environment was launched as a part of the CloudFormation stack (yo
 
 1. Take a moment to get familiar with the Cloud9 environment. You can even take a quick tour of Cloud9 [here](https://docs.aws.amazon.com/cloud9/latest/user-guide/tutorial.html#tutorial-tour-ide) if you'd like.
 
+### 3\. Update the AWS CLI and install dependencies
+
+1. Make sure the latest version of the AWS CLI is installed by running:
+
+	```
+	sudo pip install -U awscli
+	```
+	
+1. Install dependencies for use in the workshop by running:
+
+	```
+	sudo yum -y install jq amazon-efs-utils
+	```
+
 ### 3\. Clone the workshop GitHub repo
 
 In order to execute the steps in the workshop, you'll need to clone the workshop GitHub repo.
@@ -150,9 +164,7 @@ You'll use a launch template to specify configuration parameters for launching i
 
 1. Update **%ami-id%** with the AMI ID for the latest version of Amazon Linux 2 in the AWS region you launched. You can find the AMI ID by running the following command:
 
-	```
-	sudo yum -y install jq
-	
+	```	
 	aws ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn2-ami-hvm-2.0.????????-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
 	```
 
@@ -381,6 +393,11 @@ Congratulations on completing the workshop...*or at least giving it a good go*! 
 ## Workshop Cleanup
 
 1. Working backwards, delete all manually created resources.
+
+	```
+	aws autoscaling delete-auto-scaling-group --auto-scaling-group-name runningAmazonEC2WorkloadsAtScale --force-delete
+	```
+
 3. Delete the CloudFormation stack launched at the beginning of the workshop.
 
 ## Appendix  

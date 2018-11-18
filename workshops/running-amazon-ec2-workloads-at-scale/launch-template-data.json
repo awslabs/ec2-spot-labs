@@ -3,7 +3,6 @@
     "Arn": "%instanceProfile%"
   },
   "ImageId": "%ami-id%",
-  "InstanceType": "c4.large",
   "KeyName": "%KeyName%",
   "SecurityGroupIds": [
     "%instanceSecurityGroup%"
