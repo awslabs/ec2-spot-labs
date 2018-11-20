@@ -53,8 +53,9 @@ To save time on the initial setup, a CloudFormation template will be used to cre
 
 1. Take a moment to review the CloudFormation template so you understand the resources it will be creating.
 
-1. Sign in to the AWS Management Console and open the AWS CloudFormation console at [https://console.aws.amazon.com/cloudformation](https://console.aws.amazon.com/cloudformation).
->Note: Make sure you are in AWS Region designated by the facilitators of the workshop!
+1. Browse to the [AWS CloudFormation console](https://console.aws.amazon.com/cloudformation).
+
+	>Note: Make sure you are in AWS Region designated by the facilitators of the workshop!
 
 1. Click **Create stack**.
 
@@ -78,7 +79,7 @@ To save time on the initial setup, a CloudFormation template will be used to cre
 
 It will take roughly 5 minutes for the stack creation to complete.
 
-1. On the AWS CloudFormation console, select the stack in the list.
+1. On the [AWS CloudFormation console](https://console.aws.amazon.com/cloudformation), select the stack in the list.
 
 1. In the stack details pane, click the **Events** tab. You can click the refresh button to update the events in the stack creation.
  
@@ -94,7 +95,7 @@ When AWS CloudFormation has successfully created the stack, you will see the fol
 
 In this workshop, you'll need to reference the resources created by the CloudFormation stack.
 
-1. On the AWS CloudFormation console, select the stack in the list.
+1. On the [AWS CloudFormation console](https://console.aws.amazon.com/cloudformation), select the stack in the list.
 
 1. In the stack details pane, click the **Outputs** tab.
 
@@ -108,7 +109,7 @@ An AWS Cloud9 environment was launched as a part of the CloudFormation stack (yo
 
 1. Find the name of the AWS Cloud9 environment by checking the value of **cloud9Environment** in the CloudFormation stack outputs.
 
-1. Sign in to the AWS Cloud9 console at [https://console.aws.amazon.com/cloud9/](https://console.aws.amazon.com/cloud9/).
+1. Sign in to the [AWS Cloud9 console](https://console.aws.amazon.com/cloud9/).
 
 1. Find the Cloud9 environment in **Your environments**, and click **Open IDE**.
 
@@ -154,7 +155,13 @@ You can create a launch template that contains the configuration information to 
 
 You'll use a launch template to specify configuration parameters for launching instances in this workshop.
 
-1. Edit the file **user-data.txt**. Review how it will install dependency packages and then run commands to install and configure the CodeDeploy agent. Update **%awsRegionId%** with the value from the CloudFormation stack outputs. Save the file.
+1. Edit the file **user-data.txt**. Review how it will install dependency packages, run commands to install and configure the CodeDeploy agent, and run commands to configure and mount the EFS file system.
+
+1. Update **%awsRegionId%** with the value from the CloudFormation stack outputs.
+
+1. Update **%fileSystem%** with the value from the CloudFormation stack outputs.
+
+1. Save the file.
 
 1. Convert the file to base64 for use in the launch template:
 
@@ -184,7 +191,7 @@ You'll use a launch template to specify configuration parameters for launching i
 	aws ec2 create-launch-template --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description dev --launch-template-data file://launch-template-data.json
 	```
 	
-1. Browse to the Launch Templates console at [https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId](https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId) and check out your newly created launch template.
+1. Browse to the [Launch Templates console](https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId) and check out your newly created launch template.
 
 ### 6\. Deploy the database with Amazon RDS
 
@@ -198,7 +205,7 @@ Amazon Relational Database Service (Amazon RDS) makes it easy to set up, operate
 	aws rds create-db-instance --cli-input-json file://rds.json
 	```
 	
-1. Browse to the Amazon RDS console at [https://console.aws.amazon.com/rds/home?#dbinstances:](https://console.aws.amazon.com/rds/home?#dbinstances:) to monitor your database deployment. Creating the database will take a few minutes. To save time, you can move onto the next step. You'll come back to check on the database creation in a later step.
+1. Browse to the [Amazon RDS console](https://console.aws.amazon.com/rds/home?#dbinstances:) to monitor your database deployment. Creating the database will take a few minutes. To save time, you can move onto the next step. You'll come back to check on the database creation in a later step.
 
 ### 7\. Deploy the load balancer
 
@@ -216,7 +223,7 @@ Each target group routes requests to one or more registered targets, such as EC2
 
 	>Plese note the ARN of the application load balancer for use in an upcoming step.
 
-1. Browse to the Load Balancer console at [https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName) to check out your newly created load balancer.
+1. Browse to the [Load Balancer console](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName) to check out your newly created load balancer.
 
 1. 	Edit **target-group.json** and update the value of **%vpc%** from the CloudFormation stack outputs. Save the file. Create the target group:
 
@@ -224,7 +231,7 @@ Each target group routes requests to one or more registered targets, such as EC2
 	aws elbv2 create-target-group --cli-input-json file://target-group.json
 	```
 
-	>Please note the ARN of the target group for use in an upcoming step.
+	>Please note the ARN of the target group for use in upcoming steps.
 
 1. Edit **modify-target-group.json** and update the value of **%TargetGroupArn%** with the ARN. Save the file. Modify the target group:
 
@@ -232,7 +239,7 @@ Each target group routes requests to one or more registered targets, such as EC2
 	aws elbv2 modify-target-group-attributes --cli-input-json file://modify-target-group.json
 	```
 
-1. Browse to the Target Group console at [https://console.aws.amazon.com/ec2/v2/home#TargetGroups:sort=targetGroupName](https://console.aws.amazon.com/ec2/v2/home#TargetGroups:sort=targetGroupName) to check out your newly created target group.
+1. Browse to the [Target Group console](https://console.aws.amazon.com/ec2/v2/home#TargetGroups:sort=targetGroupName) to check out your newly created target group.
 
 1. Edit **listener.json** and update the values of **%LoadBalancerArn%** and **%TargetGroupArn%** from the previous steps. Save the file. Create the listener:
 
@@ -240,7 +247,7 @@ Each target group routes requests to one or more registered targets, such as EC2
 	aws elbv2 create-listener --cli-input-json file://listener.json
 	```
 
-1. Browse to the Load Balancer console at [https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName) to check out your newly created listener.
+1. Browse to the [Load Balancer console](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName) to check out your newly created listener by selecting your load balancer and clicking on the **Listeners** tab.
 
 ### 8\. Create an auto scaling group and associate it with the load balancer
 
@@ -256,11 +263,13 @@ Amazon EC2 Auto Scaling helps you maintain application availability and allows y
 	aws autoscaling create-auto-scaling-group --cli-input-json file://asg.json
 	```
 	
-1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created auto scaling group. Take a look at the instances it has deployed.
+	>Note: This command will not return any output if it is successful.
+	
+1. Browse to the [Auto Scaling console](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created auto scaling group. Take a look at the instances it has deployed.
 
 ### 9\. Seed the database with application data
 
-1. Browse to the Amazon RDS console at [https://console.aws.amazon.com/rds/home?#dbinstances:](https://console.aws.amazon.com/rds/home?#dbinstances:) to monitor your database deployment. Click on your database name. Under **Summary**, the **DB instance status** should be **available**. If it isn't quite ready (perhaps still doing the initial backup), you can hit refresh every couple of minutes and wait for it to be in the **available** state.
+1. Browse to the [Amazon RDS console](https://console.aws.amazon.com/rds/home?#dbinstances:) to monitor your database deployment. Click on your database name. Under **Summary**, the **DB instance status** should be **available**. If it isn't quite ready (perhaps still doing the initial backup), you can hit refresh every couple of minutes and wait for it to be in the **available** state.
 
 1. In the **Connect** section, find the **Endpoint** of the database instance (e.g. **runningamazonec2workloadsatscale.ckhifpaueqm7.us-east-1.rds.amazonaws.com**
 ).
@@ -268,14 +277,30 @@ Amazon EC2 Auto Scaling helps you maintain application availability and allows y
 1. Seed the database for the application environment. Replace **%endpoint%** with the database instance endpoint noted in the last step:
 
 	```
-	mysql -h %endpoint% -u dbadmin --password db-pass-2020 -f koel < koel.sql
+	mysql -h %endpoint% -u dbadmin --password=db-pass-2020 -f koel < koel.sql
 	```
-
+	>Note: This command will not return any output if it is successful.
+	
 ### 10\. Deploy the application to the automatic scaling group with CodeDeploy
+
+An application specification file (AppSpec file), which is unique to AWS CodeDeploy, is a YAML-formatted or JSON-formatted file. The AppSpec file is used to manage each deployment as a series of lifecycle event hooks, which are defined in the file. The AppSpec file is used to:
+	
+* Map the source files in your application revision to their destinations on the instance.
+
+* Specify custom permissions for deployed files.
+
+* Specify scripts to be run on each instance at various stages of the deployment process.
+
+You can learn more about the AppSpec File Structure [here](https://docs.aws.amazon.com/codedeploy/latest/userguide/reference-appspec-file-structure.html).
 
 You will now deploy your application to the EC2 instances launched by the auto scaling group.
 
-1. First clone the Koel GitHub repo:
+1. Take a moment to browse and view the CodeDeploy structure for your application, located in the **codedeploy** directory.
+
+1. You'll need to modify the CodeDeploy deployment scripts in order to implement using the RDS database instance. Edit **codedeploy/scripts/configure_db.sh**. Replace **%endpoint%** with the **Endpoint** of the database instance (e.g. **runningamazonec2workloadsatscale.ckhifpaueqm7.us-east-1.rds.amazonaws.com**
+). Save the file.
+
+1. Then clone the Koel GitHub repo:
 
 	```
 	git clone https://github.com/phanan/koel.git
@@ -290,24 +315,26 @@ You will now deploy your application to the EC2 instances launched by the auto s
 	cp -avr ../codedeploy/* .
 	```
 
-1. You'll need to modify the deployment scripts in order to implement using the RDS database instance. Edit **scripts/configure_db.sh**. Replace **%endpoint%** with the **Endpoint** of the database instance (e.g. **runningamazonec2workloadsatscale.ckhifpaueqm7.us-east-1.rds.amazonaws.com**
-). Save the file.
-
 1. After reviewing and getting comfortable with the CodeDeploy configs, go ahead and create the CodeDeploy application:
 
 	```
 	aws deploy create-application --application-name koelApp
 	```
 
-1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/applications](https://console.aws.amazon.com/codesuite/codedeploy/applications) to check out your newly created application.
+1. Browse to the [AWS CodeDeploy console](https://console.aws.amazon.com/codesuite/codedeploy/applications), make sure your region is selected in the upper right-hand corner dropdown, and then click on your application to check out your newly created application.
+
+	>Note: The CodeDeploy console will not default to your current region. Please make sure to click on **Select a Region** in the upper right-hand corner and select your region in the dropdown.
 	
 1. Next, push the application to the CodeDeploy S3 bucket. Be sure to replace **%codeDeployBucket%** with the value in the CloudFormation stack outputs:
 
 	```
 	aws deploy push --application-name koelApp --s3-location s3://%codeDeployBucket%/koelApp.zip --no-ignore-hidden-files
 	```
-
-1. Browse to the S3 console at [https://s3.console.aws.amazon.com/s3/home](https://s3.console.aws.amazon.com/s3/home) to check out your newly created application bundle in the 
+	>Note: You will get output similiar to the following. This is normal and correct:
+	
+	>*To deploy with this revision, run: aws deploy create-deployment --application-name koelApp --s3-location bucket=runningamazonec2workloadsatscale-codedeploybucket-11wv3ggxcni40,key=koelApp.zip,bundleType=zip,eTag=870b90e201bdca3a06d1b2c6cfcaab11-2 --deployment-group-name <deployment-group-name> --deployment-config-name <deployment-config-name> --description <description>*
+	
+1. Find the value of **codeDeployBucket** in the CloudFormation stack outputs. This is the bucket you're using for your code deployments. Browse to the [S3 console](https://s3.console.aws.amazon.com/s3/home) and click on the bucket. You should see your application deployment bundle inside the bucket.
 
 1. Create the CodeDeploy deployment group by editing **deployment-group.json** and replacing the value of **%codeDeployServiceRole%** from the CloudFormation stack outputs, and then running:
 
@@ -316,10 +343,10 @@ You will now deploy your application to the EC2 instances launched by the auto s
 	
 	aws deploy create-deployment-group --cli-input-json file://deployment-group.json
 	```
-	
-	>Notice this time CodeDeploy is deploying to the auto scaling group instead of filtering by EC2 instance tags.
 
-1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/applications](https://console.aws.amazon.com/codesuite/codedeploy/applications) to check out your newly created deployment group.
+1. Browse to the [AWS CodeDeploy console](https://console.aws.amazon.com/codesuite/codedeploy/applications), make sure your region is selected in the upper right-hand corner dropdown, click on your application, and then click on the **Deployment groups** tab to check out your newly created deployment group.
+
+	>Note: The CodeDeploy console will not default to your current region. Please make sure to click on **Select a Region** in the upper right-hand corner and select your region in the dropdown.
 
 1. Finally, deploy the application by editing **deployment.json** and replacing the value of **%codeDeployBucket%** from the CloudFormation stack outputs, and then running:
 
@@ -327,10 +354,26 @@ You will now deploy your application to the EC2 instances launched by the auto s
 	aws deploy create-deployment --cli-input-json file://deployment.json
 	```
 	
-1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/deployments](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment.
+	>Note the **deploymentId**.
+	
+1. Browse to the [AWS CodeDeploy console](https://console.aws.amazon.com/codesuite/codedeploy/deployments), make sure your region is selected in the upper right-hand corner dropdown, and then click on your **Deployment ID** to monitor your application deployment. At the bottom under **Deployment lifecycle events**, you will see a list of the EC2 instances belonging to your auto scaling group. To monitor the individual deployments to each of the instances, click on **View Events**.
 
-1. Once the deploy is complete, browse to the public DNS of the load balancer (e.g. http://runningAmazonEC2WorkloadsAtScale-115077449.us-east-1.elb.amazonaws.com) and login. The default email address is **admin@example.com** and default password is **admin-pass**.
+1. As the application is successfully deployed to the instances, they will pass their target group health checks and be marked as healthy in the target group status. Browse to the [Target Group console](https://console.aws.amazon.com/ec2/v2/home#TargetGroups:sort=targetGroupName), select your target group, and click on the **Targets** tab.
 
+1. Once one or more instances are marked with a status of healthy, browse to the [Load Balancer console](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName), select your load balancer, and copy the **DNS name** (URL) of your load balancer (e.g. http://runningAmazonEC2WorkloadsAtScale-115077449.us-east-1.elb.amazonaws.com).
+
+1. Open your web browser and browse to the **DNS name** (URL). You will see the login page to your application. Login in with the default email address '**admin@example.com**' and default password '**admin-pass**'.
+
+1. The EFS file system is mounted on every instance at **/var/www/media** in order to create a shared location for your audio files. Mount the EFS file system in the Cloud9 environment and copy some mp3s to the file system. Replace **%fileSystem** with the value from the CloudFormation stack outputs:
+
+	```
+	mkdir -p ~/environment/media
+
+	sudo mount -t efs %fileSystem%:/ ~/environment/media
+	
+	sudo cp -av *.mp3 /var/www/media
+	```	
+	
 1. Find some mp3s on the interwebs and upload them to **/var/www/media** on the dev instance. *****THIS STEP NEEDS MORE DETAILS*****
 
 1. Under **MANAGE**, click on **Settings**. Click on **Scan**. Play around and enjoy some tunes on your music service.
@@ -341,7 +384,7 @@ Scaling based on a schedule allows you to scale your application in response to 
 
 To configure your Auto Scaling group to scale based on a schedule, you create a scheduled action, which tells Amazon EC2 Auto Scaling to perform a scaling action at specified times. To create a scheduled scaling action, you specify the start time when the scaling action should take effect, and the new minimum, maximum, and desired sizes for the scaling action. At the specified time, Amazon EC2 Auto Scaling updates the group with the values for minimum, maximum, and desired size specified by the scaling action.
 
-1. Edit **asg-scheduled-scaling.json** and replace **%StartTime%** with a UTC timestamp in about 10 minutes from now. For example: **2018-11-11T12:20:00**. You can use this [site](https://timestampgenerator.com/) to help. Look for the **Atom** format. Save the file.
+1. Edit **asg-scheduled-scaling.json** and replace **%StartTime%** with a UTC timestamp of a few minutes in the future. For example: **2018-11-11T12:20:00**. You can use this [site](https://timestampgenerator.com/) to help. Look for the **Atom** format. Save the file.
 
 1. Schedule the scaling action:
 
@@ -349,9 +392,9 @@ To configure your Auto Scaling group to scale based on a schedule, you create a 
 	aws autoscaling put-scheduled-update-group-action --cli-input-json file://asg-scheduled-scaling.json
 	```
 
-1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created scheduled scaling action. Wait for the time you chose, and take a look at the instances it has deployed.
+1. Browse to the [Auto Scaling console](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created scheduled scaling action. Wait for the time you chose, and take a look at the instances it has deployed.
 
-1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/deployments](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment. Notice that CodeDeploy will automatically deploy the application to new instances launched by the auto scaling group.
+1. Browse to the [AWS CodeDeploy console](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment. Notice that CodeDeploy will automatically deploy the application to new instances launched by the auto scaling group.
 
 ### 12\. Dynamically scale the application with an automatic scaling policy
 
@@ -365,7 +408,7 @@ Target tracking scaling policies simplify how you configure dynamic scaling. You
 	aws autoscaling put-scaling-policy --cli-input-json file://asg-automatic-scaling.json
 	```
 
-1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created scaling policy. Notice that in a few minutes, it will begin to scale down the instances that were previously scaled up by the scheduled scaling action in order to satisfy the target tracking metrics defined in the automatic scaling policy.
+1. Browse to the [Auto Scaling console](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created scaling policy. Notice that in a few minutes, it will begin to scale down the instances that were previously scaled up by the scheduled scaling action in order to satisfy the target tracking metrics defined in the automatic scaling policy.
 
 ### 13\. Stress the application with AWS Systems Manager to trigger the automatic scaling policy
 
@@ -379,13 +422,13 @@ You will now emulate CPU stress on the instances in your automatic scaling group
 	aws ssm send-command --cli-input-json file://ssm-stress.json
 	```
 
-1. Browse to the AWS Systems Manager console at [https://console.aws.amazon.com/systems-manager/run-command/executing-commands](https://console.aws.amazon.com/systems-manager/run-command/executing-commands) to monitor the status of your run  commands.
+1. Browse to the [AWS Systems Manager console](https://console.aws.amazon.com/systems-manager/run-command/executing-commands) to monitor the status of your run  commands.
 
-1. Browse to the CloudWatch console at [https://console.aws.amazon.com/cloudwatch/home?#alarm:alarmFilter=ANY](https://console.aws.amazon.com/cloudwatch/home?#alarm:alarmFilter=ANY) to monitor the status of your alarms configured by the target tracking policy.
+1. Browse to the [CloudWatch console](https://console.aws.amazon.com/cloudwatch/home?#alarm:alarmFilter=ANY) to monitor the status of your alarms configured by the target tracking policy.
 
-1. Browse to the Auto Scaling console at [https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and watch the activity history. Notice that in a few minutes, it will begin to scale up the instances according to the CloudWatch alarms the target tracking policy has configured for you.
+1. Browse to the [Auto Scaling console](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and watch the activity history. Notice that in a few minutes, it will begin to scale up the instances according to the CloudWatch alarms the target tracking policy has configured for you.
 
-1. Browse to the AWS CodeDeploy console at [https://console.aws.amazon.com/codesuite/codedeploy/deployments](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment. Notice that CodeDeploy will automatically deploy the application to new instances launched by the auto scaling group.
+1. Browse to the [AWS CodeDeploy console](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment. Notice that CodeDeploy will automatically deploy the application to new instances launched by the auto scaling group.
 
 * * *
 
@@ -398,6 +441,8 @@ Congratulations on completing the workshop...*or at least giving it a good go*! 
 
 	```
 	aws autoscaling delete-auto-scaling-group --auto-scaling-group-name runningAmazonEC2WorkloadsAtScale --force-delete
+	
+	aws deploy delete-application --application-name koelApp
 	
 	aws deploy delete-deployment-group --application-name koelApp --deployment-group-name koelDepGroup
 	

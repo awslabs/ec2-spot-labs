@@ -7,6 +7,6 @@
   "HealthCheckPath": "/",
   "HealthCheckIntervalSeconds": 30,
   "HealthCheckTimeoutSeconds": 5,
-  "HealthyThresholdCount": 5,
-  "UnhealthyThresholdCount": 2
+  "HealthyThresholdCount": 2,
+  "UnhealthyThresholdCount": 5
 }

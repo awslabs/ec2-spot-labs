@@ -9,5 +9,5 @@
       "bundleType": "zip"
     }
   },
-  "deploymentConfigName": "CodeDeployDefault.OneAtATime"
+  "deploymentConfigName": "CodeDeployDefault.AllAtOnce"
 }
