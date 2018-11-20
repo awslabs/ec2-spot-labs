@@ -12,9 +12,11 @@
 1. While the workshop provides step by step instructions, please do take a moment to look around and understand what is happening at each step. The workshop is meant as a getting started guide, but you will learn the most by digesting each of the steps and thinking about how they would apply in your own environment. You might even consider experimenting with the steps to challenge yourself.
 
 1. This workshop has been designed to run in any public AWS Region that supports AWS Cloud9. See [Regional Products and Services](https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/) for details.
+
 	>**Note: If you are attending an event, please run in the region suggested by the facilitators of the workshop.**
 
 1. Make sure you have a valid Amazon EC2 key pair and record the key pair name in the region you are operating in before you begin. To see your key pairs, open the Amazon EC2 console, then click Key Pairs in the navigation pane.
+	
 	>Note: If you don't have an Amazon EC2 key pair, you must create the key pair in the same region where you are creating the stack. For information about creating a key pair, see [Getting an SSH Key Pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair) in the Amazon EC2 User Guide for Linux Instances. 
 
 1. During this workshop, you will install software (and dependencies) on the Amazon EC2 instances launched in your account. The software packages and/or sources you will install will be from the [Amazon Linux 2](https://aws.amazon.com/amazon-linux-2/) distribution as well as from third party repositories and sites. Please review and decide your comfort with installing these before continuing.
@@ -371,12 +373,14 @@ You will now deploy your application to the EC2 instances launched by the auto s
 
 	sudo mount -t efs %fileSystem%:/ ~/environment/media
 	
-	sudo cp -av *.mp3 /var/www/media
+	sudo chown ec2-user. ~/environment/media
+	
+	sudo cp -av *.mp3 ~/environment/media
 	```	
 	
-1. Find some mp3s on the interwebs and upload them to **/var/www/media** on the dev instance. *****THIS STEP NEEDS MORE DETAILS*****
+1. Back in Koel, under **MANAGE**, click on **Settings**. Click on **Scan**. Play around and enjoy some audio on your music service.
 
-1. Under **MANAGE**, click on **Settings**. Click on **Scan**. Play around and enjoy some tunes on your music service.
+1. [Optional] If you'd like, find a few more mp3s on the web and upload them to the directory **~/environment/media** in the Cloud9 environment. After uploading them, be sure to re-scan the media directory.
 
 ### 11\. Scale the application with a scheduled scaling action
 
@@ -391,6 +395,8 @@ To configure your Auto Scaling group to scale based on a schedule, you create a 
 	```
 	aws autoscaling put-scheduled-update-group-action --cli-input-json file://asg-scheduled-scaling.json
 	```
+	
+	>Note: This command will not return any output if it is successful.
 
 1. Browse to the [Auto Scaling console](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created scheduled scaling action. Wait for the time you chose, and take a look at the instances it has deployed.
 
@@ -442,20 +448,24 @@ Congratulations on completing the workshop...*or at least giving it a good go*! 
 	```
 	aws autoscaling delete-auto-scaling-group --auto-scaling-group-name runningAmazonEC2WorkloadsAtScale --force-delete
 	
-	aws deploy delete-application --application-name koelApp
-	
 	aws deploy delete-deployment-group --application-name koelApp --deployment-group-name koelDepGroup
 	
-	aws elbv2 delete-listener --listener-arn arn:aws:elasticloadbalancing:us-east-1:753949184587:listener/app/runningAmazonEC2WorkloadsAtScale/e9195569f4f71e10/9b8ad643e5f4c638
+	aws deploy delete-application --application-name koelApp
 	
-	aws elbv2 delete-target-group --target-group-arn arn:aws:elasticloadbalancing:us-east-1:753949184587:targetgroup/runningAmazonEC2WorkloadsAtScale/fa7b793f6f36344c
+	aws s3 rm s3://%codeDeployBucket% --recursive
+		
+	aws elbv2 delete-load-balancer --load-balancer-arn %loadBalancerArn%
 	
-	aws elbv2 delete-load-balancer --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:753949184587:loadbalancer/app/runningAmazonEC2WorkloadsAtScale/e9195569f4f71e10
+	aws elbv2 delete-target-group --target-group-arn %targetGroupArn%
 	
 	aws rds delete-db-instance --db-instance-identifier runningAmazonEC2WorkloadsAtScale --skip-final-snapshot
 	```
-
-3. Delete the CloudFormation stack launched at the beginning of the workshop.
+	
+1. Finally, delete the CloudFormation stack itself.
+	
+	```
+	aws cloudformation delete-stack --stack-name %stackName%
+	```
 
 ## Appendix  
 
