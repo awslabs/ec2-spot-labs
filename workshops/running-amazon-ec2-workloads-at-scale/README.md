@@ -2,12 +2,20 @@
   
   
 ## Overview
-[UPDATE] This workshop is designed to get you familiar with...[/UPDATE]
+This workshop is designed to get you familiar with the concepts and best practices for requesting Amazon EC2 capacity at scale in a cost optimized architecture.
+
+## Setting
+
+You've been tasked with deploying a next-generation music streaming service. You do extensive research, and determine that [Koel](https://koel.phanan.net/)- a personal music streaming server (*that works)- is the perfect fit.
+
+Requirements include the ability to automatically deploy and scale the service for both predictable and dynamic traffic patterns, all without breaking the budget.
+
+In order to optimize performance and cost, you will use Amazon EC2 Auto Scaling to [scale across multiple instance types and purchase options](https://aws.amazon.com/blogs/aws/new-ec2-auto-scaling-groups-with-multiple-instance-types-purchase-options/).
 
 ## Requirements, notes, and legal
 1. To complete this workshop, have access to an AWS account with administrative permissions. An IAM user with administrator access (**arn:aws:iam::aws:policy/AdministratorAccess**) will do nicely.
 
-1. This workshop is self-paced. The instructions will primarily be given using the [AWS Command Line Interface (CLI)](https://aws.amazon.com/cli) - this way the guide will not become outdated as changes or updates are made to the AWS Management Console. However, most steps in the workshop can be done in the AWS Management Console directly. Feel free to use whatever is comfortable for you.
+1. __This workshop is self-paced__. The instructions will primarily be given using the [AWS Command Line Interface (CLI)](https://aws.amazon.com/cli) - this way the guide will not become outdated as changes or updates are made to the AWS Management Console. However, most steps in the workshop can be done in the AWS Management Console directly. Feel free to use whatever is comfortable for you.
 
 1. While the workshop provides step by step instructions, please do take a moment to look around and understand what is happening at each step. The workshop is meant as a getting started guide, but you will learn the most by digesting each of the steps and thinking about how they would apply in your own environment. You might even consider experimenting with the steps to challenge yourself.
 
@@ -22,7 +30,7 @@
 1. During this workshop, you will install software (and dependencies) on the Amazon EC2 instances launched in your account. The software packages and/or sources you will install will be from the [Amazon Linux 2](https://aws.amazon.com/amazon-linux-2/) distribution as well as from third party repositories and sites. Please review and decide your comfort with installing these before continuing.
 
 
-## [NEED TO UPDATE] Architecture
+## Architecture
 
 In this workshop, you will deploy the following:
 
@@ -36,12 +44,14 @@ In this workshop, you will deploy the following:
 * An Amazon EC2 launch template
 * An Amazon RDS database instance
 * An Application Load Balancer (ALB) with a listener and target group
-
+* An Amazon EC2 Auto Scaling group, with:
+	* A scheduled scaling action
+	* A dynamic scaling policy
+* An AWS Systems Manager run command to emulate load on the service
 
 Here is a diagram of the resulting architecture:
 
 ![](images/interruption_notices_arch_diagram.jpg)
-## [/NEED TO UPDATE]
 
 ## Let's Begin!  
 
@@ -360,6 +370,8 @@ You will now deploy your application to the EC2 instances launched by the auto s
 	
 1. Browse to the [AWS CodeDeploy console](https://console.aws.amazon.com/codesuite/codedeploy/deployments), make sure your region is selected in the upper right-hand corner dropdown, and then click on your **Deployment ID** to monitor your application deployment. At the bottom under **Deployment lifecycle events**, you will see a list of the EC2 instances belonging to your auto scaling group. To monitor the individual deployments to each of the instances, click on **View Events**.
 
+	>Note: The CodeDeploy console will not default to your current region. Please make sure to click on **Select a Region** in the upper right-hand corner and select your region in the dropdown.
+
 1. As the application is successfully deployed to the instances, they will pass their target group health checks and be marked as healthy in the target group status. Browse to the [Target Group console](https://console.aws.amazon.com/ec2/v2/home#TargetGroups:sort=targetGroupName), select your target group, and click on the **Targets** tab.
 
 1. Once one or more instances are marked with a status of healthy, browse to the [Load Balancer console](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:sort=loadBalancerName), select your load balancer, and copy the **DNS name** (URL) of your load balancer (e.g. http://runningAmazonEC2WorkloadsAtScale-115077449.us-east-1.elb.amazonaws.com).
@@ -398,9 +410,11 @@ To configure your Auto Scaling group to scale based on a schedule, you create a 
 	
 	>Note: This command will not return any output if it is successful.
 
-1. Browse to the [Auto Scaling console](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created scheduled scaling action. Wait for the time you chose, and take a look at the instances it has deployed.
+1. Browse to the [Auto Scaling console](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created scheduled scaling action in the **Scheduled Actions** tab. Wait for the time you chose, and take a look at the instances it has deployed by checking the **Activity History** tab and the **Instances** tab.
 
-1. Browse to the [AWS CodeDeploy console](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment. Notice that CodeDeploy will automatically deploy the application to new instances launched by the auto scaling group.
+1. Browse to the [AWS CodeDeploy console](https://console.aws.amazon.com/codesuite/codedeploy/deployments), make sure your region is selected in the upper right-hand corner dropdown, and notice that CodeDeploy will automatically deploy the application to new instances launched by the auto scaling group.
+
+	>Note: The CodeDeploy console will not default to your current region. Please make sure to click on **Select a Region** in the upper right-hand corner and select your region in the dropdown.
 
 ### 12\. Dynamically scale the application with an automatic scaling policy
 
@@ -414,7 +428,7 @@ Target tracking scaling policies simplify how you configure dynamic scaling. You
 	aws autoscaling put-scaling-policy --cli-input-json file://asg-automatic-scaling.json
 	```
 
-1. Browse to the [Auto Scaling console](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created scaling policy. Notice that in a few minutes, it will begin to scale down the instances that were previously scaled up by the scheduled scaling action in order to satisfy the target tracking metrics defined in the automatic scaling policy.
+1. Browse to the [Auto Scaling console](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and check out your newly created scaling policy in the **Scaling Policies** tab. Notice that in a few minutes, it will begin to scale down the instances that were previously scaled up by the scheduled scaling action in order to satisfy the target tracking metrics defined in the automatic scaling policy (check the **Activity History** tab and the **Instances** tab).
 
 ### 13\. Stress the application with AWS Systems Manager to trigger the automatic scaling policy
 
@@ -432,9 +446,11 @@ You will now emulate CPU stress on the instances in your automatic scaling group
 
 1. Browse to the [CloudWatch console](https://console.aws.amazon.com/cloudwatch/home?#alarm:alarmFilter=ANY) to monitor the status of your alarms configured by the target tracking policy.
 
-1. Browse to the [Auto Scaling console](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and watch the activity history. Notice that in a few minutes, it will begin to scale up the instances according to the CloudWatch alarms the target tracking policy has configured for you.
+1. Browse to the [Auto Scaling console](https://console.aws.amazon.com/ec2/autoscaling/home#AutoScalingGroups:view=details) and watch the activity history. Notice that in a few minutes, it will begin to scale up the instances according to the CloudWatch alarms the target tracking policy has configured for you (check the **Activity History** tab and the **Instances** tab).
 
-1. Browse to the [AWS CodeDeploy console](https://console.aws.amazon.com/codesuite/codedeploy/deployments) to monitor your application deployment. Notice that CodeDeploy will automatically deploy the application to new instances launched by the auto scaling group.
+1. Browse to the [AWS CodeDeploy console](https://console.aws.amazon.com/codesuite/codedeploy/deployments), make sure your region is selected in the upper right-hand corner dropdown, and notice that CodeDeploy will automatically deploy the application to new instances launched by the auto scaling group.
+
+	>Note: The CodeDeploy console will not default to your current region. Please make sure to click on **Select a Region** in the upper right-hand corner and select your region in the dropdown.
 
 * * *
 
@@ -459,13 +475,19 @@ Congratulations on completing the workshop...*or at least giving it a good go*! 
 	aws elbv2 delete-target-group --target-group-arn %targetGroupArn%
 	
 	aws rds delete-db-instance --db-instance-identifier runningAmazonEC2WorkloadsAtScale --skip-final-snapshot
+	
+	aws ec2 delete-launch-template --launch-template-name runningAmazonEC2WorkloadsAtScale
 	```
 	
 1. Finally, delete the CloudFormation stack itself.
 	
 	```
-	aws cloudformation delete-stack --stack-name %stackName%
+	aws cloudformation delete-stack --stack-name runningAmazonEC2WorkloadsAtScale
 	```
+
+## Acknolwedgements
+
+A big thank you to [Phan An](https://www.phanan.net/) for creating and maintaining [Koel](https://koel.phanan.net/) and for allowing Koel to be used in this workshop.
 
 ## Appendix  
 
