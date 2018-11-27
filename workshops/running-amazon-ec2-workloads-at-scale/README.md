@@ -51,7 +51,7 @@ In this workshop, you will deploy the following:
 
 Here is a diagram of the resulting architecture:
 
-![](images/interruption_notices_arch_diagram.jpg)
+![](runnin_amazon_ec2_workloads_at_scale.jpg)
 
 ## Let's Begin!  
 
@@ -492,15 +492,14 @@ A big thank you to [Phan An](https://www.phanan.net/) for creating and maintaini
 ## Appendix  
 
 ### Resources
-Here are additional resources to learn more about Amazon EC2 Spot Instances.  
+Here are additional resources to learn more:
 
+* [Amazon EC2 Auto Scaling](https://aws.amazon.com/ec2/autoscaling/)
 * [Amazon EC2 Spot Instances](https://aws.amazon.com/ec2/spot)
 * [Amazon EC2 Spot Labs GitHub Repo](https://github.com/awslabs/ec2-spot-labs/)
-* [Amazon EC2 Spot Fleet Jenkins Plugin](https://wiki.jenkins.io/display/JENKINS/Amazon+EC2+Fleet+Plugin)
 
 ### Articles
+* [Amazon EC2 Auto Scaling Groups With Multiple Instance Types & Purchase Options](https://aws.amazon.com/blogs/aws/new-ec2-auto-scaling-groups-with-multiple-instance-types-purchase-options/)
 * [Taking Advantage of Amazon EC2 Spot Instance Interruption Notices](https://aws.amazon.com/blogs/compute/taking-advantage-of-amazon-ec2-spot-instance-interruption-notices/)
-* [Powering Your Amazon ECS Clusters with Spot Fleet](https://aws.amazon.com/blogs/compute/powering-your-amazon-ecs-clusters-with-spot-fleet/)
-
 
 
