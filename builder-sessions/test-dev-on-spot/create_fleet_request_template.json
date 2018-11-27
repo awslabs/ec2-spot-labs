@@ -1,0 +1,70 @@
+{
+  "Type": "maintain",
+  "ReplaceUnhealthyInstances": true,
+  "ExcessCapacityTerminationPolicy": "termination",
+  "TargetCapacitySpecification": {
+    "TotalTargetCapacity": 4,
+    "OnDemandTargetCapacity": 0,
+    "SpotTargetCapacity": 4,
+    "DefaultTargetCapacityType": "spot"
+  },
+  "SpotOptions": {
+    "AllocationStrategy": "lowestPrice",
+    "InstanceInterruptionBehavior": "terminate",
+    "InstancePoolsToUseCount": 2
+  },
+  "OnDemandOptions": {
+    "AllocationStrategy": "prioritized"
+  },
+  "LaunchTemplateConfigs": [
+    {
+      "LaunchTemplateSpecification": {
+        "LaunchTemplateId": "%LAUNCH_TEMPLATE_ID%",
+        "Version": "1"
+      },
+      "Overrides": [
+        {
+          "InstanceType": "t2.small",
+          "WeightedCapacity": 1.0,
+          "SubnetId": "%SUBNET_ID_1%"
+        },
+        {
+          "InstanceType": "t2.small",
+          "WeightedCapacity": 1.0,
+          "SubnetId": "%SUBNET_ID_2%"
+        },
+        {
+          "InstanceType": "c5.large",
+          "WeightedCapacity": 2.0,
+          "SubnetId": "%SUBNET_ID_1%"
+        },
+        {
+          "InstanceType": "c5.large",
+          "WeightedCapacity": 2.0,
+          "SubnetId": "%SUBNET_ID_2%"
+        },
+        {
+          "InstanceType": "c5.xlarge",
+          "WeightedCapacity": 4.0,
+          "SubnetId": "%SUBNET_ID_1%"
+        },
+        {
+           "InstanceType": "c5.xlarge",
+           "WeightedCapacity": 4.0,
+           "SubnetId": "%SUBNET_ID_2%"
+        }
+      ]
+    }
+  ],
+  "TagSpecifications": [
+    {
+      "ResourceType": "fleet",
+      "Tags": [
+        {
+          "Key": "ReInvent-EC2SpotTestDev",
+          "Value": "TestFleet"
+        }
+      ]
+    }
+  ]
+}
