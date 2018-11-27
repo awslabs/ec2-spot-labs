@@ -47,6 +47,7 @@ In this workshop, you will deploy the following:
 * An Amazon EC2 Auto Scaling group, with:
 	* A scheduled scaling action
 	* A dynamic scaling policy
+* An AWS CodeDeploy application deployment
 * An AWS Systems Manager run command to emulate load on the service
 
 Here is a diagram of the resulting architecture:
