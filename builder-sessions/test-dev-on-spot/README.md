@@ -395,11 +395,6 @@ Validate that your new test script performed it's expected interruption handling
 ## Clean up all resources
 
 ```
-aws cloudformation delete-stack \
-  --stack-name ReInvent-EC2SpotTestDev-EventRule
-```
-
-```
 aws ec2 delete-fleets \
   --terminate-instances \
   --fleet-ids $fleet_id
