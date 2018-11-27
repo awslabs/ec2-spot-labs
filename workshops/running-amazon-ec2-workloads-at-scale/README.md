@@ -51,7 +51,7 @@ In this workshop, you will deploy the following:
 
 Here is a diagram of the resulting architecture:
 
-![](runnin_amazon_ec2_workloads_at_scale.jpg)
+![](architecture.jpg)
 
 ## Let's Begin!  
 
