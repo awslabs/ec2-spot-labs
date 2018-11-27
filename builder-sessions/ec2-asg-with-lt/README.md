@@ -10,7 +10,7 @@ Below are the simple steps to launch an apache-webserver on AWS EC2 using ASG an
 
 2. Create an AutoScaling Group (replace subnetId)
 
-     `aws autoscaling create-auto-scaling-group --auto-scaling-group-name ReInvent2018ASG --min-size 1 --max-size 1 --launch-template '{"LaunchTemplateName":"ReInvent2018LT", "Version": "$Default"}'' --vpc-zone-identifier subnet-031cc93d`
+     `aws autoscaling create-auto-scaling-group --auto-scaling-group-name ReInvent2018ASG --min-size 1 --max-size 1 --launch-template '{"LaunchTemplateName":"ReInvent2018LT", "Version": "$Default"}' --vpc-zone-identifier subnet-031cc93d`
 
 ## Update ASG by updating LaunchTemplate
 

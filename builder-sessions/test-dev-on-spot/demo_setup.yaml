@@ -1,0 +1,454 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: '
+  Creates an HTTP web server, publicly accessible at "webServerPublicDns" included in the output of
+  this template.
+
+  Creates prerequisites for launching an EC2 Fleet to test this web server. These prerequisites are:
+    1. a VPC
+    2. two subnets
+    3. a Launch Template, which includes the EC2 UserData that triggers the test script
+
+  Create a CloudWatch alarm that will trigger on 1 minute of 10% errors from the test script
+  publishing results as CloudWatch metrics.'
+Metadata:
+  Authors:
+    Description: Bryan Shultz
+  License:
+    Description: 'Copyright 2017 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+Parameters:
+  keyName:
+    Default: ReInvent-EC2SpotTestDev-KeyPair
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair
+    AllowedPattern : .+
+  sourceCidr:
+    Default: 0.0.0.0/0
+    Description: Optional - CIDR/IP range for instance ssh access - defaults to 0.0.0.0/0
+    Type: String
+    AllowedPattern : .+
+  webServerInstanceType:
+    Default: m5.large
+    Description: Instance type that the web server will run on
+    Type: String
+    AllowedPattern : .+
+  webServerAmi:
+    Default: ami-0ff8a91507f77f867
+    Description: AMI to be used by the web server
+    Type: String
+    AllowedPattern : .+
+  testFleetAmi:
+    Default: ami-0ff8a91507f77f867
+    Description: AMI to be used by the test Fleet
+    Type: String
+    AllowedPattern : .+
+  s3Bucket:
+    Description: S3 bucket containing the scripts for running and testing the web server
+    Type: String
+    AllowedPattern : .+
+  webServerScript:
+    Default: simple_server.py
+    Description: Name of the web server startup script
+    Type: String
+    AllowedPattern : .+
+  testFleetScript:
+    Default: test_simple_server.py
+    Description: Name of the testing script. The region and testing target DNS will be passed as arguments to this script
+    Type: String
+    AllowedPattern : .+
+Outputs:
+  webServerPublicDns:
+    Description: Public DNS for the web server
+    Value:
+      Fn::GetAtt:
+      - webServerInstance
+      - PublicDnsName
+  testFleetLaunchTemplate:
+    Description: Launch Template to be used for the testing Fleet
+    Value:
+      Ref: testFleetLaunchTemplate
+  testFleetSubnet1:
+    Description: Subnet 1 where the test fleet can launch
+    Value:
+      Ref: testFleetSubnet1
+  testFleetSubnet2:
+    Description: Subnet 2 where the test fleet can launch
+    Value:
+      Ref: testFleetSubnet2
+  cloudWatchAlarm:
+    Description: CloudWatch alarm that triggers on errors from the web server being tested
+    Value:
+      Ref: cloudWatchAlarm
+Mappings:
+  cidrMappings:
+    subnet1:
+      cidr: 10.0.1.0/24
+    subnet2:
+      cidr: 10.0.2.0/24
+    vpc:
+      cidr: 10.0.0.0/16
+Resources:
+  webServerInternetGateway:
+    Type: AWS::EC2::InternetGateway
+  webServerVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:
+        Fn::FindInMap:
+        - cidrMappings
+        - vpc
+        - cidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+  webServerVpcGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    DependsOn:
+    - webServerInternetGateway
+    - webServerVpc
+    Properties:
+      InternetGatewayId:
+        Ref: webServerInternetGateway
+      VpcId:
+        Ref: webServerVpc
+  webServerRouteTable:
+    Type: AWS::EC2::RouteTable
+    DependsOn:
+    - webServerVpc
+    Properties:
+      VpcId:
+        Ref: webServerVpc
+  webServerRoute:
+    Type: AWS::EC2::Route
+    DependsOn:
+    - webServerInternetGateway
+    - webServerRouteTable
+    - webServerVpcGatewayAttachment
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: webServerInternetGateway
+      RouteTableId:
+        Ref: webServerRouteTable
+  webServerSubnet:
+    Type: AWS::EC2::Subnet
+    DependsOn:
+    - webServerVpcGatewayAttachment
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - cidrMappings
+        - subnet1
+        - cidr
+      MapPublicIpOnLaunch: true
+      VpcId:
+        Ref: webServerVpc
+  webServerSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn:
+    - webServerRouteTable
+    - webServerSubnet
+    Properties:
+      RouteTableId:
+        Ref: webServerRouteTable
+      SubnetId:
+        Ref: webServerSubnet
+  webServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn:
+    - webServerVpc
+    Properties:
+      GroupDescription: Enable HTTP access via port 80
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp:
+          Ref: sourceCidr
+      VpcId:
+        Ref: webServerVpc
+  webServerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Policies:
+      - PolicyName: ReInvent-EC2SpotTestDev-S3FromWebServerPolicy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action: 's3:*'
+              Resource:
+              - Fn::Sub: 'arn:aws:s3:::${s3Bucket}/*'
+  webServerInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    DependsOn:
+    - webServerRole
+    Properties:
+      Roles:
+      - Ref: webServerRole
+  webServerInstance:
+    Type: AWS::EC2::Instance
+    DependsOn:
+    - webServerSubnetRouteTableAssociation
+    - webServerSecurityGroup
+    Properties:
+      ImageId:
+        Ref: webServerAmi
+      InstanceType:
+        Ref: webServerInstanceType
+      SubnetId:
+        Ref: webServerSubnet
+      SecurityGroupIds:
+      - Ref: webServerSecurityGroup
+      IamInstanceProfile:
+        Ref: webServerInstanceProfile
+      KeyName:
+        Ref: keyName
+      Tags:
+      - Key: ReInvent-EC2SpotTestDev
+        Value: WebServerInstance
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - "\n"
+          - - "#!/bin/bash -xe"
+            - "yum -y update"
+            - "yum install -y aws-cli"
+            - Fn::Sub: "aws s3 cp s3://${s3Bucket}/${webServerScript} ."
+            - Fn::Sub: "chmod +x ${webServerScript}"
+            - Fn::Sub: "nohup ./${webServerScript} &"
+  testFleetInternetGateway:
+    Type: AWS::EC2::InternetGateway
+  testFleetVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:
+        Fn::FindInMap:
+        - cidrMappings
+        - vpc
+        - cidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+  testFleetVpcGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    DependsOn:
+    - testFleetInternetGateway
+    - testFleetVpc
+    Properties:
+      InternetGatewayId:
+        Ref: testFleetInternetGateway
+      VpcId:
+        Ref: testFleetVpc
+  testFleetRouteTable:
+    Type: AWS::EC2::RouteTable
+    DependsOn:
+    - testFleetVpc
+    Properties:
+      VpcId:
+        Ref: testFleetVpc
+  testFleetRoute:
+    Type: AWS::EC2::Route
+    DependsOn:
+    - testFleetInternetGateway
+    - testFleetRouteTable
+    - testFleetVpcGatewayAttachment
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: testFleetInternetGateway
+      RouteTableId:
+        Ref: testFleetRouteTable
+  testFleetSubnet1:
+    Type: AWS::EC2::Subnet
+    DependsOn:
+    - testFleetVpcGatewayAttachment
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - cidrMappings
+        - subnet1
+        - cidr
+      MapPublicIpOnLaunch: true
+      VpcId:
+        Ref: testFleetVpc
+  testFleetSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn:
+    - testFleetRouteTable
+    - testFleetSubnet1
+    Properties:
+      RouteTableId:
+        Ref: testFleetRouteTable
+      SubnetId:
+        Ref: testFleetSubnet1
+  testFleetSubnet2:
+    Type: AWS::EC2::Subnet
+    DependsOn:
+    - testFleetVpcGatewayAttachment
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - cidrMappings
+        - subnet2
+        - cidr
+      MapPublicIpOnLaunch: true
+      VpcId:
+        Ref: testFleetVpc
+  testFleetSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn:
+    - testFleetRouteTable
+    - testFleetSubnet2
+    Properties:
+      RouteTableId:
+        Ref: testFleetRouteTable
+      SubnetId:
+        Ref: testFleetSubnet2
+  testFleetSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn:
+    - testFleetVpc
+    Properties:
+      GroupDescription: Enable SSH access
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp:
+          Ref: sourceCidr
+      VpcId:
+        Ref: testFleetVpc
+  testFleetRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Policies:
+      - PolicyName: ReInvent-EC2SpotTestDev-PutMetricsPolicy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action: cloudwatch:PutMetricData
+              Resource: '*'
+      - PolicyName: ReInvent-EC2SpotTestDev-S3FromTestFleetPolicy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action: 's3:*'
+              Resource:
+              - Fn::Sub: 'arn:aws:s3:::${s3Bucket}/*'
+  testFleetInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    DependsOn:
+    - testFleetRole
+    Properties:
+      Roles:
+      - Ref: testFleetRole
+  testFleetLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    DependsOn:
+    - testFleetInstanceProfile
+    - testFleetSecurityGroup
+    Properties:
+      LaunchTemplateName: ReInvent-EC2SpotTestDev-TestFleetTemplate
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Name:
+            Ref: testFleetInstanceProfile
+        ImageId:
+          Ref: testFleetAmi
+        KeyName:
+          Ref: keyName
+        SecurityGroupIds:
+        - Ref: testFleetSecurityGroup
+        TagSpecifications:
+        - ResourceType: instance
+          Tags:
+          - Key: ReInvent-EC2SpotTestDev
+            Value: TestFleet
+        UserData:
+          Fn::Base64:
+            Fn::Join:
+            - "\n"
+            - - "#!/bin/bash -xe"
+              - "yum -y update"
+              - "yum -y install aws-cli"
+              - "yum -y install python27-boto3.noarch"
+              - Fn::Sub: "aws s3 cp s3://${s3Bucket}/${testFleetScript} ."
+              - Fn::Sub: "chmod +x ${testFleetScript}"
+              - Fn::Join:
+                - " "
+                - - Fn::Sub: "nohup ./${testFleetScript} ${AWS::Region}"
+                  - Fn::GetAtt:
+                    - webServerInstance
+                    - PublicDnsName
+                  - "&"
+  alarmSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: ReInvent-EC2SpotTestDev-TestFailureAlarmTopic
+  cloudWatchAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+    - alarmSnsTopic
+    Properties:
+      AlarmName: ReInvent-EC2SpotTestDev-Alarm
+      MetricName: Error
+      Namespace: ReInvent-EC2SpotTestDev-Metrics
+      ActionsEnabled: true
+      AlarmActions:
+      - Ref: alarmSnsTopic
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      Threshold: 0.1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Period: 60
+      Statistic: Average
+      TreatMissingData: ignore
+...
