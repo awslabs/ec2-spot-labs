@@ -85,10 +85,14 @@ Outputs:
     Description: Subnet 2 where the test fleet can launch
     Value:
       Ref: testFleetSubnet2
-  cloudWatchAlarm:
-    Description: CloudWatch alarm that triggers on errors from the web server being tested
+  testFailureAlarmSnsTopic:
+    Description: SNS topic that is published to when test failures exceed 10%
     Value:
-      Ref: cloudWatchAlarm
+      Ref: testFailureAlarmSnsTopic
+  spotInterruptionSnsTopic:
+    Description: SNS topic that is published to when Spot Instances are interrupted
+    Value:
+      Ref: spotInterruptionSnsTopic
 Mappings:
   cidrMappings:
     subnet1:
@@ -429,21 +433,21 @@ Resources:
                     - webServerInstance
                     - PublicDnsName
                   - "&"
-  alarmSnsTopic:
+  testFailureAlarmSnsTopic:
     Type: AWS::SNS::Topic
     Properties:
       TopicName: ReInvent-EC2SpotTestDev-TestFailureAlarmTopic
-  cloudWatchAlarm:
+  testFailureCloudWatchAlarm:
     Type: AWS::CloudWatch::Alarm
     DependsOn:
-    - alarmSnsTopic
+    - testFailureAlarmSnsTopic
     Properties:
       AlarmName: ReInvent-EC2SpotTestDev-Alarm
       MetricName: Error
       Namespace: ReInvent-EC2SpotTestDev-Metrics
       ActionsEnabled: true
       AlarmActions:
-      - Ref: alarmSnsTopic
+      - Ref: testFailureAlarmSnsTopic
       DatapointsToAlarm: 1
       EvaluationPeriods: 1
       Threshold: 0.1
@@ -451,4 +455,48 @@ Resources:
       Period: 60
       Statistic: Average
       TreatMissingData: ignore
+  spotInterruptionSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: ReInvent-EC2SpotTestDev-SpotInterruptionTopic
+  spotInterruptionSnsTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    DependsOn:
+    - spotInterruptionSnsTopic
+    Properties:
+      PolicyDocument:
+        Id:
+          Fn::GetAtt:
+          - spotInterruptionSnsTopic
+          - TopicName
+        Statement:
+        - Action: sns:Publish
+          Effect: Allow
+          Principal:
+            Service:
+            - events.amazonaws.com
+          Resource:
+            Ref: spotInterruptionSnsTopic
+        Version: '2012-10-17'
+      Topics:
+      - Ref: spotInterruptionSnsTopic
+  spotInterruptionEventRule:
+    Type: AWS::Events::Rule
+    DependsOn:
+    - spotInterruptionSnsTopicPolicy
+    Properties:
+      Description: Events rule for EC2 Spot Instance Interruption Notices
+      EventPattern:
+        detail-type:
+        - EC2 Spot Instance Interruption Warning
+        source:
+        - aws.ec2
+      State: ENABLED
+      Targets:
+      - Arn:
+          Ref: spotInterruptionSnsTopic
+        Id:
+          Fn::GetAtt:
+          - spotInterruptionSnsTopic
+          - TopicName
 ...
