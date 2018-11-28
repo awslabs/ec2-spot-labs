@@ -1,30 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  MyVpc:
-    Type: AWS::EC2::VPC
-    Properties:
-       CidrBlock: 10.0.0.0/16
-       EnableDnsHostnames: true
-       EnableDnsSupport: true
-  MySubnet:
-    Type: AWS::EC2::Subnet
-    Properties:
-      CidrBlock: 10.0.0.0/24
-      MapPublicIpOnLaunch: true
-      VpcId:
-        !Ref MyVpc
-  MySecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: TestASGWithLTAndCFN
-      GroupDescription: TestASGWithLTAndCFN
-      VpcId: !Ref MyVpc
-      SecurityGroupIngress:
-        - IpProtocol: -1
-          CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          CidrIp: 0.0.0.0/0
   ASGLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties:
@@ -35,13 +10,13 @@ Resources:
         UserData:
           IyEvYmluL2Jhc2gKeXVtIHVwZGF0ZSAteQphbWF6b24tbGludXgtZXh0cmFzIGluc3RhbGwgLXkgbGFtcC1tYXJpYWRiMTAuMi1waHA3LjIgcGhwNy4yCnl1bSBpbnN0YWxsIC15IGh0dHBkIG1hcmlhZGItc2VydmVyCnN5c3RlbWN0bCBzdGFydCBodHRwZApzeXN0ZW1jdGwgZW5hYmxlIGh0dHBkCnVzZXJtb2QgLWEgLUcgYXBhY2hlIGVjMi11c2VyCmNob3duIC1SIGVjMi11c2VyOmFwYWNoZSAvdmFyL3d3dwpjaG1vZCAyNzc1IC92YXIvd3d3CmZpbmQgL3Zhci93d3cgLXR5cGUgZCAtZXhlYyBjaG1vZCAyNzc1IHt9IFw7CmZpbmQgL3Zhci93d3cgLXR5cGUgZiAtZXhlYyBjaG1vZCAwNjY0IHt9IFw7CmVjaG8gIjw/cGhwIHBocGluZm8oKTsgPz4iID4gL3Zhci93d3cvaHRtbC9waHBpbmZvLnBocA==
         SecurityGroupIds:
-          - !Ref MySecurityGroup
+          - sg-025def4d7af8d3d23
         CreditSpecification:
           CpuCredits: standard  
   CFNLTAsg:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      AutoScalingGroupName: Reinvent2018CFNASGNov27-1
+      AutoScalingGroupName: Reinvent2018CFNASGNov27-2
       LaunchTemplate:
         LaunchTemplateId:
           !Ref ASGLaunchTemplate
@@ -50,4 +25,4 @@ Resources:
       MaxSize: 1
       MinSize: 1
       VPCZoneIdentifier:
-        - !Ref MySubnet
+        - subnet-031cc93d
