@@ -1,21 +1,15 @@
 {
   "Type": "maintain",
+  "InstanceInterruptionBehavior": "terminate",
   "ReplaceUnhealthyInstances": true,
-  "ExcessCapacityTerminationPolicy": "termination",
-  "TargetCapacitySpecification": {
-    "TotalTargetCapacity": 4,
-    "OnDemandTargetCapacity": 0,
-    "SpotTargetCapacity": 4,
-    "DefaultTargetCapacityType": "spot"
-  },
-  "SpotOptions": {
-    "AllocationStrategy": "lowestPrice",
-    "InstanceInterruptionBehavior": "terminate",
-    "InstancePoolsToUseCount": 2
-  },
-  "OnDemandOptions": {
-    "AllocationStrategy": "prioritized"
-  },
+  "ExcessCapacityTerminationPolicy": "default",
+  "TargetCapacity": 4,
+  "OnDemandTargetCapacity": 0,
+  "AllocationStrategy": "lowestPrice",
+  "InstancePoolsToUseCount": 2,
+  "SpotPrice": "1.0",
+  "OnDemandAllocationStrategy": "prioritized",
+  "IamFleetRole": "%IAM_ROLE_ARN%",
   "LaunchTemplateConfigs": [
     {
       "LaunchTemplateSpecification": {
@@ -52,17 +46,6 @@
            "InstanceType": "c5.xlarge",
            "WeightedCapacity": 4.0,
            "SubnetId": "%SUBNET_ID_2%"
-        }
-      ]
-    }
-  ],
-  "TagSpecifications": [
-    {
-      "ResourceType": "fleet",
-      "Tags": [
-        {
-          "Key": "ReInvent-EC2SpotTestDev",
-          "Value": "TestFleet"
         }
       ]
     }
