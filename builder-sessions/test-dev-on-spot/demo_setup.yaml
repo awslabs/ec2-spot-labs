@@ -9,8 +9,7 @@ Description: '
     2. two subnets
     3. a Launch Template, which includes the EC2 UserData that triggers the test script
 
-  Create a CloudWatch alarm that will trigger on 1 minute of 10% errors from the test script
-  publishing results as CloudWatch metrics.'
+  Creates an SNS topic that is published to when Spot Instances are interrupted.'
 Metadata:
   Authors:
     Description: Bryan Shultz
@@ -85,10 +84,16 @@ Outputs:
     Description: Subnet 2 where the test fleet can launch
     Value:
       Ref: testFleetSubnet2
-  cloudWatchAlarm:
-    Description: CloudWatch alarm that triggers on errors from the web server being tested
+  spotFleetRoleArn:
+    Description: IAM role required to launch a Spot Fleet
     Value:
-      Ref: cloudWatchAlarm
+      Fn::GetAtt:
+      - spotFleetRole
+      - Arn
+  spotInterruptionSnsTopic:
+    Description: SNS topic that is published to when Spot Instances are interrupted
+    Value:
+      Ref: spotInterruptionSnsTopic
 Mappings:
   cidrMappings:
     subnet1:
@@ -355,7 +360,7 @@ Resources:
           Ref: sourceCidr
       VpcId:
         Ref: testFleetVpc
-  testFleetRole:
+  s3AndCloudWatchFromS3Role:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -386,10 +391,10 @@ Resources:
   testFleetInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     DependsOn:
-    - testFleetRole
+    - s3AndCloudWatchFromS3Role
     Properties:
       Roles:
-      - Ref: testFleetRole
+      - Ref: s3AndCloudWatchFromS3Role
   testFleetLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     DependsOn:
@@ -429,26 +434,62 @@ Resources:
                     - webServerInstance
                     - PublicDnsName
                   - "&"
-  alarmSnsTopic:
+  spotFleetRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - spotfleet.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      ManagedPolicyArns:
+      - "arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole"
+  spotInterruptionSnsTopic:
     Type: AWS::SNS::Topic
     Properties:
-      TopicName: ReInvent-EC2SpotTestDev-TestFailureAlarmTopic
-  cloudWatchAlarm:
-    Type: AWS::CloudWatch::Alarm
+      TopicName: ReInvent-EC2SpotTestDev-SpotInterruptionTopic
+  spotInterruptionSnsTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
     DependsOn:
-    - alarmSnsTopic
+    - spotInterruptionSnsTopic
     Properties:
-      AlarmName: ReInvent-EC2SpotTestDev-Alarm
-      MetricName: Error
-      Namespace: ReInvent-EC2SpotTestDev-Metrics
-      ActionsEnabled: true
-      AlarmActions:
-      - Ref: alarmSnsTopic
-      DatapointsToAlarm: 1
-      EvaluationPeriods: 1
-      Threshold: 0.1
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      Period: 60
-      Statistic: Average
-      TreatMissingData: ignore
+      PolicyDocument:
+        Id:
+          Fn::GetAtt:
+          - spotInterruptionSnsTopic
+          - TopicName
+        Statement:
+        - Action: sns:Publish
+          Effect: Allow
+          Principal:
+            Service:
+            - events.amazonaws.com
+          Resource:
+            Ref: spotInterruptionSnsTopic
+        Version: '2012-10-17'
+      Topics:
+      - Ref: spotInterruptionSnsTopic
+  spotInterruptionEventRule:
+    Type: AWS::Events::Rule
+    DependsOn:
+    - spotInterruptionSnsTopicPolicy
+    Properties:
+      Description: Events rule for EC2 Spot Instance Interruption Notices
+      EventPattern:
+        detail-type:
+        - EC2 Spot Instance Interruption Warning
+        source:
+        - aws.ec2
+      State: ENABLED
+      Targets:
+      - Arn:
+          Ref: spotInterruptionSnsTopic
+        Id:
+          Fn::GetAtt:
+          - spotInterruptionSnsTopic
+          - TopicName
 ...

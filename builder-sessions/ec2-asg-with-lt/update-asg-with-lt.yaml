@@ -3,7 +3,7 @@ Resources:
   ASGLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties:
-      LaunchTemplateName: ReInvent2018CFNLT
+      LaunchTemplateName: ReInvent2018CFNLTNov27-1
       LaunchTemplateData:
         ImageId: ami-0922553b7b0369273
         InstanceType: t2.large
@@ -16,12 +16,12 @@ Resources:
   CFNLTAsg:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      AutoScalingGroupName: Reinvent2018CFNASG
+      AutoScalingGroupName: Reinvent2018CFNASGNov27-2
       LaunchTemplate:
         LaunchTemplateId:
-          Ref: ASGLaunchTemplate
+          !Ref ASGLaunchTemplate
         Version:
-          Fn::GetAtt: [ASGLaunchTemplate, LatestVersionNumber]
+          !GetAtt ASGLaunchTemplate.LatestVersionNumber
       MaxSize: 1
       MinSize: 1
       VPCZoneIdentifier:
