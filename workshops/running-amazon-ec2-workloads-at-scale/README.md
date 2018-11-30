@@ -23,12 +23,7 @@ In order to optimize performance and cost, you will use Amazon EC2 Auto Scaling 
 
 	>**Note: If you are attending an event, please run in the region suggested by the facilitators of the workshop.**
 
-1. Make sure you have a valid Amazon EC2 key pair and record the key pair name in the region you are operating in before you begin. To see your key pairs, open the Amazon EC2 console, then click Key Pairs in the navigation pane.
-	
-	>Note: If you don't have an Amazon EC2 key pair, you must create the key pair in the same region where you are creating the stack. For information about creating a key pair, see [Getting an SSH Key Pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair) in the Amazon EC2 User Guide for Linux Instances. 
-
 1. During this workshop, you will install software (and dependencies) on the Amazon EC2 instances launched in your account. The software packages and/or sources you will install will be from the [Amazon Linux 2](https://aws.amazon.com/amazon-linux-2/) distribution as well as from third party repositories and sites. Please review and decide your comfort with installing these before continuing.
-
 
 ## Architecture
 
@@ -126,6 +121,8 @@ An AWS Cloud9 environment was launched as a part of the CloudFormation stack (yo
 
 1. Find the Cloud9 environment in **Your environments**, and click **Open IDE**.
 
+	>**Note: Please make sure you are using the Cloud9 environment created by the workshop CloudFormation stack!!**
+
 1. Take a moment to get familiar with the Cloud9 environment. You can even take a quick tour of Cloud9 [here](https://docs.aws.amazon.com/cloud9/latest/user-guide/tutorial.html#tutorial-tour-ide) if you'd like.
 
 ### 3\. Update the AWS CLI and install dependencies
@@ -192,19 +189,29 @@ You'll use a launch template to specify configuration parameters for launching i
 	aws ec2 describe-images --owners amazon --filters 'Name=name,Values=amzn2-ami-hvm-2.0.????????-x86_64-gp2' 'Name=state,Values=available' --output json | jq -r '.Images | sort_by(.CreationDate) | last(.[]).ImageId'
 	```
 
-1. Update **%KeyName%** with your ssh key pair name.
-
 1. Update **%UserData%** with the contents of **user-data.base64.txt**.
 
 1. Save the file.
 
-1. Create the launch template from the launch template config you just saved.
+1. Create the launch template from the launch template config you just saved:
 
 	```
 	aws ec2 create-launch-template --launch-template-name runningAmazonEC2WorkloadsAtScale --version-description dev --launch-template-data file://launch-template-data.json
 	```
 	
 1. Browse to the [Launch Templates console](https://console.aws.amazon.com/ec2/v2/home?#LaunchTemplates:sort=launchTemplateId) and check out your newly created launch template.
+
+1. Verify that the contents of the launch template are correct:
+
+	```
+	aws ec2 describe-launch-template-versions  --launch-template-name runningAmazonEC2WorkloadsAtScale
+	```
+
+1. Verify that the contents of the launch template user data are correct:
+
+	```
+	aws ec2 describe-launch-template-versions  --launch-template-name runningAmazonEC2WorkloadsAtScale --output json | jq -r '.LaunchTemplateVersions[].LaunchTemplateData.UserData' | base64 --decode
+	```
 
 ### 6\. Deploy the database with Amazon RDS
 
