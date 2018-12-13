@@ -4,7 +4,6 @@
     "InstanceInterruptionBehavior": "terminate",
     "SingleInstanceType": true
   },
-  "ExcessCapacityTerminationPolicy": "termination",
   "LaunchTemplateConfigs": [
     {
       "LaunchTemplateSpecification": {
@@ -67,9 +66,7 @@
     "TotalTargetCapacity": 20,
     "DefaultTargetCapacityType": "spot"
   },
-  "TerminateInstancesWithExpiration": true,
-  "Type": "maintain",
-  "ReplaceUnhealthyInstances": true,
+  "Type": "instant",
   "TagSpecifications": [
     {
       "ResourceType": "fleet",
