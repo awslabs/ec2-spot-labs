@@ -234,7 +234,7 @@ def handler(event, context):
   instanceAction = event['detail']['instance-action']
   try:
     ec2client = boto3.client('ec2')
-    describeTags = ec2client.describe_tags(Filters=[{'Name': 'resource-id','Values':[instanceId],'Name':'key','Values':['loadBalancerTargetGroup']}])
+    describeTags = ec2client.describe_tags(Filters=[{'Name': 'resource-id','Values':[instanceId]},{'Name':'key','Values':['loadBalancerTargetGroup']}])
   except:
     print("No action being taken. Unable to describe tags for instance id:", instanceId)
     return
