@@ -1,6 +1,6 @@
 {
   "SpotOptions": {
-    "AllocationStrategy": "lowestPrice",
+    "AllocationStrategy": "lowest-price",
     "InstanceInterruptionBehavior": "terminate",
     "SingleInstanceType": true
   },
