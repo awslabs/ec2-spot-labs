@@ -86,11 +86,8 @@ Parameters:
     AllowedValues:
     - c4large
     - c4xlarge
-    - c42xlarge
-    - c44xlarge
-    - c48xlarge
     Default: c4large
-    Description: Enter c4large, c4xlarge, c42xlarge, c44xlarge, c48xlarge. Default is c4large.
+    Description: Enter c4large, c4xlarge. Default is c4large.
     Type: String
   keyName:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the EC2 Instances
@@ -101,6 +98,25 @@ Parameters:
       access
     Type: String
 Resources:
+  alarmCpuHigh:
+    DependsOn:
+    - snsTopic
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+      - Ref: snsTopic
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value:
+          Ref: autoScalingGroup
+      EvaluationPeriods: 2
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Period: 300
+      Statistic: Average
+      Threshold: 75
+    Type: AWS::CloudWatch::Alarm
   attachGateway:
     DependsOn:
     - vpc
@@ -117,14 +133,18 @@ Resources:
     - c4xlarge
     - publicSubnet1
     - publicSubnet2
+    - targetGroup
     Properties:
       DesiredCapacity: 1
+      HealthCheckType: EC2
       LaunchTemplate:
         LaunchTemplateName:
           Ref: instanceType
         Version: 1
       MaxSize: 2
       MinSize: 0
+      TargetGroupARNs:
+      - Ref: targetGroup
       VPCZoneIdentifier:
       - Ref: publicSubnet1
       - Ref: publicSubnet2
@@ -139,63 +159,14 @@ Resources:
       Description: Default Service-Linked Role enables access to AWS Services and Resources
         used or managed by Auto Scaling
     Type: AWS::IAM::ServiceLinkedRole
-  c42xlarge:
-    Properties:
-      LaunchTemplateData:
-        ImageId:
-          Fn::FindInMap:
-          - amazonLinuxAmi
-          - Ref: AWS::Region
-          - AMI
-        InstanceType: c4.2xlarge
-        KeyName:
-          Ref: keyName
-        TagSpecifications:
-        - ResourceType: instance
-          Tags:
-          - Key: Name
-            Value: Demonstration of vertical scaling with EC2 Auto Scaling Groups - EC2 instance
-      LaunchTemplateName: c42xlarge
-    Type: AWS::EC2::LaunchTemplate
-  c44xlarge:
-    Properties:
-      LaunchTemplateData:
-        ImageId:
-          Fn::FindInMap:
-          - amazonLinuxAmi
-          - Ref: AWS::Region
-          - AMI
-        InstanceType: c4.4xlarge
-        KeyName:
-          Ref: keyName
-        TagSpecifications:
-        - ResourceType: instance
-          Tags:
-          - Key: Name
-            Value: Demonstration of vertical scaling with EC2 Auto Scaling Groups - EC2 instance
-      LaunchTemplateName: c44xlarge
-    Type: AWS::EC2::LaunchTemplate
-  c48xlarge:
-    Properties:
-      LaunchTemplateData:
-        ImageId:
-          Fn::FindInMap:
-          - amazonLinuxAmi
-          - Ref: AWS::Region
-          - AMI
-        InstanceType: c4.8xlarge
-        KeyName:
-          Ref: keyName
-        TagSpecifications:
-        - ResourceType: instance
-          Tags:
-          - Key: Name
-            Value: Demonstration of vertical scaling with EC2 Auto Scaling Groups - EC2 instance
-      LaunchTemplateName: c48xlarge
-    Type: AWS::EC2::LaunchTemplate
   c4large:
     Properties:
       LaunchTemplateData:
+        IamInstanceProfile:
+          Arn:
+            Fn::GetAtt:
+            - instanceProfile
+            - Arn
         ImageId:
           Fn::FindInMap:
           - amazonLinuxAmi
@@ -204,16 +175,24 @@ Resources:
         InstanceType: c4.large
         KeyName:
           Ref: keyName
+        SecurityGroupIds:
+        - Ref: instanceSecurityGroup
         TagSpecifications:
         - ResourceType: instance
           Tags:
           - Key: Name
             Value: Demonstration of vertical scaling with EC2 Auto Scaling Groups - EC2 instance
+        UserData: I2Nsb3VkLWNvbmZpZwpyZXBvX3VwZGF0ZTogdHJ1ZQpyZXBvX3VwZ3JhZGU6IGFsbAoKcGFja2FnZXM6CiAgLSBodHRwZAogIC0gY3VybAoKcnVuY21kOgogIC0gWyBzaCwgLWMsICJlY2hvIGhlbGxvIHdvcmxkLiBNeSBpbnN0YW5jZS1pZCBpcyAkKGN1cmwgLXMgaHR0cDovLzE2OS4yNTQuMTY5LjI1NC9sYXRlc3QvbWV0YS1kYXRhL2luc3RhbmNlLWlkKS4gTXkgaW5zdGFuY2UtdHlwZSBpcyAkKGN1cmwgLXMgaHR0cDovLzE2OS4yNTQuMTY5LjI1NC9sYXRlc3QvbWV0YS1kYXRhL2luc3RhbmNlLXR5cGUpLiA+IC92YXIvd3d3L2h0bWwvaW5kZXguaHRtbCIgXQogIC0gWyBzaCwgLWMsICJzeXN0ZW1jdGwgZW5hYmxlIGh0dHBkIiBdCiAgLSBbIHNoLCAtYywgInN5c3RlbWN0bCBzdGFydCBodHRwZCIgXQoKCg==
       LaunchTemplateName: c4large
     Type: AWS::EC2::LaunchTemplate
   c4xlarge:
     Properties:
       LaunchTemplateData:
+        IamInstanceProfile:
+          Arn:
+            Fn::GetAtt:
+            - instanceProfile
+            - Arn
         ImageId:
           Fn::FindInMap:
           - amazonLinuxAmi
@@ -222,11 +201,14 @@ Resources:
         InstanceType: c4.xlarge
         KeyName:
           Ref: keyName
+        SecurityGroupIds:
+        - Ref: instanceSecurityGroup
         TagSpecifications:
         - ResourceType: instance
           Tags:
           - Key: Name
             Value: Demonstration of vertical scaling with EC2 Auto Scaling Groups - EC2 instance
+        UserData: I2Nsb3VkLWNvbmZpZwpyZXBvX3VwZGF0ZTogdHJ1ZQpyZXBvX3VwZ3JhZGU6IGFsbAoKcGFja2FnZXM6CiAgLSBodHRwZAogIC0gY3VybAoKcnVuY21kOgogIC0gWyBzaCwgLWMsICJlY2hvIGhlbGxvIHdvcmxkLiBNeSBpbnN0YW5jZS1pZCBpcyAkKGN1cmwgLXMgaHR0cDovLzE2OS4yNTQuMTY5LjI1NC9sYXRlc3QvbWV0YS1kYXRhL2luc3RhbmNlLWlkKS4gTXkgaW5zdGFuY2UtdHlwZSBpcyAkKGN1cmwgLXMgaHR0cDovLzE2OS4yNTQuMTY5LjI1NC9sYXRlc3QvbWV0YS1kYXRhL2luc3RhbmNlLXR5cGUpLiA+IC92YXIvd3d3L2h0bWwvaW5kZXguaHRtbCIgXQogIC0gWyBzaCwgLWMsICJzeXN0ZW1jdGwgZW5hYmxlIGh0dHBkIiBdCiAgLSBbIHNoLCAtYywgInN5c3RlbWN0bCBzdGFydCBodHRwZCIgXQoKCg==
       LaunchTemplateName: c4xlarge
     Type: AWS::EC2::LaunchTemplate
   ec2FleetServiceLinkedRole:
@@ -323,13 +305,13 @@ Resources:
     - lambdaFunctionRole
     Properties:
       Code:
-        ZipFile: "def handler(event, context):\n  return\n"
+        ZipFile: "import json\ndef handler(event, context):\n  print(\"Received event: \" + json.dumps(event, indent=2))\n  message = event['Records'][0]['Sns']['Message']\n  print(\"From SNS: \" + message)\n  return message\n"
       Handler: index.handler
       Role:
         Fn::GetAtt:
         - lambdaFunctionRole
         - Arn
-      Runtime: python3.6
+      Runtime: python3.7
     Type: AWS::Lambda::Function
   lambdaFunctionPermission:
     Properties:
@@ -548,6 +530,16 @@ Resources:
       VpcId:
         Ref: vpc
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
+  topicSubscription:
+    Properties:
+      Endpoint:
+        Fn::GetAtt:
+        - lambdaFunction
+        - Arn
+      Protocol: lambda
+      TopicArn:
+        Ref: snsTopic
+    Type: AWS::SNS::Subscription
   vpc:
     Properties:
       CidrBlock:
