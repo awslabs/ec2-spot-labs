@@ -43,10 +43,6 @@ Outputs:
   c4xlarge:
     Value:
       Ref: c4xlarge
-  eventRule:
-    Description: Events rule
-    Value:
-      Ref: eventRule
   instanceProfile:
     Description: Instance profile ARN
     Value:
@@ -82,6 +78,14 @@ Outputs:
     Value:
       Ref: vpc
 Parameters:
+  alarmCpuHighThreshold:
+    Default: 75
+    Description: CloudWatch alarm CPU high threshold
+    Type: String
+  alarmCpuLowThreshold:
+    Default: 25
+    Description: CloudWatch alarm CPU low threshold
+    Type: String
   instanceType:
     AllowedValues:
     - c4large
@@ -93,9 +97,7 @@ Parameters:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the EC2 Instances
     Type: AWS::EC2::KeyPair::KeyName
   sourceCidr:
-    Default: 0.0.0.0/0
-    Description: Optional - CIDR/IP range for instance ssh/http access and load balancer http
-      access
+    Description: CIDR/IP range for instance ssh/http access and load balancer http access
     Type: String
 Resources:
   alarmCpuHigh:
@@ -110,12 +112,33 @@ Resources:
       - Name: AutoScalingGroupName
         Value:
           Ref: autoScalingGroup
-      EvaluationPeriods: 2
+      EvaluationPeriods: 1
       MetricName: CPUUtilization
       Namespace: AWS/EC2
       Period: 300
       Statistic: Average
-      Threshold: 75
+      Threshold:
+        Ref: alarmCpuHighThreshold
+    Type: AWS::CloudWatch::Alarm
+  alarmCpuLow:
+    DependsOn:
+    - snsTopic
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+      - Ref: snsTopic
+      ComparisonOperator: LessThanThreshold
+      Dimensions:
+      - Name: AutoScalingGroupName
+        Value:
+          Ref: autoScalingGroup
+      EvaluationPeriods: 1
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Period: 300
+      Statistic: Average
+      Threshold:
+        Ref: alarmCpuLowThreshold
     Type: AWS::CloudWatch::Alarm
   attachGateway:
     DependsOn:
@@ -216,31 +239,6 @@ Resources:
       AWSServiceName: ec2fleet.amazonaws.com
       Description: Default EC2 Fleet Service Linked Role
     Type: AWS::IAM::ServiceLinkedRole
-  eventRule:
-    DependsOn:
-    - snsTopic
-    Properties:
-      Description: Events rule for EC2 Spot Instance Interruption Notices
-      EventPattern:
-        detail-type:
-        - EC2 Spot Instance Interruption Warning
-        source:
-        - aws.ec2
-      State: ENABLED
-      Targets:
-      - Arn:
-          Ref: snsTopic
-        Id:
-          Fn::GetAtt:
-          - snsTopic
-          - TopicName
-      - Arn:
-          Fn::GetAtt:
-          - lambdaFunction
-          - Arn
-        Id:
-          Ref: lambdaFunction
-    Type: AWS::Events::Rule
   instanceProfile:
     DependsOn:
     - instanceRole
@@ -305,7 +303,12 @@ Resources:
     - lambdaFunctionRole
     Properties:
       Code:
-        ZipFile: "import json\ndef handler(event, context):\n  print(\"Received event: \" + json.dumps(event, indent=2))\n  message = event['Records'][0]['Sns']['Message']\n  print(\"From SNS: \" + message)\n  return message\n"
+        ZipFile:
+          Fn::Sub: "import json\nimport boto3\ndef handler(event, context):\n  print(\"Received\
+            \ event: \" + json.dumps(event, indent=2))\n  message = event['Records'][0]['Sns']['Message']\n\
+            \  print(\"From SNS: \" + message)\n  client = boto3.client('cloudformation')\n\
+            \  response = client.update_stack(StackName='${AWS::StackName}',UsePreviousTemplate=True,Parameters=[{'ParameterKey':'instanceType','ParameterValue':'c4xlarge'},{'ParameterKey':'keyName','UsePreviousValue':True},{'ParameterKey':'sourceCidr','UsePreviousValue':True}],Capabilities=['CAPABILITY_IAM'])\n\
+            \  print(response)\n  return response\n"
       Handler: index.handler
       Role:
         Fn::GetAtt:
@@ -320,11 +323,9 @@ Resources:
         Fn::GetAtt:
         - lambdaFunction
         - Arn
-      Principal: events.amazonaws.com
+      Principal: sns.amazonaws.com
       SourceArn:
-        Fn::GetAtt:
-        - eventRule
-        - Arn
+        Ref: snsTopic
     Type: AWS::Lambda::Permission
   lambdaFunctionRole:
     Properties:
@@ -339,6 +340,9 @@ Resources:
         Version: 2012-10-17
       ManagedPolicyArns:
       - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      - arn:aws:iam::aws:policy/AutoScalingFullAccess
+      - arn:aws:iam::aws:policy/AmazonEC2FullAccess
+      - arn:aws:iam::aws:policy/AdministratorAccess
       Path: /
       Policies:
       - PolicyDocument:
@@ -347,6 +351,27 @@ Resources:
             Effect: Allow
             Resource: '*'
           - Action: ec2:DescribeTags
+            Effect: Allow
+            Resource: '*'
+          - Action: ec2:DescribeKeyPairs
+            Effect: Allow
+            Resource: '*'
+          - Action: cloudformation:UpdateStack
+            Effect: Allow
+            Resource: '*'
+          - Action: autoscaling:DescribeAutoScalingGroups
+            Effect: Allow
+            Resource: '*'
+          - Action: autoscaling:UpdateAutoScalingGroup
+            Effect: Allow
+            Resource: '*'
+          - Action: ec2:DescribeLaunchTemplateVersions
+            Effect: Allow
+            Resource: '*'
+          - Action: iam:CreateServiceLinkedRole
+            Effect: Allow
+            Resource: '*'
+          - Action: ec2:*
             Effect: Allow
             Resource: '*'
           Version: '2012-10-17'
@@ -504,10 +529,13 @@ Resources:
           - TopicName
         Statement:
         - Action: sns:Publish
+          Condition:
+            StringEquals:
+              AWS:SourceOwner:
+                Ref: AWS::AccountId
           Effect: Allow
           Principal:
-            Service:
-            - events.amazonaws.com
+            AWS: '*'
           Resource:
             Ref: snsTopic
         Version: '2012-10-17'
