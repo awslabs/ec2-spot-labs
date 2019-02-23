@@ -59,3 +59,13 @@
 1. Clean up
 
 	`aws ec2 delete-fleets --fleet-id $FLEETID --terminate-instances`
+
+# EC2 Fleet of type 'instant'
+
+1. Create EC2 Fleet of type 'instant'
+
+	`aws ec2 create-fleet --cli-input-json file://ec2-fleet-ec2-spot-instant.json`
+
+1. Describe Fleet
+
+	`aws ec2 describe-fleets --fleet-id $FLEETID`

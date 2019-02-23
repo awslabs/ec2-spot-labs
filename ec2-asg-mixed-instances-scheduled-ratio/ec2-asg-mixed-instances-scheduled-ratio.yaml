@@ -1,0 +1,443 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Demonstration of ASG mixed instances scheduled ratio adjustment
+Mappings:
+  CidrMappings:
+    public-subnet-1:
+      CIDR: 10.0.1.0/24
+    public-subnet-2:
+      CIDR: 10.0.2.0/24
+    vpc:
+      CIDR: 10.0.0.0/16
+  amazonLinuxAmi:
+    us-east-1:
+      AMI: ami-035be7bafff33b6b6
+    us-east-2:
+      AMI: ami-04328208f4f0cf1fe
+    us-west-1:
+      AMI: ami-0799ad445b5727125
+    us-west-2:
+      AMI: ami-032509850cf9ee54e
+Metadata:
+  Author:
+    Description: Chad Schmutzer <schmutze@amazon.com>
+  License:
+    Description: 'Copyright 2019 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+Outputs:
+  awsRegionId:
+    Description: The AWS Region ID your template was launched in
+    Value:
+      Ref: AWS::Region
+  instanceProfile:
+    Description: Instance profile ARN
+    Value:
+      Fn::GetAtt:
+      - instanceProfile
+      - Arn
+  lambdaFunction:
+    Description: Lambda function
+    Value:
+      Ref: lambdaFunction
+  publicSubnet1:
+    Description: Public subnet 1
+    Value:
+      Ref: publicSubnet1
+  publicSubnet2:
+    Description: Public subnet 2
+    Value:
+      Ref: publicSubnet2
+  snsTopic:
+    Description: SNS topic ARN
+    Value:
+      Ref: snsTopic
+  vpc:
+    Description: The VPC
+    Value:
+      Ref: vpc
+Parameters:
+  desiredCapacity:
+    Default: 12
+    Description: Desired capacity.
+    Type: Number
+  maxSize:
+    Default: 24
+    Description: Maximum capacity.
+    Type: Number
+  minSize:
+    Default: 12
+    Description: Mininum capacity.
+    Type: Number
+  onDemandAllocationStrategy:
+    AllowedValues:
+    - prioritized
+    Default: prioritized
+    Description: Indicates how to allocate instance types to fulfill On-Demand capacity.
+    Type: String
+  onDemandBaseCapacity:
+    Default: 0
+    Description: The minimum amount of the Auto Scaling group's capacity that must be fulfilled
+      by On-Demand Instances. This base portion is provisioned first as your group scales.
+    Type: Number
+  onDemandPercentageAboveBaseCapacity:
+    Default: 50
+    Description: Controls the percentages of On-Demand Instances and Spot Instances for your
+      additional capacity beyond OnDemandBaseCapacity.
+    Type: Number
+  peakBegin:
+    Default: 7
+    Description: Peak period begin hour (UTC).
+    Type: Number
+  peakEnd:
+    Default: 18
+    Description: Peak period end hour (UTC).
+    Type: Number
+  spotAllocationStrategy:
+    AllowedValues:
+    - lowest-price
+    Default: lowest-price
+    Description: Indicates how to allocate Spot capacity across Spot pools.
+    Type: String
+  spotInstancePools:
+    Default: 4
+    Description: The number of Spot pools to use to allocate your Spot capacity.
+    Type: Number
+Resources:
+  attachGateway:
+    DependsOn:
+    - vpc
+    - internetGateway
+    Properties:
+      InternetGatewayId:
+        Ref: internetGateway
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::VPCGatewayAttachment
+  autoScalingGroup:
+    DependsOn:
+    - launchTemplate
+    - publicSubnet1
+    - publicSubnet2
+    - autoScalingServiceLinkedRole
+    Properties:
+      DesiredCapacity:
+        Ref: desiredCapacity
+      HealthCheckType: EC2
+      MaxSize:
+        Ref: maxSize
+      MinSize:
+        Ref: minSize
+      MixedInstancesPolicy:
+        InstancesDistribution:
+          OnDemandAllocationStrategy:
+            Ref: onDemandAllocationStrategy
+          OnDemandBaseCapacity:
+            Ref: onDemandBaseCapacity
+          OnDemandPercentageAboveBaseCapacity:
+            Ref: onDemandPercentageAboveBaseCapacity
+          SpotAllocationStrategy:
+            Ref: spotAllocationStrategy
+          SpotInstancePools:
+            Ref: spotInstancePools
+        LaunchTemplate:
+          LaunchTemplateSpecification:
+            LaunchTemplateId:
+              Ref: launchTemplate
+            Version: 1
+          Overrides:
+          - InstanceType: c3.large
+          - InstanceType: c4.large
+          - InstanceType: c5.large
+          - InstanceType: m3.large
+          - InstanceType: m4.large
+          - InstanceType: m5.large
+          - InstanceType: r3.large
+          - InstanceType: r4.large
+          - InstanceType: r5.large
+      VPCZoneIdentifier:
+      - Ref: publicSubnet1
+      - Ref: publicSubnet2
+    Type: AWS::AutoScaling::AutoScalingGroup
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MaxBatchSize: 1
+        MinInstancesInService: 1
+  autoScalingServiceLinkedRole:
+    Properties:
+      AWSServiceName: autoscaling.amazonaws.com
+      Description: Default Service-Linked Role enables access to AWS Services and Resources
+        used or managed by Auto Scaling
+    Type: AWS::IAM::ServiceLinkedRole
+  ec2FleetServiceLinkedRole:
+    Properties:
+      AWSServiceName: ec2fleet.amazonaws.com
+      Description: Default EC2 Fleet Service Linked Role
+    Type: AWS::IAM::ServiceLinkedRole
+  instanceProfile:
+    DependsOn:
+    - instanceRole
+    Properties:
+      Path: /
+      Roles:
+      - Ref: instanceRole
+    Type: AWS::IAM::InstanceProfile
+  instanceRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      Path: /
+    Type: AWS::IAM::Role
+  internetGateway:
+    DependsOn:
+    - vpc
+    Type: AWS::EC2::InternetGateway
+  lambdaFunction:
+    DependsOn:
+    - lambdaFunctionRole
+    Properties:
+      Code:
+        ZipFile:
+          Fn::Sub: "import json\nimport boto3\ndef handler(event, context):\n  print(\"Received\
+            \ event: \" + json.dumps(event, indent=2))\n  message = event['Records'][0]['Sns']['Message']\n\
+            \  print(\"From SNS: \" + message)\n  client = boto3.client('cloudformation')\n\
+            \  response = client.update_stack(StackName='${AWS::StackName}',UsePreviousTemplate=True,Parameters=[{'ParameterKey':'instanceType','ParameterValue':'c4xlarge'},{'ParameterKey':'keyName','UsePreviousValue':True},{'ParameterKey':'sourceCidr','UsePreviousValue':True}],Capabilities=['CAPABILITY_IAM'])\n\
+            \  print(response)\n  return response\n"
+      Handler: index.handler
+      Role:
+        Fn::GetAtt:
+        - lambdaFunctionRole
+        - Arn
+      Runtime: python3.7
+    Type: AWS::Lambda::Function
+  lambdaFunctionPermission:
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+        - lambdaFunction
+        - Arn
+      Principal: sns.amazonaws.com
+      SourceArn:
+        Ref: snsTopic
+    Type: AWS::Lambda::Permission
+  lambdaFunctionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action: ec2:DescribeTags
+            Effect: Allow
+            Resource: '*'
+          - Action: cloudformation:UpdateStack
+            Effect: Allow
+            Resource: '*'
+          - Action: autoscaling:DescribeAutoScalingGroups
+            Effect: Allow
+            Resource: '*'
+          - Action: autoscaling:UpdateAutoScalingGroup
+            Effect: Allow
+            Resource: '*'
+          - Action: ec2:DescribeLaunchTemplateVersions
+            Effect: Allow
+            Resource: '*'
+          - Action: iam:CreateServiceLinkedRole
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - lambdaFunctionRole
+    Type: AWS::IAM::Role
+  launchTemplate:
+    Properties:
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn:
+            Fn::GetAtt:
+            - instanceProfile
+            - Arn
+        ImageId:
+          Fn::FindInMap:
+          - amazonLinuxAmi
+          - Ref: AWS::Region
+          - AMI
+        TagSpecifications:
+        - ResourceType: instance
+          Tags:
+          - Key: Name
+            Value:
+              Ref: AWS::StackName
+    Type: AWS::EC2::LaunchTemplate
+  publicRoute:
+    DependsOn:
+    - publicRouteTable
+    - internetGateway
+    - attachGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: internetGateway
+      RouteTableId:
+        Ref: publicRouteTable
+    Type: AWS::EC2::Route
+  publicRouteTable:
+    DependsOn:
+    - vpc
+    - attachGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::RouteTable
+  publicSubnet1:
+    DependsOn: attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - public-subnet-1
+        - CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet1RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet1
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet1
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  publicSubnet2:
+    DependsOn: attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - public-subnet-2
+        - CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet2RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet2
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet2
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  snsTopic:
+    Properties:
+      DisplayName:
+        Ref: AWS::StackName
+    Type: AWS::SNS::Topic
+  snsTopicPolicy:
+    DependsOn:
+    - snsTopic
+    Properties:
+      PolicyDocument:
+        Id:
+          Fn::GetAtt:
+          - snsTopic
+          - TopicName
+        Statement:
+        - Action: sns:Publish
+          Condition:
+            StringEquals:
+              AWS:SourceOwner:
+                Ref: AWS::AccountId
+          Effect: Allow
+          Principal:
+            AWS: '*'
+          Resource:
+            Ref: snsTopic
+        Version: '2012-10-17'
+      Topics:
+      - Ref: snsTopic
+    Type: AWS::SNS::TopicPolicy
+  topicSubscription:
+    Properties:
+      Endpoint:
+        Fn::GetAtt:
+        - lambdaFunction
+        - Arn
+      Protocol: lambda
+      TopicArn:
+        Ref: snsTopic
+    Type: AWS::SNS::Subscription
+  vpc:
+    Properties:
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpc
+        - CIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+    Type: AWS::EC2::VPC
+...
