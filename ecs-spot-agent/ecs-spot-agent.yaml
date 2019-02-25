@@ -1,0 +1,88 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Spot Instances Auto-Deregister from ECS Cluster'
+
+Parameters:
+
+  ecsClusterName:
+    Type: String
+    Default: default
+    Description: Target ECS Cluster Name.
+
+  ecsSpotAgentImage:
+    Type: String
+    Default: mats16/ecs-spot-agent:latest
+    Description: If you need to use other image, please change this parameter.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "ECS Configuration"
+        Parameters:
+          - ecsClusterName
+          - ecsSpotAgentImage
+
+Resources:
+
+  LogGroup: 
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/ecs/${AWS::StackName}"
+      RetentionInDays: 7
+
+  ecsTaskRole:
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "ecs-tasks.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies: 
+        - 
+          PolicyName: "DeregisterContainerInstance"
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement: 
+              - 
+                Effect: "Allow"
+                Action: "ecs:DeregisterContainerInstance"
+                Resource: arn:aws:ecs:*:*:cluster/*"
+
+  ecsTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${AWS::StackName}
+      TaskRoleArn: !Ref "ecsTaskRole"
+      RequiresCompatibilities: ["EC2"]
+      NetworkMode: "host"
+      ContainerDefinitions: 
+        -
+          Name: "ecs-spot-agent"
+          Image: !Ref "ecsSpotAgentImage"
+          Cpu: "10"
+          Memory: "30"
+          Essential: "true"
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-group: !Ref "LogGroup"
+              awslogs-stream-prefix: !Ref "ecsClusterName"
+
+  ecsService: 
+    Type: AWS::ECS::Service
+    Properties: 
+      Cluster: !Ref ecsClusterName
+      LaunchType: "EC2"
+      SchedulingStrategy: "DAEMON"
+      TaskDefinition: !Ref ecsTaskDefinition
+
