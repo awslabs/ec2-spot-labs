@@ -62,7 +62,7 @@ Resources:
               def deregister(self, instance_id):
                   container_instance_arn = None  # default
                   cluster_arns = self.get_cluster_arns()
-                  logger.info('Get all ecs clusters)
+                  logger.info('Get all ecs clusters')
 
                   for cluster_arn in cluster_arns:
                       res = self.cl.list_container_instances(
