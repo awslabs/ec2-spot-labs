@@ -1,0 +1,314 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Running Elastic Inference - workshop template
+
+Mappings:
+  CidrMappings:
+    public-subnet:
+      CIDR: 10.0.1.0/24
+    vpc:
+      CIDR: 10.0.0.0/16
+
+Metadata:
+  Author:
+    Description: Chakravarthy Nagarajan <chakravn@amazon.com>
+  License:
+    Description: >-
+      Copyright 2019 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not
+      use this file except in compliance with the License. A copy of the License
+      is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed
+      on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+      express or implied. See the License for the specific language governing
+      permissions and limitations under the License.
+
+Outputs:
+  awsRegionId:
+    Description: The AWS Region ID your template was launched in
+    Value:
+      Ref: 'AWS::Region'
+
+  publicSubnet:
+    Description: Public subnet
+    Value:
+      Ref: publicSubnet
+
+  snsTopic:
+    Description: SNS topic ARN
+    Value:
+      Ref: snsTopic
+
+  vpc:
+    Description: The VPC
+    Value:
+      Ref: vpc
+
+  vpcEndpoint:
+    Description: VPC Endpoint for EI accelerator
+    Value:
+      Ref: vpcEndpoint
+
+  eventRule:
+    Description: Events rule
+    Value:
+      Ref: eventRule
+
+  snsTopic:
+    Description: SNS topic ARN
+    Value:
+      Ref: snsTopic
+
+  instanceSecurityGroup:
+    Description: Instance security group
+    Value:
+      Ref: instanceSecurityGroup
+
+  eventRule:
+    Description: Events rule
+    Value:
+      Ref: eventRule
+
+  instanceProfile:
+    Description: Instance profile ARN
+    Value:
+      Fn::GetAtt:
+      - instanceProfile
+      - Arn
+
+  instanceRole:
+    Description: Instance Role
+    Value:
+      Ref: instanceRole
+
+Parameters:
+  sourceCidr:
+    Default: 0.0.0.0/0
+    Description: Optional - CIDR/IP range for instance ssh/http access access
+    Type: String
+
+Resources:
+  attachGateway:
+    DependsOn:
+      - vpc
+      - internetGateway
+    Properties:
+      InternetGatewayId:
+        Ref: internetGateway
+      VpcId:
+        Ref: vpc
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+
+  ec2FleetServiceLinkedRole:
+    Properties:
+      AWSServiceName: ec2fleet.amazonaws.com
+      Description: Default EC2 Fleet Service Linked Role
+    Type: 'AWS::IAM::ServiceLinkedRole'
+
+  eventRule:
+    DependsOn:
+    - snsTopic
+    Properties:
+      Description: Events rule for EC2 Spot Instance Interruption Notices
+      EventPattern:
+        detail-type:
+        - EC2 Spot Instance Interruption Warning
+        source:
+        - aws.ec2
+      State: ENABLED
+      Targets:
+      - Arn:
+          Ref: snsTopic
+        Id:
+          Fn::GetAtt:
+          - snsTopic
+          - TopicName
+    Type: AWS::Events::Rule
+
+  instanceRole:
+    Description: Instance Role for EI
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      RoleName: "EI-Spot"
+    Type: "AWS::IAM::Role"
+
+  instancePolicy:
+    Description: "Policy for Elastic Inference"
+    Properties:
+      ManagedPolicyName: "ec2-role-trust-policy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action:
+              - 'elastic-inference:Connect'
+              - 'iam:List*'
+              - 'iam:Get*'
+              - 'ec2:Describe*'
+              - 'ec2:Get*'
+            Resource: "*"
+      Roles:
+        - Ref: "instanceRole"
+    Type: "AWS::IAM::ManagedPolicy"
+
+  instanceProfile:
+    Properties:
+      Path: /
+      Roles:
+        - Ref: "instanceRole"
+      InstanceProfileName: "EI-Spot"
+    Type: "AWS::IAM::InstanceProfile"
+
+  instanceSecurityGroup:
+    DependsOn:
+      - vpc
+    Properties:
+      GroupDescription: Allow ssh (22)
+      SecurityGroupIngress:
+        - CidrIp:
+            Ref: sourceCidr
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+        - CidrIp:
+            Ref: sourceCidr
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId:
+        Ref: vpc
+    Type: 'AWS::EC2::SecurityGroup'
+
+  vpcEndpoint:
+    DependsOn:
+      - vpc
+      - publicSubnet
+      - instanceSecurityGroup
+    Properties:
+      VpcId: !Ref vpc
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.elastic-inference.runtime'
+      VpcEndpointType: 'Interface'
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - Ref: publicSubnet
+      SecurityGroupIds:
+        - Ref: instanceSecurityGroup
+    Type: AWS::EC2::VPCEndpoint
+
+  internetGateway:
+    DependsOn:
+      - vpc
+    Type: 'AWS::EC2::InternetGateway'
+
+  publicSubnet:
+    DependsOn: attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - public-subnet
+        - CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: Elastic Inference with EC2 Spot - public subnet
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+
+  publicRoute:
+    DependsOn:
+      - publicRouteTable
+      - internetGateway
+      - attachGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: internetGateway
+      RouteTableId:
+        Ref: publicRouteTable
+    Type: 'AWS::EC2::Route'
+
+  publicRouteTable:
+    DependsOn:
+      - vpc
+      - attachGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: Elastic Inference with EC2 Spot - public route table
+      VpcId:
+        Ref: vpc
+    Type: 'AWS::EC2::RouteTable'
+
+  publicSubnet1RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet
+    Type: AWS::EC2::SubnetRouteTableAssociation
+
+  snsTopic:
+    Properties:
+      DisplayName: SNS Topic for EC2 Spot Instance Interruption Notices
+    Type: AWS::SNS::Topic
+
+  snsTopicPolicy:
+    DependsOn:
+    - snsTopic
+    Properties:
+      PolicyDocument:
+        Id:
+          Fn::GetAtt:
+          - snsTopic
+          - TopicName
+        Statement:
+        - Action: sns:Publish
+          Effect: Allow
+          Principal:
+            Service:
+            - events.amazonaws.com
+          Resource:
+            Ref: snsTopic
+        Version: '2012-10-17'
+      Topics:
+      - Ref: snsTopic
+    Type: AWS::SNS::TopicPolicy
+
+  vpc:
+    Properties:
+      CidrBlock:
+        'Fn::FindInMap':
+          - CidrMappings
+          - vpc
+          - CIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: Elastic Inference with EC2 Spot - workshop template
+    Type: 'AWS::EC2::VPC'
