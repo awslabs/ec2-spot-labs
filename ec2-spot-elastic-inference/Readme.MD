@@ -34,7 +34,7 @@ Here is a diagram of the resulting architecture:
 To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets, as well as various supporting resources including IAM policies and roles, security groups, and a VPC endpoint for you to run the steps for the workshop in.
 
 **To create the stack**
-1.	You can view and download the CloudFormation temlpate from GitHub [here](https://github.com/chakravn/ec2-spot-labs/blob/master/ec2-spot-elastic-inference/EI_Spot_CFN.yaml)
+1.	You can view and download the CloudFormation temlpate from GitHub [here](https://github.com/awslabs/ec2-spot-labs/blob/master/ec2-spot-elastic-inference/EI_Spot_CFN.yaml)
 2.	Take a moment to review the CloudFormation template so you understand the resources it will be creating.
 3.	Browse to the [AWS CloudFormation console](https://console.aws.amazon.com/cloudformation).
 Note: Make sure you are in the appropriate AWS Region 
