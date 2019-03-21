@@ -1,0 +1,34 @@
+{
+  "LaunchTemplateData": {
+    "EbsOptimized": true,
+    "IamInstanceProfile": {
+      "Arn": "%instanceProfile%"
+    },
+    "ImageId": "ami-001f9c1ca57fbc7a2",
+    "InstanceType": "c5.xlarge",
+    "KeyName": "%key-name%",
+    "Monitoring": {
+      "Enabled": true
+    },
+    "ElasticInferenceAccelerators": [
+      {
+        "Type": "eia1.medium"
+      }
+    ],
+    "SecurityGroupIds": [
+      "%instanceSecurityGroup%"
+    ],
+    "TagSpecifications": [
+      {
+        "ResourceType": "instance",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "EI-with-Spot"
+          }
+        ]
+      }
+    ],
+    "UserData": ""
+  }
+}

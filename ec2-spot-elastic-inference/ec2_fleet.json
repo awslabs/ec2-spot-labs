@@ -1,0 +1,48 @@
+{
+  "SpotOptions": {
+    "AllocationStrategy": "diversified",
+    "InstanceInterruptionBehavior": "terminate"
+  },
+  "LaunchTemplateConfigs": [
+    {
+      "LaunchTemplateSpecification": {
+        "LaunchTemplateName": "EI_spot",
+        "Version": "1"
+      },
+      "Overrides": [
+        {
+          "InstanceType": "r4.xlarge",
+          "SubnetId": "%publicSubnet%"
+        },
+        {
+          "InstanceType": "c5.xlarge",
+          "SubnetId": "%publicSubnet%"
+        },
+        {
+          "InstanceType": "m5.xlarge",
+          "SubnetId": "%publicSubnet%"
+        }
+      ]
+    }
+  ],
+  "TargetCapacitySpecification": {
+    "TotalTargetCapacity": 1,
+    "OnDemandTargetCapacity": 0,
+    "SpotTargetCapacity": 1,
+    "DefaultTargetCapacityType": "spot"
+  },
+  "TerminateInstancesWithExpiration": true,
+  "Type": "maintain",
+  "ReplaceUnhealthyInstances": true,
+  "TagSpecifications": [
+    {
+      "ResourceType": "fleet",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "EI-Spot EC2 Fleet"
+        }
+      ]
+    }
+  ]
+}
