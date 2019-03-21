@@ -2,7 +2,7 @@
   "LaunchTemplateName": "ec2-fleet",
   "VersionDescription": "Demo Launch Template for EC2 Fleet",
   "LaunchTemplateData": {
-    "ImageId": "ami-009d6802948d06e52",
+    "ImageId": "ami-02da3a138888ced85",
     "TagSpecifications": [
       {
         "ResourceType": "instance",

@@ -1,30 +1,43 @@
 LT demo
 
-1. aws --profile worker ec2 run-instances --image-id ami-035be7bafff33b6b6 --region us-east-1 --subnet-id subnet-0fc4d2543f3dcc255 --security-group-ids sg-08953bf52a9d4a160 --instance-type c3.large --key-name schmutze@amazon-ec2
+1. aws ec2 run-instances --image-id ami-035be7bafff33b6b6 --region us-east-1 --subnet-id subnet-0fc4d2543f3dcc255 --security-group-ids sg-08953bf52a9d4a160 --instance-type c3.large --key-name schmutze@amazon-ec2
 
-2. Show IAM user and permissions
+2. show instance in console, no tag
 
-3. aws --profile worker ec2 run-instances --launch-template LaunchTemplateName=worker-lt
+3. story of users with restricted permissions, difficult parameters, and enforcing best practices
 
-4. show console
+4. aws --profile worker ec2 run-instances --image-id ami-035be7bafff33b6b6 --region us-east-1 --subnet-id subnet-0fc4d2543f3dcc255 --security-group-ids sg-08953bf52a9d4a160 --instance-type c3.large --key-name schmutze@amazon-ec2
+
+5. create LT in console with above parameters
+
+6. Show IAM user and permissions
+
+7. aws --profile worker ec2 run-instances --launch-template LaunchTemplateName=worker-lt
+
+8. show console
+
 
 
 EC2 Fleet demo
 
-1. Show LT
+1. Show LT (open ec2-fleet-launch-template.json)
 
-2. Show ec2-fleet-ec2-spot-instant.json
+2. aws ec2 create-launch-template --cli-input-json file://ec2-fleet-launch-template.json
 
-3. aws ec2 create-fleet --cli-input-json file://ec2-fleet-ec2-spot-instant.json
+3. Show ec2 fleet config (open ec2-fleet-ec2-spot-instant.json)
+
+4. aws ec2 create-fleet --cli-input-json file://ec2-fleet-ec2-spot-instant.json
 
 4. aws ec2 describe-fleets --fleet-id $FLEETID
 
 5. show console
 
 
+
+
 ASG demo
 
-1. Show asg.json
+1. Show ASG config (open asg.json)
 
 2. aws autoscaling create-auto-scaling-group --cli-input-json file://asg.json
 
