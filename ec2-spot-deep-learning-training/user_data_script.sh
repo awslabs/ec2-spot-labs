@@ -1,5 +1,5 @@
 #!/bin/bash
-# Get instance ID 
+# Get instance ID, Instance AZ, Volume ID and Volume AZ 
 INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 INSTANCE_AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
 AWS_REGION=us-west-2
@@ -7,8 +7,10 @@ AWS_REGION=us-west-2
 VOLUME_ID=$(aws ec2 describe-volumes --region $AWS_REGION --filter "Name=tag:Name,Values=DL-datasets-checkpoints" --query "Volumes[].VolumeId" --output text)
 VOLUME_AZ=$(aws ec2 describe-volumes --region $AWS_REGION --filter "Name=tag:Name,Values=DL-datasets-checkpoints" --query "Volumes[].AvailabilityZone" --output text)
 
+# Proceed if Volume Id is not null or unset
 if [ $VOLUME_ID ]; then
-
+		# Check if the Volume AZ and the instance AZ are same or different.
+		# If they are different, create a snapshot and then create a new volume in the instance's AZ.
 		if [ $VOLUME_AZ != $INSTANCE_AZ ]; then
 				SNAPSHOT_ID=$(aws ec2 create-snapshot \
 						--region $AWS_REGION \
@@ -29,7 +31,7 @@ if [ $VOLUME_ID ]; then
 						--query VolumeId --output text)
 				aws ec2 wait volume-available --region $AWS_REGION --volume-id $VOLUME_ID
 		fi
-
+		# Attach volume to instance
 		aws ec2 attach-volume \
 			--region $AWS_REGION --volume-id $VOLUME_ID \
 			--instance-id $INSTANCE_ID --device /dev/sdf
@@ -42,9 +44,9 @@ if [ $VOLUME_ID ]; then
 		cd /home/ubuntu/
 
 		# Get training code
-		git clone https://github.com/shashankprasanna/ec2-spot-deep-learning-training.git
-		chown -R ubuntu: ec2-spot-deep-learning-training
-		cd ec2-spot-deep-learning-training/
+		git clone https://github.com/awslabs/ec2-spot-labs.git
+		chown -R ubuntu: ec2-spot-labs
+		cd ec2-spot-labs/ec2-spot-deep-learning-training/
 
 		# Initiate training using the tensorflow_36 conda environment
 		sudo -H -u ubuntu bash -c "source /home/ubuntu/anaconda3/bin/activate tensorflow_p36; python ec2_spot_keras_training.py"
