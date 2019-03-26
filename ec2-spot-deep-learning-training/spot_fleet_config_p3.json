@@ -1,0 +1,23 @@
+{
+  "TargetCapacity": 1,
+  "IamFleetRole": "arn:aws:iam::<ACCOUNT_NUMBER>:role/DL-Training-Spot-Fleet-Role",
+  "LaunchSpecifications": [
+      {
+          "ImageId": "ami-0027dfad6168539c7",
+          "KeyName": "<KEYPAIR_NAME>",
+          "SecurityGroups": [
+              {
+                  "GroupId": "<SECURITY_GROUP_ID>"
+              }
+          ],
+          "InstanceType": "p3.2xlarge",
+          "Placement": {
+              "AvailabilityZone": "us-west-2a, us-west-2b, us-west-2c, us-west-2d"
+          },
+		  "UserData": "base64_encoded_bash_script",
+          "IamInstanceProfile": {
+              "Arn": "arn:aws:iam::<ACCOUNT_NUMBER>:instance-profile/DL-Training"
+          }
+      }
+  ]
+}

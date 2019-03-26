@@ -1,0 +1,21 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:AttachVolume",
+                "ec2:DeleteVolume",
+                "ec2:DescribeVolumeStatus",
+                "ec2:CancelSpotFleetRequests",
+                "ec2:CreateTags",
+                "ec2:DescribeVolumes",
+                "ec2:CreateSnapshot",
+                "ec2:DescribeSpotInstanceRequests",
+                "ec2:DescribeSnapshots",
+                "ec2:CreateVolume"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
