@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: 'Spot Instances Auto-Deregister from ECS Cluster'
+Description: 'ecs-spot-agent for Amazon ECS'
 
 Parameters:
 
