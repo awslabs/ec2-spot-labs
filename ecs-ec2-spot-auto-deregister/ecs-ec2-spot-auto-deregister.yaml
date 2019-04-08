@@ -62,7 +62,7 @@ Resources:
               def deregister(self, instance_id):
                   container_instance_arn = None  # default
                   cluster_arns = self.get_cluster_arns()
-                  logger.info('Get all ecs clusters)
+                  logger.info('Get all ecs clusters')
 
                   for cluster_arn in cluster_arns:
                       res = self.cl.list_container_instances(
@@ -72,17 +72,16 @@ Resources:
                       )
                       if len(res['containerInstanceArns']) == 1:
                           container_instance_arn = res['containerInstanceArns'][0]
-                          logger.info('{0} is used in {0}'.format(instance_id, cluster_arn))
+                          logger.info(f'{instance_id} is used in {cluster_arn}, deregistering')
+                          res = self.cl.deregister_container_instance(
+                              cluster=cluster_arn,
+                              containerInstance=container_instance_arn,
+                              force=True
+                          )
+                          logger.info(res)
                       else:
-                          logger.debug('{0} is not used in {1}'.format(instance_id, cluster_arn))
-                  if container_instance_arn:
-                      res = self.cl.deregister_container_instance(
-                          cluster=cluster_arn,
-                          containerInstance=container_instance_arn,
-                          force=True
-                      )
-                      logger.info(res)
-                  else:
+                          logger.debug(f'{instance_id} is not used in {cluster_arn}')
+                  if not container_instance_arn:
                       logger.warning('{0} is not used in all ecs clusters'.format(instance_id))
 
 
