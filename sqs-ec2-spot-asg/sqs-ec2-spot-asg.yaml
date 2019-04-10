@@ -1,0 +1,417 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Example of EC2 Auto Scaling group using EC2 Spot Instances, automatically scaling
+  based on SQS queue depth
+Mappings:
+  CidrMappings:
+    vpc:
+      CIDR: 10.0.0.0/16
+  amazonLinuxAmi:
+    us-east-1:
+      AMI: ami-0de53d8956e8dcf80
+Metadata:
+  Author:
+    Description: Ran Sheinberg <ranshein@amazon.com>, Chad Schmutzer <schmutze@amazon.com>
+  License:
+    Description: 'Copyright 2019 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+Outputs:
+  awsRegionId:
+    Description: The AWS Region ID your template was launched in
+    Value:
+      Ref: AWS::Region
+  instanceProfile:
+    Description: Instance profile ARN
+    Value:
+      Fn::GetAtt:
+      - instanceProfile
+      - Arn
+  publicSubnet1:
+    Description: Public subnet 1
+    Value:
+      Ref: publicSubnet1
+  publicSubnet2:
+    Description: Public subnet 2
+    Value:
+      Ref: publicSubnet2
+  s3BucketId:
+    Description: The S3 bucket ID
+    Value:
+      Ref: s3Bucket
+  sqsQueueArn:
+    Description: The SQS queue ARN
+    Value:
+      Fn::GetAtt:
+      - sqsQueue
+      - Arn
+  vpc:
+    Description: The VPC
+    Value:
+      Ref: vpc
+Parameters:
+  desiredCapacity:
+    Default: 2
+    Description: Desired capacity
+    Type: Number
+  maxSize:
+    Default: 12
+    Description: Maximum capacity
+    Type: Number
+  minSize:
+    Default: 2
+    Description: Mininum capacity
+    Type: Number
+  spotAllocationStrategy:
+    AllowedValues:
+    - lowest-price
+    Default: lowest-price
+    Description: Strategy for allocating Spot capacity across Spot pools
+    Type: String
+Resources:
+  attachGateway:
+    DependsOn:
+    - vpc
+    - internetGateway
+    Properties:
+      InternetGatewayId:
+        Ref: internetGateway
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::VPCGatewayAttachment
+  autoScalingGroup:
+    DependsOn:
+    - launchTemplate
+    - publicSubnet1
+    - publicSubnet2
+    - autoScalingServiceLinkedRole
+    Properties:
+      DesiredCapacity:
+        Ref: desiredCapacity
+      HealthCheckType: EC2
+      MaxSize:
+        Ref: maxSize
+      MinSize:
+        Ref: minSize
+      MixedInstancesPolicy:
+        InstancesDistribution:
+          OnDemandBaseCapacity: 0
+          OnDemandPercentageAboveBaseCapacity: 0
+          SpotAllocationStrategy:
+            Ref: spotAllocationStrategy
+        LaunchTemplate:
+          LaunchTemplateSpecification:
+            LaunchTemplateId:
+              Ref: launchTemplate
+            Version: 1
+          Overrides:
+          - InstanceType: t2.large
+          - InstanceType: t3.large
+          - InstanceType: c4.large
+          - InstanceType: c5.large
+          - InstanceType: m4.large
+          - InstanceType: m5.large
+          - InstanceType: r4.large
+          - InstanceType: r5.large
+      VPCZoneIdentifier:
+      - Ref: publicSubnet1
+      - Ref: publicSubnet2
+    Type: AWS::AutoScaling::AutoScalingGroup
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MaxBatchSize: 1
+        MinInstancesInService: 1
+  autoScalingServiceLinkedRole:
+    Properties:
+      AWSServiceName: autoscaling.amazonaws.com
+      Description: Default Service-Linked Role enables access to AWS Services and Resources
+        used or managed by Auto Scaling
+    Type: AWS::IAM::ServiceLinkedRole
+  cloudWatchLogsGroup:
+    Properties:
+      RetentionInDays: 7
+    Type: AWS::Logs::LogGroup
+  ec2FleetServiceLinkedRole:
+    Properties:
+      AWSServiceName: ec2fleet.amazonaws.com
+      Description: Default EC2 Fleet Service Linked Role
+    Type: AWS::IAM::ServiceLinkedRole
+  instanceProfile:
+    DependsOn:
+    - instanceRole
+    Properties:
+      Path: /
+      Roles:
+      - Ref: instanceRole
+    Type: AWS::IAM::InstanceProfile
+  instanceRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action: sqs:*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+              - sqsQueue
+              - Arn
+          Version: 2012-10-17
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - sqsQueuePolicy
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStreams
+            Effect: Allow
+            Resource: arn:aws:logs:*:*:*
+          Version: 2012-10-17
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - cloudWatchLogsPolicy
+      - PolicyDocument:
+          Statement:
+          - Action: s3:ListBucket
+            Effect: Allow
+            Resource:
+            - Fn::Join:
+              - ''
+              - - 'arn:aws:s3:::'
+                - Ref: s3Bucket
+          Version: '2012-10-17'
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - s3BucketListPolicy
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - s3:PutObject*
+            - s3:GetObject
+            - s3:DeleteObject
+            Effect: Allow
+            Resource:
+            - Fn::Join:
+              - ''
+              - - 'arn:aws:s3:::'
+                - Ref: s3Bucket
+                - /*
+          Version: '2012-10-17'
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - s3BucketReadWritePolicy
+    Type: AWS::IAM::Role
+  internetGateway:
+    DependsOn:
+    - vpc
+    Type: AWS::EC2::InternetGateway
+  launchTemplate:
+    DependsOn:
+    - instanceProfile
+    Properties:
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn:
+            Fn::GetAtt:
+            - instanceProfile
+            - Arn
+        ImageId:
+          Fn::FindInMap:
+          - amazonLinuxAmi
+          - Ref: AWS::Region
+          - AMI
+        TagSpecifications:
+        - ResourceType: instance
+          Tags:
+          - Key: Name
+            Value:
+              Ref: AWS::StackName
+        UserData:
+          Fn::Base64:
+            Fn::Sub: '#!/bin/bash -xe
+
+              yum -y install git
+
+              cd /root && git clone https://github.com/awslabs/ec2-spot-labs.git
+
+              REGION=${AWS::Region} S3BUCKET=${s3Bucket} SQSQUEUE=${sqsQueue} CLOUDWATCHLOGSGROUP=${cloudWatchLogsGroup}
+              bash /root/ec2-spot-labs/sqs-ec2-spot-asg/user-data.sh
+
+              '
+    Type: AWS::EC2::LaunchTemplate
+  publicRoute:
+    DependsOn:
+    - publicRouteTable
+    - internetGateway
+    - attachGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: internetGateway
+      RouteTableId:
+        Ref: publicRouteTable
+    Type: AWS::EC2::Route
+  publicRouteTable:
+    DependsOn:
+    - vpc
+    - attachGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: Public Route Table
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::RouteTable
+  publicSubnet1:
+    DependsOn:
+    - attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::Select:
+        - 0
+        - Fn::Cidr:
+          - Fn::FindInMap:
+            - CidrMappings
+            - vpc
+            - CIDR
+          - 256
+          - 8
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet1RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet1
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet1
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  publicSubnet2:
+    DependsOn:
+    - attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::Select:
+        - 1
+        - Fn::Cidr:
+          - Fn::FindInMap:
+            - CidrMappings
+            - vpc
+            - CIDR
+          - 256
+          - 8
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet2RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet2
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet2
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  s3Bucket:
+    DependsOn:
+    - sqsQueue
+    - sqsQueuePolicy
+    Properties:
+      NotificationConfiguration:
+        QueueConfigurations:
+        - Event: s3:ObjectCreated:*
+          Queue:
+            Fn::GetAtt:
+            - sqsQueue
+            - Arn
+    Type: AWS::S3::Bucket
+  sqsQueue:
+    Properties:
+      VisibilityTimeout: 900
+    Type: AWS::SQS::Queue
+  sqsQueuePolicy:
+    DependsOn:
+    - sqsQueue
+    Properties:
+      PolicyDocument:
+        Statement:
+        - Action:
+          - sqs:SendMessage
+          Effect: Allow
+          Principal:
+            Service: s3.amazonaws.com
+          Resource: '*'
+        Version: 2012-10-17
+      Queues:
+      - Ref: sqsQueue
+    Type: AWS::SQS::QueuePolicy
+  vpc:
+    Properties:
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpc
+        - CIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+    Type: AWS::EC2::VPC
+...

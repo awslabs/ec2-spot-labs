@@ -1,0 +1,327 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Demonstration of ASG mixed instances scheduled ratio adjustment
+Mappings:
+  CidrMappings:
+    vpc:
+      CIDR: 10.0.0.0/16
+  amazonLinuxAmi:
+    us-east-1:
+      AMI: ami-035be7bafff33b6b6
+    us-east-2:
+      AMI: ami-04328208f4f0cf1fe
+    us-west-1:
+      AMI: ami-0799ad445b5727125
+    us-west-2:
+      AMI: ami-032509850cf9ee54e
+Metadata:
+  Author:
+    Description: Chad Schmutzer <schmutze@amazon.com>
+  License:
+    Description: 'Copyright 2019 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+Outputs:
+  awsRegionId:
+    Description: The AWS Region ID your template was launched in
+    Value:
+      Ref: AWS::Region
+  instanceProfile:
+    Description: Instance profile ARN
+    Value:
+      Fn::GetAtt:
+      - instanceProfile
+      - Arn
+  publicSubnet1:
+    Description: Public subnet 1
+    Value:
+      Ref: publicSubnet1
+  publicSubnet2:
+    Description: Public subnet 2
+    Value:
+      Ref: publicSubnet2
+  vpc:
+    Description: The VPC
+    Value:
+      Ref: vpc
+Parameters:
+  spotAllocationStrategy:
+    AllowedValues:
+    - lowestPrice
+    Default: lowestPrice
+    Description: Indicates how to allocate Spot capacity across Spot pools.
+    Type: String
+  spotInstancePools:
+    Default: 4
+    Description: The number of Spot pools to use to allocate your Spot capacity.
+    Type: Number
+  targetCapacity:
+    Default: 12
+    Description: Target capacity.
+    Type: Number
+Resources:
+  attachGateway:
+    DependsOn:
+    - vpc
+    - internetGateway
+    Properties:
+      InternetGatewayId:
+        Ref: internetGateway
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::VPCGatewayAttachment
+  ec2Fleet:
+    DependsOn:
+    - launchTemplate
+    Properties:
+      LaunchTemplateConfigs:
+      - LaunchTemplateSpecification:
+          LaunchTemplateId:
+            Ref: launchTemplate
+          Version: 1
+        Overrides:
+        - InstanceType: c3.large
+          SubnetId:
+            Ref: publicSubnet1
+          WeightedCapacity: 3
+        - InstanceType: c3.large
+          SubnetId:
+            Ref: publicSubnet2
+          WeightedCapacity: 3
+        - InstanceType: c3.xlarge
+          SubnetId:
+            Ref: publicSubnet1
+          WeightedCapacity: 4
+        - InstanceType: c3.xlarge
+          SubnetId:
+            Ref: publicSubnet2
+          WeightedCapacity: 4
+      ReplaceUnhealthyInstances: true
+      SpotOptions:
+        AllocationStrategy:
+          Ref: spotAllocationStrategy
+        InstanceInterruptionBehavior: terminate
+        InstancePoolsToUseCount:
+          Ref: spotInstancePools
+      TargetCapacitySpecification:
+        DefaultTargetCapacityType: spot
+        TotalTargetCapacity:
+          Ref: targetCapacity
+      TerminateInstancesWithExpiration: true
+      Type: maintain
+    Type: AWS::EC2::EC2Fleet
+  instanceProfile:
+    DependsOn:
+    - instanceRole
+    Properties:
+      Path: /
+      Roles:
+      - Ref: instanceRole
+    Type: AWS::IAM::InstanceProfile
+  instanceRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      Path: /
+    Type: AWS::IAM::Role
+  internetGateway:
+    DependsOn:
+    - vpc
+    Type: AWS::EC2::InternetGateway
+  launchTemplate:
+    DependsOn:
+    - instanceProfile
+    Properties:
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn:
+            Fn::GetAtt:
+            - instanceProfile
+            - Arn
+        ImageId:
+          Fn::FindInMap:
+          - amazonLinuxAmi
+          - Ref: AWS::Region
+          - AMI
+        TagSpecifications:
+        - ResourceType: instance
+          Tags:
+          - Key: Name
+            Value:
+              Ref: AWS::StackName
+    Type: AWS::EC2::LaunchTemplate
+  publicRoute:
+    DependsOn:
+    - publicRouteTable
+    - internetGateway
+    - attachGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: internetGateway
+      RouteTableId:
+        Ref: publicRouteTable
+    Type: AWS::EC2::Route
+  publicRouteIpv6:
+    DependsOn:
+    - publicRouteTable
+    - internetGateway
+    - attachGateway
+    Properties:
+      DestinationIpv6CidrBlock: ::/0
+      GatewayId:
+        Ref: internetGateway
+      RouteTableId:
+        Ref: publicRouteTable
+    Type: AWS::EC2::Route
+  publicRouteTable:
+    DependsOn:
+    - vpc
+    - attachGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::RouteTable
+  publicSubnet1:
+    DependsOn:
+    - attachGateway
+    - vpcCidrBlockIpv6
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::Select:
+        - 0
+        - Fn::Cidr:
+          - Fn::FindInMap:
+            - CidrMappings
+            - vpc
+            - CIDR
+          - 256
+          - 8
+      Ipv6CidrBlock:
+        Fn::Select:
+        - 0
+        - Fn::Cidr:
+          - Fn::Select:
+            - 0
+            - Fn::GetAtt:
+              - vpc
+              - Ipv6CidrBlocks
+          - 256
+          - 64
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet1RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet1
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet1
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  publicSubnet2:
+    DependsOn:
+    - attachGateway
+    - vpcCidrBlockIpv6
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::Select:
+        - 1
+        - Fn::Cidr:
+          - Fn::FindInMap:
+            - CidrMappings
+            - vpc
+            - CIDR
+          - 256
+          - 8
+      Ipv6CidrBlock:
+        Fn::Select:
+        - 1
+        - Fn::Cidr:
+          - Fn::Select:
+            - 0
+            - Fn::GetAtt:
+              - vpc
+              - Ipv6CidrBlocks
+          - 256
+          - 64
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet2RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet2
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet2
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  vpc:
+    Properties:
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpc
+        - CIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+    Type: AWS::EC2::VPC
+  vpcCidrBlockIpv6:
+    DependsOn:
+    - vpc
+    Properties:
+      AmazonProvidedIpv6CidrBlock: true
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::VPCCidrBlock
+...
