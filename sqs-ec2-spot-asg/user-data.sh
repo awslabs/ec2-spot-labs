@@ -1,7 +1,7 @@
 #!/bin/bash
 
 INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-WORKING_DIR=/root/ec2-spot-labs/sqs-ec2-spot-fleet-autoscaling
+WORKING_DIR=/root/ec2-spot-labs/sqs-ec2-spot-asg
 
 yum -y --security update
 

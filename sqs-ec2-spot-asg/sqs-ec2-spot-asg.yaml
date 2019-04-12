@@ -8,7 +8,7 @@ Mappings:
       CIDR: 10.0.0.0/16
   amazonLinuxAmi:
     us-east-1:
-      AMI: ami-0de53d8956e8dcf80
+      AMI: ami-0080e4c5bc078760e
 Metadata:
   Author:
     Description: Ran Sheinberg <ranshein@amazon.com>, Chad Schmutzer <schmutze@amazon.com>
@@ -24,6 +24,10 @@ Metadata:
       BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
       License for the specific language governing permissions and limitations under the License.'
 Outputs:
+  autoScalingGroup:
+    Description: The autoScalingGroup
+    Value:
+      Ref: autoScalingGroup
   awsRegionId:
     Description: The AWS Region ID your template was launched in
     Value:

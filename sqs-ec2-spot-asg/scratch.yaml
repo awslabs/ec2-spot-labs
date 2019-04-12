@@ -1,0 +1,93 @@
+  spotFleetScalableTarget:
+    DependsOn:
+    - spotFleet
+    - spotFleetAutoscaleRole
+    Properties:
+      MaxCapacity:
+        Ref: spotFleetMaximumCapacity
+      MinCapacity:
+        Ref: spotFleetTargetCapacity
+      ResourceId:
+        Fn::Join:
+        - /
+        - - spot-fleet-request
+          - Ref: spotFleet
+      RoleARN:
+        Fn::GetAtt:
+        - spotFleetAutoscaleRole
+        - Arn
+      ScalableDimension: ec2:spot-fleet-request:TargetCapacity
+      ServiceNamespace: ec2
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+  spotFleetScalingPolicyScaleDown:
+    Properties:
+      PolicyName: spotFleetScalingPolicyScaleDown
+      PolicyType: StepScaling
+      ScalingTargetId:
+        Ref: spotFleetScalableTarget
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ChangeInCapacity
+        Cooldown: 300
+        MetricAggregationType: Average
+        StepAdjustments:
+        - MetricIntervalUpperBound: 0
+          ScalingAdjustment: -1
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+  spotFleetScalingPolicyScaleUp:
+    Properties:
+      PolicyName: spotFleetScalingPolicyScaleUp
+      PolicyType: StepScaling
+      ScalingTargetId:
+        Ref: spotFleetScalableTarget
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ChangeInCapacity
+        Cooldown: 300
+        MetricAggregationType: Average
+        StepAdjustments:
+        - MetricIntervalLowerBound: 0
+          ScalingAdjustment: 1
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+  sqsQueueDepthAlarmScaleDown:
+    DependsOn:
+    - sqsQueue
+    - spotFleetScalingPolicyScaleDown
+    Properties:
+      AlarmActions:
+      - Ref: spotFleetScalingPolicyScaleDown
+      AlarmDescription: Alarm if queue depth falls below 8 messages
+      ComparisonOperator: LessThanThreshold
+      Dimensions:
+      - Name: QueueName
+        Value:
+          Fn::GetAtt:
+          - sqsQueue
+          - QueueName
+      EvaluationPeriods: 2
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Period: 300
+      Statistic: Sum
+      Threshold: 8
+    Type: AWS::CloudWatch::Alarm
+  sqsQueueDepthAlarmScaleUp:
+    DependsOn:
+    - sqsQueue
+    - spotFleetScalingPolicyScaleUp
+    Properties:
+      AlarmActions:
+      - Ref: spotFleetScalingPolicyScaleUp
+      AlarmDescription: Alarm if queue depth grows beyond 16 messages
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+      - Name: QueueName
+        Value:
+          Fn::GetAtt:
+          - sqsQueue
+          - QueueName
+      EvaluationPeriods: 2
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Period: 300
+      Statistic: Sum
+      Threshold: 16
+    Type: AWS::CloudWatch::Alarm
