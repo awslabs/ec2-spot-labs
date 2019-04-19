@@ -1,8 +1,10 @@
 #!/bin/bash
 
+INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 REGION=%REGION%
 S3BUCKET=%S3BUCKET%
 SQSQUEUE=%SQSQUEUE%
+#AUTOSCALINGGROUP=$(aws ec2 describe-tags --filters "Name=resource-id,Values=$INSTANCE_ID")
 
 while sleep 5; do 
 
@@ -38,17 +40,29 @@ while sleep 5; do
 
     logger "$0: Found work to convert. Details: INPUT=$INPUT, FNAME=$FNAME, FEXT=$FEXT"
 
+    logger "$0: Running: aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --protected-from-scale-in"
+
+    aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --protected-from-scale-in
+
     aws s3 cp s3://$S3BUCKET/$INPUT /tmp
 
     convert /tmp/$INPUT /tmp/$FNAME.pdf
 
     logger "$0: Convert done. Copying to S3 and cleaning up"
 
+    logger "$0: Running: aws s3 cp /tmp/$FNAME.pdf s3://$S3BUCKET"
+
     aws s3 cp /tmp/$FNAME.pdf s3://$S3BUCKET
 
     rm -f /tmp/$INPUT /tmp/$FNAME.pdf
 
+    logger "$0: Running: aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT"
+
     aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT
+
+    logger "$0: Running: aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --no-protected-from-scale-in"
+
+    aws autoscaling set-instance-protection --instance-ids $INSTANCE_ID --auto-scaling-group-name $AUTOSCALINGGROUP --no-protected-from-scale-in
 
   else
 

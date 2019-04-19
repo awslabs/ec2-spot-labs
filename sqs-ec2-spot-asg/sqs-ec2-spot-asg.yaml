@@ -156,6 +156,9 @@ Resources:
       - Ref: instanceRole
     Type: AWS::IAM::InstanceProfile
   instanceRole:
+    DependsOn:
+    - sqsQueue
+    - s3Bucket
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -233,6 +236,19 @@ Resources:
           - '-'
           - - Ref: AWS::StackName
             - s3BucketReadWritePolicy
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - autoscaling:SetInstanceProtection
+            - autoscaling:SetInstanceHealth
+            Effect: Allow
+            Resource: arn:aws:autoscaling:::autoScalingGroup::autoScalingGroupName/*
+          Version: '2012-10-17'
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - autoScalingGroupPolicy
     Type: AWS::IAM::Role
   internetGateway:
     DependsOn:
@@ -241,6 +257,9 @@ Resources:
   launchTemplate:
     DependsOn:
     - instanceProfile
+    - s3Bucket
+    - sqsQueue
+    - cloudWatchLogsGroup
     Properties:
       LaunchTemplateData:
         IamInstanceProfile:
