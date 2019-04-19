@@ -4,7 +4,7 @@ INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 REGION=%REGION%
 S3BUCKET=%S3BUCKET%
 SQSQUEUE=%SQSQUEUE%
-#AUTOSCALINGGROUP=$(aws ec2 describe-tags --filters "Name=resource-id,Values=$INSTANCE_ID")
+AUTOSCALINGGROUP=$(aws ec2 describe-tags --filters "Name=resource-id,Values=$INSTANCE_ID" "Name=key,Values=aws:autoscaling:groupName" | jq -r '.Tags[0].Value')
 
 while sleep 5; do 
 
@@ -55,6 +55,8 @@ while sleep 5; do
     aws s3 cp /tmp/$FNAME.pdf s3://$S3BUCKET
 
     rm -f /tmp/$INPUT /tmp/$FNAME.pdf
+
+    sleep 300
 
     logger "$0: Running: aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT"
 
