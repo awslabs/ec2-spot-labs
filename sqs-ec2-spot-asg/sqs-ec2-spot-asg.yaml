@@ -219,6 +219,17 @@ Resources:
             - s3BucketListPolicy
       - PolicyDocument:
           Statement:
+          - Action: ec2:DescribeTags
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - ec2DescribeTagsPolicy
+      - PolicyDocument:
+          Statement:
           - Action:
             - s3:PutObject*
             - s3:GetObject
@@ -242,7 +253,7 @@ Resources:
             - autoscaling:SetInstanceProtection
             - autoscaling:SetInstanceHealth
             Effect: Allow
-            Resource: arn:aws:autoscaling:::autoScalingGroup::autoScalingGroupName/*
+            Resource: arn:aws:autoscaling:*:*:autoScalingGroup:*:autoScalingGroupName/*
           Version: '2012-10-17'
         PolicyName:
           Fn::Join:

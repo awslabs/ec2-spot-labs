@@ -56,7 +56,8 @@ while sleep 5; do
 
     rm -f /tmp/$INPUT /tmp/$FNAME.pdf
 
-    sleep 300
+    # pretend to do work for 2 minutes
+    sleep 120
 
     logger "$0: Running: aws sqs --output=json delete-message --queue-url $SQSQUEUE --receipt-handle $RECEIPT"
 

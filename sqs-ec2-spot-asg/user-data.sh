@@ -26,7 +26,6 @@ sed -i "s|%CLOUDWATCHLOGSGROUP%|$CLOUDWATCHLOGSGROUP|g" /etc/awslogs/awslogs.con
 sed -i "s|%REGION%|$REGION|g" /usr/local/bin/convert-worker.sh
 sed -i "s|%S3BUCKET%|$S3BUCKET|g" /usr/local/bin/convert-worker.sh
 sed -i "s|%SQSQUEUE%|$SQSQUEUE|g" /usr/local/bin/convert-worker.sh
-sed -i "s|%AUTOSCALINGGROUP%|$AUTOSCALINGGROUP|g" /usr/local/bin/convert-worker.sh
 
 chkconfig awslogs on && service awslogs restart
 
