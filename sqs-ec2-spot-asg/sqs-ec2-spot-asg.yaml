@@ -7,8 +7,40 @@ Mappings:
     vpc:
       CIDR: 10.0.0.0/16
   amazonLinuxAmi:
+    ap-northeast-1:
+      AMI: ami-00a5245b4816c38e6
+    ap-northeast-2:
+      AMI: ami-00dc207f8ba6dc919
+    ap-northeast-3:
+      AMI: ami-0b65f69a5c11f3522
+    ap-south-1:
+      AMI: ami-0ad42f4f66f6c1cc9
+    ap-southeast-1:
+      AMI: ami-05b3bcf7f311194b3
+    ap-southeast-2:
+      AMI: ami-02fd0b06f06d93dfc
+    ca-central-1:
+      AMI: ami-07423fb63ea0a0930
+    eu-central-1:
+      AMI: ami-0cfbf4f6db41068ac
+    eu-north-1:
+      AMI: ami-86fe70f8
+    eu-west-1:
+      AMI: ami-08935252a36e25f85
+    eu-west-2:
+      AMI: ami-01419b804382064e4
+    eu-west-3:
+      AMI: ami-0dd7e7ed60da8fb83
+    sa-east-1:
+      AMI: ami-05145e0b28ad8e0b2
     us-east-1:
       AMI: ami-0080e4c5bc078760e
+    us-east-2:
+      AMI: ami-0cd3dfa4e37921605
+    us-west-1:
+      AMI: ami-0ec6517f6edbf8044
+    us-west-2:
+      AMI: ami-01e24be29428c15b2
 Metadata:
   Author:
     Description: Ran Sheinberg <ranshein@amazon.com>, Chad Schmutzer <schmutze@amazon.com>
@@ -132,6 +164,26 @@ Resources:
       AutoScalingRollingUpdate:
         MaxBatchSize: 1
         MinInstancesInService: 1
+  autoScalingPolicy:
+    DependsOn:
+    - autoScalingGroup
+    - sqsQueue
+    Properties:
+      AutoScalingGroupName:
+        Ref: autoScalingGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        CustomizedMetricSpecification:
+          Dimensions:
+          - Name: QueueName
+            Value:
+              Ref: sqsQueue
+          MetricName: ApproximateNumberOfMessagesVisible
+          Namespace: AWS/SQS
+          Statistic: Sum
+          Unit: Count
+        TargetValue: 5
+    Type: AWS::AutoScaling::ScalingPolicy
   autoScalingServiceLinkedRole:
     Properties:
       AWSServiceName: autoscaling.amazonaws.com
