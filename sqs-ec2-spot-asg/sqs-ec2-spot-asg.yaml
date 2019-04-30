@@ -105,12 +105,6 @@ Parameters:
     Default: 2
     Description: Mininum capacity
     Type: Number
-  spotAllocationStrategy:
-    AllowedValues:
-    - lowest-price
-    Default: lowest-price
-    Description: Strategy for allocating Spot capacity across Spot pools
-    Type: String
 Resources:
   attachGateway:
     DependsOn:
@@ -140,8 +134,7 @@ Resources:
         InstancesDistribution:
           OnDemandBaseCapacity: 0
           OnDemandPercentageAboveBaseCapacity: 0
-          SpotAllocationStrategy:
-            Ref: spotAllocationStrategy
+          SpotAllocationStrategy: lowest-price
         LaunchTemplate:
           LaunchTemplateSpecification:
             LaunchTemplateId:
@@ -160,10 +153,6 @@ Resources:
       - Ref: publicSubnet1
       - Ref: publicSubnet2
     Type: AWS::AutoScaling::AutoScalingGroup
-    UpdatePolicy:
-      AutoScalingRollingUpdate:
-        MaxBatchSize: 1
-        MinInstancesInService: 1
   autoScalingPolicy:
     DependsOn:
     - autoScalingGroup
@@ -177,12 +166,14 @@ Resources:
           Dimensions:
           - Name: QueueName
             Value:
-              Ref: sqsQueue
+              Fn::GetAtt:
+              - sqsQueue
+              - QueueName
           MetricName: ApproximateNumberOfMessagesVisible
           Namespace: AWS/SQS
           Statistic: Sum
           Unit: Count
-        TargetValue: 5
+        TargetValue: 2
     Type: AWS::AutoScaling::ScalingPolicy
   autoScalingServiceLinkedRole:
     Properties:
