@@ -105,6 +105,10 @@ Parameters:
     Default: 2
     Description: Mininum capacity
     Type: Number
+  spotInstancePools:
+    Default: 4
+    Description: The number of Spot pools per Availability Zone
+    Type: Number
 Resources:
   attachGateway:
     DependsOn:
@@ -135,6 +139,8 @@ Resources:
           OnDemandBaseCapacity: 0
           OnDemandPercentageAboveBaseCapacity: 0
           SpotAllocationStrategy: lowest-price
+          SpotInstancePools:
+            Ref: spotInstancePools
         LaunchTemplate:
           LaunchTemplateSpecification:
             LaunchTemplateId:
