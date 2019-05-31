@@ -1,0 +1,44 @@
+LT demo
+
+1. Show what a normal run-instances command looks like
+
+$ aws ec2 run-instances --image-id ami-035be7bafff33b6b6 --region us-east-1 --subnet-id subnet-0fc4d2543f3dcc255 --security-group-ids sg-08953bf52a9d4a160 --instance-type c3.large --key-name schmutze@amazon-ec2
+
+2. Create LT in console
+
+ --image-id ami-035be7bafff33b6b6
+ --region us-east-1
+ --subnet-id subnet-0fc4d2543f3dcc255
+ --security-group-ids sg-08953bf52a9d4a160
+ --instance-type c3.large
+ --key-name schmutze@amazon-ec2
+
+3. Show new simplified command
+
+aws ec2 run-instances --launch-template LaunchTemplateName=chicago
+
+4. show instance running in console
+
+
+EC2 Fleet demo
+
+1. Show LT (open ec2-fleet-launch-template.json)
+
+2. aws ec2 create-launch-template --cli-input-json file://ec2-fleet-launch-template.json
+
+3. Show ec2 fleet config (open ec2-fleet-ec2-spot-instant.json)
+
+4. aws ec2 create-fleet --cli-input-json file://ec2-fleet-ec2-spot-instant.json
+
+4. aws ec2 describe-fleets --fleet-id $FLEETID
+
+5. show console
+
+
+ASG demo
+
+1. Show ASG config (open asg.json)
+
+2. aws autoscaling create-auto-scaling-group --cli-input-json file://asg.json
+
+3. show console

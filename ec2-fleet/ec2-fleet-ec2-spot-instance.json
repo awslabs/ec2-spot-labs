@@ -1,0 +1,38 @@
+{
+  "SpotOptions": {
+    "AllocationStrategy": "lowestPrice",
+    "InstanceInterruptionBehavior": "terminate"
+  },
+  "LaunchTemplateConfigs": [
+    {
+      "LaunchTemplateSpecification": {
+        "LaunchTemplateName": "ec2-fleet-launch-template-instance",
+        "Version": "1"
+      },
+      "Overrides": [
+        {
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        }
+      ]
+    }
+  ],
+  "TargetCapacitySpecification": {
+    "TotalTargetCapacity": 20,
+    "DefaultTargetCapacityType": "spot"
+  },
+  "Type": "maintain",
+  "TagSpecifications": [
+    {
+      "ResourceType": "fleet",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "Demo EC2 Fleet"
+        }
+      ]
+    }
+  ]
+}
