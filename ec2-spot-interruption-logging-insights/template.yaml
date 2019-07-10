@@ -1,0 +1,115 @@
+ # Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ #
+ # Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ # software and associated documentation files (the "Software"), to deal in the Software
+ # without restriction, including without limitation the rights to use, copy, modify,
+ # merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ # permit persons to whom the Software is furnished to do so.
+ #
+ # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ # INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ # PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ # HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  ec2-spot-interruption-logging-insights
+
+  Sample solution for logging instance details in response to EC2 Spot Instance Interruption Warnings
+  
+Parameters:
+    CloudWatchLogGroupName:
+        Description: Name of the Cloud Watch Log Group logs will be written to.
+        Default: SpotInterruptionLogs
+        Type: String
+
+    CloudWatchLogGroupRetentionPeriodDays:
+        Description: Number of days to retain Cloud Watch Logs
+        Default: 7
+        Type: Number
+
+Globals:
+  Function:
+    Timeout: 30
+
+Resources:
+
+  EventRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: "EventRule"
+      EventPattern: 
+        source: 
+            - "aws.ec2"
+        detail-type: 
+            - "EC2 Spot Instance Interruption Warning"
+      State: "ENABLED"
+      Targets: 
+        - 
+          Arn: 
+            Fn::GetAtt: 
+                - "SpotInterruptionTriggerFunction"
+                - "Arn"
+          Id: "SpotInterruptionTriggerFunctionV1"
+    
+  PermissionForEventsToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: 
+        Ref: "SpotInterruptionTriggerFunction"
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: 
+        Fn::GetAtt: 
+          - "EventRule"
+          - "Arn"
+
+  SpotInterruptionTriggerFunctionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: SpotInterruptionTriggerPolicy
+          PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - "ec2:DescribeInstances"
+                    - "logs:*"
+                  Resource: "*"
+
+  CloudWatchLogGroup: 
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Ref CloudWatchLogGroupName
+      RetentionInDays: !Ref CloudWatchLogGroupRetentionPeriodDays
+
+  SpotInterruptionTriggerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: SpotInterruptionTriggerFunction/
+      Handler: app.lambda_handler
+      Role: !GetAtt [ SpotInterruptionTriggerFunctionRole, Arn ]
+      Runtime: python3.7
+      Environment:
+        Variables:
+          CLOUDWATCH_LOG_GROUP_NAME: !Ref CloudWatchLogGroup
+
+Outputs:
+  SpotInterruptionTriggerFunction:
+    Description: "SpotInterruptionTriggerFunction Lambda Function ARN"
+    Value: !GetAtt SpotInterruptionTriggerFunction.Arn
+  
+  CloudWatchLogGroupName:
+    Description: "CloudWatch Log Group Name"
+    Value: !Ref CloudWatchLogGroup
