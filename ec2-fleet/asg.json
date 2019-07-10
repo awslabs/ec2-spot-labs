@@ -4,7 +4,7 @@
     "LaunchTemplate": {
       "LaunchTemplateSpecification": {
         "LaunchTemplateName": "ec2-fleet",
-        "Version": "1"
+        "Version": "$Latest"
       },
       "Overrides": [
         {
@@ -46,7 +46,7 @@
   },
   "MinSize": 10,
   "MaxSize": 125,
-  "DesiredCapacity": 100,
+  "DesiredCapacity": 110,
   "HealthCheckType": "EC2",
   "VPCZoneIdentifier": "subnet-0fc4d2543f3dcc255,subnet-09b9d0dbca4bae8a5,subnet-0437dfe009676c434,subnet-052ed2e5eb7d058b4,subnet-07d4be5d4d87ecab2,subnet-0987cb4c3b3db2c83"
 }
