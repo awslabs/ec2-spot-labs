@@ -1,0 +1,18 @@
+{
+  "LaunchTemplateName": "aws-batch-demo-launch-template",
+  "VersionDescription": "AWS Batch demo launch template",
+  "LaunchTemplateData": {
+    "ImageId": "ami-02507631a9f7bc956",
+    "TagSpecifications": [
+      {
+        "ResourceType": "instance",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "AWS Batch demo launch template"
+          }
+        ]
+      }
+    ]
+  }
+}

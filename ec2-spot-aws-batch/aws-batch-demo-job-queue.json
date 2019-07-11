@@ -1,0 +1,11 @@
+{
+    "jobQueueName": "aws-batch-demo-job-queue",
+    "state": "ENABLED",
+    "priority": 10,
+    "computeEnvironmentOrder": [
+        {
+            "order": 1,
+            "computeEnvironment": "aws-batch-demo-compute-environment"
+        }
+    ]
+}

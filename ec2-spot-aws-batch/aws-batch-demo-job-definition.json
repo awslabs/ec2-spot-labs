@@ -1,0 +1,12 @@
+{
+  "jobDefinitionName": "aws-batch-demo-job-definition",
+  "type": "container",
+  "containerProperties": {
+    "image": "alpine:latest",
+    "vcpus": 1,
+    "memory": 128,
+    "command": [
+      "env"
+    ]
+  }
+}

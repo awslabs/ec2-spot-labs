@@ -1,0 +1,5 @@
+{
+    "jobName": "aws-batch-demo-job",
+    "jobQueue": "aws-batch-demo-job-queue",
+    "jobDefinition": "aws-batch-demo-job-definition"
+}

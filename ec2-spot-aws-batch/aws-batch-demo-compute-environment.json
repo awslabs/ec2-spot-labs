@@ -1,0 +1,30 @@
+{
+    "computeEnvironmentName": "aws-batch-demo-compute-environment",
+    "type": "MANAGED",
+    "state": "ENABLED",
+    "computeResources": {
+        "type": "SPOT",
+        "minvCpus": 128,
+        "maxvCpus": 1024,
+        "desiredvCpus": 128,
+        "instanceTypes": [
+            "optimal"
+        ],
+        "subnets": [
+            "subnet-0fc4d2543f3dcc255",
+            "subnet-09b9d0dbca4bae8a5",
+            "subnet-0437dfe009676c434",
+            "subnet-052ed2e5eb7d058b4",
+            "subnet-07d4be5d4d87ecab2",
+            "subnet-0987cb4c3b3db2c83"
+        ],
+        "instanceRole": "ecsInstanceRole",
+        "bidPercentage": 100,
+        "spotIamFleetRole": "arn:aws:iam::753949184587:role/aws-ec2-spot-fleet-tagging-role",
+        "launchTemplate": {
+            "launchTemplateName": "aws-batch-demo-launch-template",
+            "version": "1"
+        }
+    },
+    "serviceRole": "arn:aws:iam::753949184587:role/service-role/AWSBatchServiceRole"
+}

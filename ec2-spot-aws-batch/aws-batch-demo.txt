@@ -1,0 +1,9 @@
+1. Open job defintion and review
+
+$ open aws-batch-demo-job-definition.json
+
+2. Register the job definition
+
+$ aws batch register-job-definition --cli-input-json file://aws-batch-demo-job-definition.json
+
+3. 
