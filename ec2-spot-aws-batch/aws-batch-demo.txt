@@ -6,4 +6,35 @@ $ open aws-batch-demo-job-definition.json
 
 $ aws batch register-job-definition --cli-input-json file://aws-batch-demo-job-definition.json
 
-3. 
+3. Open launch template and review
+
+open aws-batch-demo-launch-template.json
+
+4. Create launch template
+
+$ aws ec2 create-launch-template --cli-input-json file://aws-batch-demo-launch-template.json
+
+5. Open compute environment and review
+
+open aws-batch-demo-compute-environment.json
+
+6. Create compute environment
+
+aws batch create-compute-environment --cli-input-json file://aws-batch-demo-compute-environment.json
+
+5. Open job queue and review
+
+open aws-batch-demo-job-queue.json
+
+6. Create job queue
+
+$ aws batch create-job-queue --cli-input-json file://aws-batch-demo-job-queue.json
+
+7. Open job and review
+
+open aws-batch-demo-job.json
+
+8. Submit 25 jobs
+
+$ for i in {1..25}; do aws batch submit-job --cli-input-json file://aws-batch-demo-job.json; done
+
