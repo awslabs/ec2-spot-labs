@@ -46,11 +46,7 @@ sym, args, aux = mx.model.load_checkpoint('resnet-50', 0)
 
 
 img = mx.image.imread(image)
-<<<<<<< HEAD
 
-=======
-                                                                                                                                                      1,1           Top
->>>>>>> a9b1aae82201851ad741900b32ddf8ec2436676d
 # convert into format (batch, RGB, width, height)
 
 img = mx.image.imresize(img, 224, 224) # resize
