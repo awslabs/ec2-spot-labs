@@ -15,13 +15,13 @@ if __name__ == '__main__':
 
 image = args.image
 
-#path='http://data.mxnet.io/models/imagenet/'
+path='http://data.mxnet.io/models/imagenet/'
 
-#[mx.test_utils.download(path+'resnet/50-layers/resnet-50-0000.params'),
+[mx.test_utils.download(path+'resnet/50-layers/resnet-50-0000.params'),
 
-#mx.test_utils.download(path+'resnet/50-layers/resnet-50-symbol.json'),
+mx.test_utils.download(path+'resnet/50-layers/resnet-50-symbol.json'),
 
-#mx.test_utils.download(path+'synset.txt')]
+mx.test_utils.download(path+'synset.txt')]
 
 
 path = 'http://data.dmlc.ml/models/imagenet/squeezenet/'
