@@ -76,7 +76,15 @@ Using CloudWatch Events, an event rule subscribes to EC2 Spot Instance Interrupt
 
 6. Logs can then be reviewed and/or further processed for any required analysis. See the Analyzing Logs section below for some recommendations using CloudWatch Logs Insights.
 
-## Requirements
+## Packaging and Deployment
+
+### Deployment (Severless Application Repository)
+
+Search for ec2-spot-interruption-logging-insights in the [Serverless Application Repository]( https://serverlessrepo.aws.amazon.com/applications) and follow the instructions to deploy. (Make sure you've checked the box labeled: Show apps that create custom IAM roles or resource policies)
+
+### Deployment (Local)
+
+#### Requirements
 
 Note: For easiest deployment, create a Cloud9 instance and use the provided environment to deploy the function.
 
@@ -85,13 +93,27 @@ Note: For easiest deployment, create a Cloud9 instance and use the provided envi
 * [Docker installed](https://www.docker.com/community-edition)
 * [SAM CLI installed](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 
-## Packaging and Deployment
+#### Deployment Steps
+
+Once you've installed the requirements listed above, open a terminal sesssion as you'll need to run through a few commands to deploy the solution.
 
 Firstly, we need a `S3 bucket` where we can upload our Lambda functions packaged as ZIP before we deploy anything - If you don't have a S3 bucket to store code artifacts then this is a good time to create one:
 
 ```bash
 aws s3 mb s3://BUCKET_NAME
 ```
+Next, clone the ec2-spot-labs repository to your local workstation or to your Cloud9 environment.
+
+```
+git clone https://github.com/awslabs/ec2-spot-labs.git
+```
+
+Next, change directories to the root directory for this example solution.
+
+```
+cd ec2-spot-labs/ec2-spot-interruption-logging-insights
+```
+
 Next, run the folllowing command to build the Lambda function:
 
 ```bash
