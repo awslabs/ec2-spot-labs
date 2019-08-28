@@ -1,0 +1,130 @@
+{
+  "SpotOptions": {
+    "AllocationStrategy": "capacity-optimized",
+    "MinTargetCapacity": 10,
+    "InstanceInterruptionBehavior": "terminate"
+  },
+  "LaunchTemplateConfigs": [
+    {
+      "LaunchTemplateSpecification": {
+        "LaunchTemplateName": "amazon-linux-2",
+        "Version": "1"
+      },
+      "Overrides": [
+        {
+          "InstanceType": "c3.large",
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "InstanceType": "c3.large",
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        },
+        {
+          "InstanceType": "c3.large",
+          "SubnetId": "subnet-0437dfe009676c434"
+        },
+        {
+          "InstanceType": "c4.large",
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "InstanceType": "c4.large",
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        },
+        {
+          "InstanceType": "c4.large",
+          "SubnetId": "subnet-0437dfe009676c434"
+        },
+        {
+          "InstanceType": "c5.large",
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "InstanceType": "c5.large",
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        },
+        {
+          "InstanceType": "c5.large",
+          "SubnetId": "subnet-0437dfe009676c434"
+        },
+        {
+          "InstanceType": "t3a.large",
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "InstanceType": "t3a.large",
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        },
+        {
+          "InstanceType": "t3a.large",
+          "SubnetId": "subnet-0437dfe009676c434"
+        },
+        {
+          "InstanceType": "t3.large",
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "InstanceType": "t3.large",
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        },
+        {
+          "InstanceType": "t3.large",
+          "SubnetId": "subnet-0437dfe009676c434"
+        },
+        {
+          "InstanceType": "m5a.large",
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "InstanceType": "m5a.large",
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        },
+        {
+          "InstanceType": "m5a.large",
+          "SubnetId": "subnet-0437dfe009676c434"
+        },
+        {
+          "InstanceType": "m5.large",
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "InstanceType": "m5.large",
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        },
+        {
+          "InstanceType": "m5.large",
+          "SubnetId": "subnet-0437dfe009676c434"
+        },
+        {
+          "InstanceType": "r5a.large",
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "InstanceType": "r5a.large",
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        },
+        {
+          "InstanceType": "r5a.large",
+          "SubnetId": "subnet-0437dfe009676c434"
+        },
+        {
+          "InstanceType": "r5.large",
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "InstanceType": "r5.large",
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        },
+        {
+          "InstanceType": "r5.large",
+          "SubnetId": "subnet-0437dfe009676c434"
+        }
+      ]
+    }
+  ],
+  "TargetCapacitySpecification": {
+    "TotalTargetCapacity": 1,
+    "DefaultTargetCapacityType": "spot"
+  },
+  "Type": "maintain"
+}

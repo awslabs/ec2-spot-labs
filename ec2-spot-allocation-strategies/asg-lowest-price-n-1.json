@@ -1,0 +1,52 @@
+{
+  "AutoScalingGroupName": "lowest-price-n-1",
+  "MixedInstancesPolicy": {
+    "LaunchTemplate": {
+      "LaunchTemplateSpecification": {
+        "LaunchTemplateName": "amazon-linux-2",
+        "Version": "$Latest"
+      },
+      "Overrides": [
+        {
+          "InstanceType": "c3.large"
+        },
+        {
+          "InstanceType": "c4.large"
+        },
+        {
+          "InstanceType": "c5.large"
+        },
+        {
+          "InstanceType": "t3a.large"
+        },
+        {
+          "InstanceType": "t3.large"
+        },
+        {
+          "InstanceType": "m5a.large"
+        },
+        {
+          "InstanceType": "m5.large"
+        },
+        {
+          "InstanceType": "r5a.large" 
+        },
+        {
+          "InstanceType": "r5.large"
+        }
+      ]
+    },
+    "InstancesDistribution": {
+      "OnDemandAllocationStrategy": "prioritized",
+      "OnDemandBaseCapacity": 0,
+      "OnDemandPercentageAboveBaseCapacity": 0,
+      "SpotAllocationStrategy": "lowest-price",
+      "SpotInstancePools": 1
+    }
+  },
+  "MinSize": 10,
+  "MaxSize": 40,
+  "DesiredCapacity": 20,
+  "HealthCheckType": "EC2",
+  "VPCZoneIdentifier": "subnet-0fc4d2543f3dcc255,subnet-09b9d0dbca4bae8a5,subnet-0437dfe009676c434"
+}

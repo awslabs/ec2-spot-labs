@@ -1,0 +1,78 @@
+demo.txt
+
+1. create S3 bucket
+
+aws s3 mb s3://itversity-emr-demo
+
+2. show Amazon Customer Reviews Dataset
+
+open https://s3.amazonaws.com/amazon-reviews-pds/readme.html
+
+3. show wordcount script
+
+open wordcount.py
+
+4. Open the EMR console in the region where you are looking to launch your cluster.
+
+5. Click “Create Cluster“
+
+6. Click “Go to advanced options“
+
+7. Select the latest EMR release, and in the list of components, only leave Hadoop checked and also check Spark and Ganglia (we will use it later to monitor our cluster)
+
+8. Under “Add steps (Optional)” -> Step type drop down menu, select “Spark application” and click Configure, then add the following details in the Add step dialog window:
+Spark-submit options: here we will configure the memory and core count for each executor, as described in the previous section. Use these settings (make sure you have two ‘-’ chars):
+
+--executor-memory 18G --executor-cores 4 
+
+9. Application location: here we will configure the location of our Spark application. Save the following python code to a file (or download it from the Attachment box) and upload it to your S3 bucket using the AWS console or AWS CLI:
+
+aws s3 cp wordcount.py s3://itversity-emr-demo
+
+10. Then add the location of the file under the Application location field:
+
+s3://itversity-emr-demo/wordcount.py
+
+11. Arguments: Here we will configure the location of where Spark will write the results of the job:
+
+s3://itversity-emr-demo/results/
+
+12. Configure instance fleet
+
+Master
+
+c4.large
+m4.large
+
+Core - 4 Spot units
+
+r5a.xlarge - 4 units
+r5d.xlarge - 4 units
+r4.xlarge - 4 units
+r5.xlarge - 4 units
+
+Task - 40 Spot units
+
+r5.2xlarge - 8 units
+r4.xlarge - 4 units
+r4.2xlarge - 8 units
+r5.xlarge - 4 units
+i3.xlarge - 4 units
+
+
+
+
+
+
+
+
+Recommended for the workshop:
+- r4.xlarge and larger
+- r5.xlarge and larger
+- r5a.xlarge and larger
+- r5d.xlarge and larger
+- i3.xlarge and larger
+
+Previous generation instance types:
+- r3.xlarge and larger
+- i2.xlarge and larger

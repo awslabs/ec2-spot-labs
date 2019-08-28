@@ -1,0 +1,18 @@
+{
+  "LaunchTemplateName": "amazon-linux-2",
+  "VersionDescription": "Launch template for Amazon Linux 2 AMI",
+  "LaunchTemplateData": {
+    "ImageId": "ami-0b898040803850657",
+    "TagSpecifications": [
+      {
+        "ResourceType": "instance",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Amazon Linux 2"
+          }
+        ]
+      }
+    ]
+  }
+}
