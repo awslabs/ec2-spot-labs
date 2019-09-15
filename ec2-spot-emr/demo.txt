@@ -2,7 +2,7 @@ demo.txt
 
 1. create S3 bucket
 
-aws s3 mb s3://itversity-emr-demo
+aws s3 mb s3://twitch-live
 
 2. show Amazon Customer Reviews Dataset
 
@@ -27,15 +27,15 @@ Spark-submit options: here we will configure the memory and core count for each 
 
 9. Application location: here we will configure the location of our Spark application. Save the following python code to a file (or download it from the Attachment box) and upload it to your S3 bucket using the AWS console or AWS CLI:
 
-aws s3 cp wordcount.py s3://itversity-emr-demo
+aws s3 cp wordcount.py s3://twitch-live
 
 10. Then add the location of the file under the Application location field:
 
-s3://itversity-emr-demo/wordcount.py
+s3://twitch-live/wordcount.py
 
 11. Arguments: Here we will configure the location of where Spark will write the results of the job:
 
-s3://itversity-emr-demo/results/
+s3://twitch-live/results/
 
 12. Configure instance fleet
 
