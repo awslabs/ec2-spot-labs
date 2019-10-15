@@ -1,0 +1,348 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Example of EC2 Auto Scaling group using EC2 Spot Instances, automatically scaling
+  based on SQS queue depth
+Mappings:
+  CidrMappings:
+    vpc:
+      CIDR: 10.0.0.0/16
+Metadata:
+  Author:
+    Description: Chad Schmutzer <schmutze@amazon.com>
+  License:
+    Description: 'Copyright 2019 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+Outputs:
+  awsRegionId:
+    Description: The AWS Region ID your template was launched in
+    Value:
+      Ref: AWS::Region
+  publicSubnet1:
+    Description: Public subnet 1
+    Value:
+      Ref: publicSubnet1
+  publicSubnet2:
+    Description: Public subnet 2
+    Value:
+      Ref: publicSubnet2
+  vpc:
+    Description: The VPC
+    Value:
+      Ref: vpc
+Parameters:
+  maxvCpusOnDemand:
+    Default: 16
+    Description: The maximum number of Amazon EC2 On-Demand vCPUs that an environment can reach
+    Type: Number
+  maxvCpusSpot:
+    Default: 256
+    Description: The maximum number of Amazon EC2 Spot vCPUs that an environment can reach
+    Type: Number
+  minvCpusOnDemand:
+    Default: 8
+    Description: The minimum number of Amazon EC2 On-Demand vCPUs that an environment should
+      maintain
+    Type: Number
+  minvCpusSpot:
+    Default: 32
+    Description: The minimum number of Amazon EC2 Spot vCPUs that an environment should maintain
+    Type: Number
+Resources:
+  attachGateway:
+    DependsOn:
+    - vpc
+    - internetGateway
+    Properties:
+      InternetGatewayId:
+        Ref: internetGateway
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::VPCGatewayAttachment
+  batchComputeEnvironmentOnDemand:
+    DependsOn:
+    - publicSubnet1
+    - publicSubnet2
+    - instanceRole
+    - launchTemplate
+    - spotFleetServiceRole
+    Properties:
+      ComputeResources:
+        AllocationStrategy: BEST_FIT_PROGRESSIVE
+        InstanceRole:
+          Ref: instanceProfile
+        InstanceTypes:
+        - optimal
+        LaunchTemplate:
+          LaunchTemplateId:
+            Ref: launchTemplate
+          Version: 1
+        MaxvCpus:
+          Ref: maxvCpusOnDemand
+        MinvCpus:
+          Ref: minvCpusOnDemand
+        SpotIamFleetRole:
+          Ref: spotFleetServiceRole
+        Subnets:
+        - Ref: publicSubnet1
+        - Ref: publicSubnet2
+        Type: EC2
+      ServiceRole:
+        Ref: batchServiceRole
+      State: ENABLED
+      Type: MANAGED
+    Type: AWS::Batch::ComputeEnvironment
+  batchComputeEnvironmentSpot:
+    DependsOn:
+    - publicSubnet1
+    - publicSubnet2
+    - instanceRole
+    - launchTemplate
+    - spotFleetServiceRole
+    Properties:
+      ComputeResources:
+        AllocationStrategy: SPOT_CAPACITY_OPTIMIZED
+        InstanceRole:
+          Ref: instanceProfile
+        InstanceTypes:
+        - optimal
+        LaunchTemplate:
+          LaunchTemplateId:
+            Ref: launchTemplate
+          Version: 1
+        MaxvCpus:
+          Ref: maxvCpusSpot
+        MinvCpus:
+          Ref: minvCpusSpot
+        SpotIamFleetRole:
+          Ref: spotFleetServiceRole
+        Subnets:
+        - Ref: publicSubnet1
+        - Ref: publicSubnet2
+        Type: SPOT
+      ServiceRole:
+        Ref: batchServiceRole
+      State: ENABLED
+      Type: MANAGED
+    Type: AWS::Batch::ComputeEnvironment
+  batchJobDefinition:
+    Properties:
+      ContainerProperties:
+        Command:
+        - env
+        Image: alpine:latest
+        Memory: 128
+        Vcpus: 1
+      RetryStrategy:
+        Attempts: 10
+      Type: container
+    Type: AWS::Batch::JobDefinition
+  batchJobQueue:
+    Properties:
+      ComputeEnvironmentOrder:
+      - ComputeEnvironment:
+          Ref: batchComputeEnvironmentOnDemand
+        Order: 1
+      - ComputeEnvironment:
+          Ref: batchComputeEnvironmentSpot
+        Order: 2
+      Priority: 10
+      State: ENABLED
+    Type: AWS::Batch::JobQueue
+  batchServiceRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - batch.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole
+    Type: AWS::IAM::Role
+  instanceProfile:
+    DependsOn:
+    - instanceRole
+    Properties:
+      Path: /
+      Roles:
+      - Ref: instanceRole
+    Type: AWS::IAM::InstanceProfile
+  instanceRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+      Path: /
+    Type: AWS::IAM::Role
+  internetGateway:
+    DependsOn:
+    - vpc
+    Type: AWS::EC2::InternetGateway
+  launchTemplate:
+    Properties:
+      LaunchTemplateData:
+        SecurityGroupIds:
+        - Ref: securityGroup
+        TagSpecifications:
+        - ResourceType: instance
+          Tags:
+          - Key: Name
+            Value:
+              Ref: AWS::StackName
+        UserData: TUlNRS1WZXJzaW9uOiAxLjAKQ29udGVudC1UeXBlOiBtdWx0aXBhcnQvbWl4ZWQ7IGJvdW5kYXJ5PSI9PU1ZQk9VTkRBUlk9PSIKCi0tPT1NWUJPVU5EQVJZPT0KQ29udGVudC1UeXBlOiB0ZXh0L2Nsb3VkLWNvbmZpZzsgY2hhcnNldD0idXMtYXNjaWkiCgpydW5jbWQ6Ci0gZWNobyAiRUNTX0VOQUJMRV9TUE9UX0lOU1RBTkNFX0RSQUlOSU5HPXRydWUiID4+IC9ldGMvZWNzL2Vjcy5jb25maWcKCi0tPT1NWUJPVU5EQVJZPT0tLQ==
+    Type: AWS::EC2::LaunchTemplate
+  publicRoute:
+    DependsOn:
+    - publicRouteTable
+    - internetGateway
+    - attachGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: internetGateway
+      RouteTableId:
+        Ref: publicRouteTable
+    Type: AWS::EC2::Route
+  publicRouteTable:
+    DependsOn:
+    - vpc
+    - attachGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: Public Route Table
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::RouteTable
+  publicSubnet1:
+    DependsOn:
+    - attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::Select:
+        - 0
+        - Fn::Cidr:
+          - Fn::FindInMap:
+            - CidrMappings
+            - vpc
+            - CIDR
+          - 256
+          - 8
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet1RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet1
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet1
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  publicSubnet2:
+    DependsOn:
+    - attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::Select:
+        - 1
+        - Fn::Cidr:
+          - Fn::FindInMap:
+            - CidrMappings
+            - vpc
+            - CIDR
+          - 256
+          - 8
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet2RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet2
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet2
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  securityGroup:
+    DependsOn:
+    - vpc
+    Properties:
+      GroupDescription: Instance security group
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::SecurityGroup
+  spotFleetServiceRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - spotfleet.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole
+    Type: AWS::IAM::Role
+  vpc:
+    Properties:
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpc
+        - CIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+    Type: AWS::EC2::VPC
+...

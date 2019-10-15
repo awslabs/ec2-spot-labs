@@ -1,7 +1,6 @@
 {
   "SpotOptions": {
     "AllocationStrategy": "capacity-optimized",
-    "MinTargetCapacity": 10,
     "InstanceInterruptionBehavior": "terminate"
   },
   "LaunchTemplateConfigs": [
@@ -126,5 +125,6 @@
     "TotalTargetCapacity": 1,
     "DefaultTargetCapacityType": "spot"
   },
-  "Type": "maintain"
+  "Type": "maintain",
+  "ReplaceUnhealthyInstances": true
 }
