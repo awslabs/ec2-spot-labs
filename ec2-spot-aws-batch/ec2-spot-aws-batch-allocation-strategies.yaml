@@ -1,7 +1,6 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: Example of EC2 Auto Scaling group using EC2 Spot Instances, automatically scaling
-  based on SQS queue depth
+Description: Example of using AWS Batch allocation strategies with EC2 Spot Instances
 Mappings:
   CidrMappings:
     vpc:
