@@ -38,7 +38,7 @@ Outputs:
       Ref: vpc
 Parameters:
   maxvCpusOnDemand:
-    Default: 16
+    Default: 256
     Description: The maximum number of Amazon EC2 On-Demand vCPUs that an environment can reach
     Type: Number
   maxvCpusSpot:
@@ -46,12 +46,12 @@ Parameters:
     Description: The maximum number of Amazon EC2 Spot vCPUs that an environment can reach
     Type: Number
   minvCpusOnDemand:
-    Default: 8
+    Default: 0
     Description: The minimum number of Amazon EC2 On-Demand vCPUs that an environment should
       maintain
     Type: Number
   minvCpusSpot:
-    Default: 32
+    Default: 0
     Description: The minimum number of Amazon EC2 Spot vCPUs that an environment should maintain
     Type: Number
 Resources:
