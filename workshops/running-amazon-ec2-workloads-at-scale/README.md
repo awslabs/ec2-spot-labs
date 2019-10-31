@@ -1,3 +1,7 @@
+# This workshop is now available on https://ec2spotworkshops.com/ along with other great EC2 Spot workshops.
+
+
+
 # Running Amazon EC2 Workloads at Scale: Workshop guide
   
   
