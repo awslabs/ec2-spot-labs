@@ -1,9 +1,9 @@
-#Spot @ re:Invent 2019
+# Spot @ re:Invent 2019
 
 Here is a complete list of re:Invent sessions where you can learn about cost and capacity optimization.
 
 
-##BREAKOUT SESSIONS
+## BREAKOUT SESSIONS
 
 ###CMP202 - Better, Faster, Cheaper Compute - Cost Optimizing Amazon EC2
 
