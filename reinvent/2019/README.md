@@ -1,26 +1,32 @@
-*re:Invent Spot 2019*
+#Spot @ re:Invent 2019
+
+Here is a complete list of re:Invent sessions where you can learn about cost and capacity optimization.
 
 
-Cost and Capacity Optimization re:Invent Sessions 
+##BREAKOUT SESSIONS
 
-* *Breakout Sessions*: re:Invent breakout sessions are lecture style and 60 minutes long. These sessions will take place throughout the re:Invent campus and cover all topics at all levels (200–400). Sessions are delivered by AWS experts, customers, and partners, and they typically include 10–15 minutes at the end for Q&A.
-* *Workshops*: Workshops are two-hour, hands-on sessions where you work in teams to solve problems using AWS. Workshops organize attendees into small groups and provide scenarios to encourage interaction, giving you the opportunity to learn from and teach each other. Each workshop starts with a 10–15-minute lecture by the main speaker, and the rest of the time is spent working as a group. AWS will provide credits.
-* *Builders Sessions*: Builders Sessions are 60-minute small groups sessions with up to five customers and one AWS expert, who is there to help, answer questions, and provide guidance. You will use your laptop to experiment and build with the AWS expert after a short demonstration. There is reserved seating for builders sessions. 
-* *Chalk Talks:* Chalk talks are a highly interactive content format with a smaller audience. They begin with a 10–15-minute lecture delivered by an AWS expert, followed by a 45–50-minute Q&A session with the audience. The goal is to foster a technical discussion around real-world architecture challenges.Chalk talks are one hour and are presented by AWS experts. They have expert level content.
+###CMP202 - Better, Faster, Cheaper Compute - Cost Optimizing Amazon EC2
 
-[Image: image.png]
-BREAKOUT SESSIONS
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95739&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97223&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
 
-*CMP202 - Better, Faster, Cheaper Compute - Cost Optimizing Amazon EC2  *- (session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95739&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97223&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-It’s easier than ever to grow your compute capacity and enable new types of cloud computing applications while maintaining the lowest TCO by blending EC2 Spot, On-Demand and RI purchase models. In this session, learn how to use the power of EC2 with AWS services such as Auto Scaling, ECS, EKS, EMR, and Batch to programmatically optimize costs while maintaining high performance and availability‚ all without breaking a sweat. Finally we will dive deep into how [***REMOVED***] can help you optimize your EC2 usage for cost and performance.
+>It’s easier than ever to grow your compute capacity and enable new types of cloud computing applications while maintaining the lowest TCO by blending EC2 Spot, On-Demand and RI purchase models. In this session, learn how to use the power of EC2 with AWS services such as Auto Scaling, ECS, EKS, EMR, and Batch to programmatically optimize costs while maintaining high performance and availability‚ all without breaking a sweat. Finally we will dive deep into how [***REMOVED***] can help you optimize your EC2 usage for cost and performance. 
 
-*CMP331 - Save up to 90% and Run Production Workloads on Spot *- (session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98830&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98831&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-In this session, learn how to effectively harness Spot Instances for production workloads. Amazon EC2 Spot Instances allow you to use spare EC2 computing capacity, which is often 90 percent less expensive than On-Demand prices. We explore application requirements to use Spot Instances, best practices learned from thousands of customers, and the services that make it easy. Finally, we run through practical examples of how to use Spot for the most common production workloads, the common pitfalls customers run into, and how to avoid them.
 
-*CMP326 - Capacity Management Made Easy with Amazon EC2 Auto Scaling - *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98813&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98814&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-Amazon EC2 Auto Scaling offers a hands-free capacity management experience to help customers maintain a healthy fleet, improve application availability, and reduce costs. In this session, we deep-dive into how Amazon EC2 Auto Scaling works to simplify continuous fleet management and automatic scaling with changing load. Netflix delivers shows like Sacred Games, Stranger Things, Money Heist, and many more to more than 150 million subscribers across 190+ countries around the world. Netflix shares how Amazon EC2 Auto Scaling allows its infrastructure to automatically adapt to changing traffic patterns in order to keep its audience entertained and its costs on target.
 
-CHALK TALKS
+- ***CMP331 - Save up to 90% and Run Production Workloads on Spot***
+>In this session, learn how to effectively harness Spot Instances for production workloads. Amazon EC2 Spot Instances allow you to use spare EC2 computing capacity, which is often 90 percent less expensive than On-Demand prices. We explore application requirements to use Spot Instances, best practices learned from thousands of customers, and the services that make it easy. Finally, we run through practical examples of how to use Spot for the most common production workloads, the common pitfalls customers run into, and how to avoid them.
+
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98830&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98831&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+
+- ***CMP326 - Capacity Management Made Easy with Amazon EC2 Auto Scaling***
+> Amazon EC2 Auto Scaling offers a hands-free capacity management experience to help customers maintain a healthy fleet, improve application availability, and reduce costs. In this session, we deep-dive into how Amazon EC2 Auto Scaling works to simplify continuous fleet management and automatic scaling with changing load. Netflix delivers shows like Sacred Games, Stranger Things, Money Heist, and many more to more than 150 million subscribers across 190+ countries around the world. Netflix shares how Amazon EC2 Auto Scaling allows its infrastructure to automatically adapt to changing traffic patterns in order to keep its audience entertained and its costs on target.
+
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98813&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98814&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+
+##CHALK TALKS
 
 *CMP313 - Save by using multiple purchase options with Amazon EC2 Auto Scaling *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95752&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97215&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
 Amazon EC2 Auto Scaling now makes it easier than ever to mix multiple purchase options and instance types in the same Auto Scaling group, so you can leverage the cost savings of Spot Instances with the stability of On-Demand and Reserved Instances within the same Auto Scaling group. In this chalk talk, we show you how Auto Scaling groups have made it easier than ever to deploy your applications.
@@ -32,7 +38,7 @@ Learn how you can save on big data workloads by running Spot Instances on Amazon
 Provisioning and managing instances is fundamental to creating a secure, scalable environment for your application. This session guides you through recommended practices for selecting instance types, provisioning resources, connecting to instances, building automation and governance, and monitoring and optimizing instance usage for your workloads. Learn how to move seamlessly from a proof of concept to an automated production environment using launch templates and newly launched features. We also cover some best practices and share tips on how you can simplify your instance launch experience.
 
 
-WORKSHOPS
+##WORKSHOPS
 
 *CMP401 - Running EC2 workloads at scale *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95748&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96180&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 3 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96714&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
 Join this workshop to get hands-on with the latest Amazon EC2 features, including Amazon EC2 Auto Scaling groups and Amazon EC2 launch templates, and AWS CodeDeploy. Learn how to utilize EC2 launch templates to power and deploy an EC2 Auto Scaling group using a combination of EC2 On-Demand and EC2 Spot Instances behind a load balancer. Next, configure the workload to handle peak demand with automatic scaling policies—while optimizing cost and performance.
@@ -43,7 +49,7 @@ Learn how you can leverage Amazon EC2 Spot Instances to create CI/CD pipelines, 
 *CMP318 - Kubernetes on Spot Instances: Optimize for Scale and Cost *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96396&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96395&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
 Containers are usually stateless and fault-tolerant, and Amazon EC2 Spot Instances are a great match for powering container workloads. Attend this workshop to learn how to provision, manage, and maintain your Amazon Kubernetes clusters with Amazon EKS at any scale on Spot Instances while architecting to optimize cost and scale. We dive deep using hands-on material to provision and scale worker nodes, handle interruptions, and design for fault tolerance. We also demonstrate successfully managing a suddenly spiky workload. This workshop is designed to help architects, engineers, and developers understand how to run a containerized environment on Spot Instances.
 
-BUILDERS SESSIONS
+##BUILDERS SESSIONS
 
 *CMP416 - Scale Kuberenetes for less on Spot Instances - *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98821&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98822&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 3 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98823&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
 In this builders session on containers, we cover how to optimize your Kubernetes clusters with Amazon Elastic Kubernetes Service (Amazon EKS) using a mixed worker node group of Amazon EC2 On-Demand and Spot Instances. We cover concepts of provisioning instances, scaling, and handling interruptions. This session provides a hands-on guide for developers and operations managers to explore.
@@ -80,3 +86,19 @@ Have you ever needed to build a 10,000-core HPC cluster? And have you wondered w
 
 *ANT226 - Lower costs on Amazon EMR: AWS Auto Scaling and Spot pricing *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97960&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
 Amazon EMR enables customers to process and analyze big data at any scale. In this chalk talk, we share proven strategies to maximize utilization while minimizing costs for long-running clusters. We discuss how to get the most leverage from features like AWS Auto Scaling and Spot pricing. We also examine how changing design architecture decoupling of compute and storage impacts total cost of ownership and how appropriately sizing instances, clusters, and jobs will cost customers less.
+
+##What to expect in each type of session
+
+**Breakout Sessions**
+>re:Invent breakout sessions are lecture style and 60 minutes long. These sessions will take place throughout the re:Invent campus and cover all topics at all levels (200–400). Sessions are delivered by AWS experts, customers, and partners, and they typically include 10–15 minutes at the end for Q&A.
+
+**Workshops**
+>Workshops are two-hour, hands-on sessions where you work in teams to solve problems using AWS. Workshops organize attendees into small groups and provide scenarios to encourage interaction, giving you the opportunity to learn from and teach each other. Each workshop starts with a 10–15-minute lecture by the main speaker, and the rest of the time is spent working as a group. AWS will provide credits.
+
+**Builders Sessions**
+>Builders Sessions are 60-minute small groups sessions with up to five customers and one AWS expert, who is there to help, answer questions, and provide guidance. You will use your laptop to experiment and build with the AWS expert after a short demonstration. There is reserved seating for builders sessions. 
+
+**Chalk Talks**
+>Chalk talks are a highly interactive content format with a smaller audience. They begin with a 10–15-minute lecture delivered by an AWS expert, followed by a 45–50-minute Q&A session with the audience. The goal is to foster a technical discussion around real-world architecture challenges.Chalk talks are one hour and are presented by AWS experts. They have expert level content.
+
+![Know the campus](./campus.png)
