@@ -1,4 +1,4 @@
-# Spot @ re:Invent 2019
+# EC2 Spot @ re:Invent 2019
 
 Here is a complete list of re:Invent sessions where you can learn about cost and capacity optimization.
 #EC2Spot #SaveAtScale #SpotInstances
@@ -34,25 +34,39 @@ Here is a complete list of re:Invent sessions where you can learn about cost and
   - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95752&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
   - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97215&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
 
->Amazon EC2 Auto Scaling now makes it easier than ever to mix multiple purchase options and instance types in the same Auto Scaling group, so you can leverage the cost savings of Spot Instances with the stability of On-Demand and Reserved Instances within the same Auto Scaling group. In this chalk talk, we show you how Auto Scaling groups have made it easier than ever to deploy your applications.
+> Amazon EC2 Auto Scaling now makes it easier than ever to mix multiple purchase options and instance types in the same Auto Scaling group, so you can leverage the cost savings of Spot Instances with the stability of On-Demand and Reserved Instances within the same Auto Scaling group. In this chalk talk, we show you how Auto Scaling groups have made it easier than ever to deploy your applications.
 
-*CMP336 - Save on Big Data Workloads like Apache Spark and Hadoop *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98839&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98840&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-Learn how you can save on big data workloads by running Spot Instances on Amazon EMR. Access significantly higher compute capacity and reduce the time to process big datasets at a fraction of the cost. With Amazon EMR you can optimize for the right instance mix across Spot and On-Demand and simplify the setup process. Finally, learn how to increase cluster resilience by configuring transient and long-running clusters for the right mix of On-Demand and Spot Instances.
+### CMP336 - Save on Big Data Workloads like Apache Spark and Hadoop
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98839&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98840&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
 
-*CMP335 - Streamlining EC2 Instance Provisioning and Management *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98838&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-Provisioning and managing instances is fundamental to creating a secure, scalable environment for your application. This session guides you through recommended practices for selecting instance types, provisioning resources, connecting to instances, building automation and governance, and monitoring and optimizing instance usage for your workloads. Learn how to move seamlessly from a proof of concept to an automated production environment using launch templates and newly launched features. We also cover some best practices and share tips on how you can simplify your instance launch experience.
+> Learn how you can save on big data workloads by running Spot Instances on Amazon EMR. Access significantly higher compute capacity and reduce the time to process big datasets at a fraction of the cost. With Amazon EMR you can optimize for the right instance mix across Spot and On-Demand and simplify the setup process. Finally, learn how to increase cluster resilience by configuring transient and long-running clusters for the right mix of On-Demand and Spot Instances.
 
+### CMP335 - Streamlining EC2 Instance Provisioning and Management
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98838&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
 
-##WORKSHOPS
+> Provisioning and managing instances is fundamental to creating a secure, scalable environment for your application. This session guides you through recommended practices for selecting instance types, provisioning resources, connecting to instances, building automation and governance, and monitoring and optimizing instance usage for your workloads. Learn how to move seamlessly from a proof of concept to an automated production environment using launch templates and newly launched features. We also cover some best practices and share tips on how you can simplify your instance launch experience.
 
-*CMP401 - Running EC2 workloads at scale *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95748&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96180&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 3 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96714&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-Join this workshop to get hands-on with the latest Amazon EC2 features, including Amazon EC2 Auto Scaling groups and Amazon EC2 launch templates, and AWS CodeDeploy. Learn how to utilize EC2 launch templates to power and deploy an EC2 Auto Scaling group using a combination of EC2 On-Demand and EC2 Spot Instances behind a load balancer. Next, configure the workload to handle peak demand with automatic scaling policies—while optimizing cost and performance.
+## WORKSHOPS
 
-*CMP410 - Save up to 90% on CI/CD and test workloads *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96392&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96393&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-Learn how you can leverage Amazon EC2 Spot Instances to create CI/CD pipelines, Jenkins build agents, and test environments at a fraction of the cost of On-Demand Instances. We also implement mechanisms to ensure that our CI/CD pipelines remain available by decoupling application state from our compute resources. Finally, we migrate everything to a containered environment to eke out maximum performance and cost-efficiency. In addition to covering the ins and outs of Spot, we also share how some customers use Spot to reduce the cost of their test and production solutions
+### CMP401 - Running EC2 workloads at scale
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95748&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96180&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 3](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96714&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
 
-*CMP318 - Kubernetes on Spot Instances: Optimize for Scale and Cost *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96396&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96395&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-Containers are usually stateless and fault-tolerant, and Amazon EC2 Spot Instances are a great match for powering container workloads. Attend this workshop to learn how to provision, manage, and maintain your Amazon Kubernetes clusters with Amazon EKS at any scale on Spot Instances while architecting to optimize cost and scale. We dive deep using hands-on material to provision and scale worker nodes, handle interruptions, and design for fault tolerance. We also demonstrate successfully managing a suddenly spiky workload. This workshop is designed to help architects, engineers, and developers understand how to run a containerized environment on Spot Instances.
+> Join this workshop to get hands-on with the latest Amazon EC2 features, including Amazon EC2 Auto Scaling groups and Amazon EC2 launch templates, and AWS CodeDeploy. Learn how to utilize EC2 launch templates to power and deploy an EC2 Auto Scaling group using a combination of EC2 On-Demand and EC2 Spot Instances behind a load balancer. Next, configure the workload to handle peak demand with automatic scaling policies—while optimizing cost and performance.
+
+### CMP410 - Save up to 90% on CI/CD and test workloads
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96392&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96393&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+
+>Learn how you can leverage Amazon EC2 Spot Instances to create CI/CD pipelines, Jenkins build agents, and test environments at a fraction of the cost of On-Demand Instances. We also implement mechanisms to ensure that our CI/CD pipelines remain available by decoupling application state from our compute resources. Finally, we migrate everything to a containered environment to eke out maximum performance and cost-efficiency. In addition to covering the ins and outs of Spot, we also share how some customers use Spot to reduce the cost of their test and production solutions
+
+### CMP318 - Kubernetes on Spot Instances: Optimize for Scale and Cost
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96396&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96395&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+
+> Containers are usually stateless and fault-tolerant, and Amazon EC2 Spot Instances are a great match for powering container workloads. Attend this workshop to learn how to provision, manage, and maintain your Amazon Kubernetes clusters with Amazon EKS at any scale on Spot Instances while architecting to optimize cost and scale. We dive deep using hands-on material to provision and scale worker nodes, handle interruptions, and design for fault tolerance. We also demonstrate successfully managing a suddenly spiky workload. This workshop is designed to help architects, engineers, and developers understand how to run a containerized environment on Spot Instances.
 
 ##BUILDERS SESSIONS
 
