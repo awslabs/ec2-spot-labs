@@ -1,6 +1,6 @@
 # EC2 Spot @ re:Invent 2019
 
-Here is a complete list of re:Invent sessions where you can learn about cost and capacity optimization.
+Here is a **COMPLETE** list of re:Invent sessions where you can learn about cost and capacity optimization.
 #EC2Spot #SaveAtScale #SpotInstances
 
 
