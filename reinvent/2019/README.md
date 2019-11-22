@@ -12,25 +12,28 @@ Here is a complete list of re:Invent sessions where you can learn about cost and
 
 > It’s easier than ever to grow your compute capacity and enable new types of cloud computing applications while maintaining the lowest TCO by blending EC2 Spot, On-Demand and RI purchase models. In this session, learn how to use the power of EC2 with AWS services such as Auto Scaling, ECS, EKS, EMR, and Batch to programmatically optimize costs while maintaining high performance and availability‚ all without breaking a sweat. Finally we will dive deep into how [***REMOVED***] can help you optimize your EC2 usage for cost and performance. 
 
-### CMP331 - Save up to 90% and Run Production Workloads on Spot***
+### CMP331 - Save up to 90% and Run Production Workloads on Spot
 
   - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98830&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
   - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98831&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
 
 > In this session, learn how to effectively harness Spot Instances for production workloads. Amazon EC2 Spot Instances allow you to use spare EC2 computing capacity, which is often 90 percent less expensive than On-Demand prices. We explore application requirements to use Spot Instances, best practices learned from thousands of customers, and the services that make it easy. Finally, we run through practical examples of how to use Spot for the most common production workloads, the common pitfalls customers run into, and how to avoid them.
 
-### CMP326 - Capacity Management Made Easy with Amazon EC2 Auto Scaling***
+### CMP326 - Capacity Management Made Easy with Amazon EC2 Auto Scaling
 
- - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98813&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98813&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
   - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98814&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
 
 > Amazon EC2 Auto Scaling offers a hands-free capacity management experience to help customers maintain a healthy fleet, improve application availability, and reduce costs. In this session, we deep-dive into how Amazon EC2 Auto Scaling works to simplify continuous fleet management and automatic scaling with changing load. Netflix delivers shows like Sacred Games, Stranger Things, Money Heist, and many more to more than 150 million subscribers across 190+ countries around the world. Netflix shares how Amazon EC2 Auto Scaling allows its infrastructure to automatically adapt to changing traffic patterns in order to keep its audience entertained and its costs on target.
 
 
-##CHALK TALKS
+## CHALK TALKS
 
-*CMP313 - Save by using multiple purchase options with Amazon EC2 Auto Scaling *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95752&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97215&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-Amazon EC2 Auto Scaling now makes it easier than ever to mix multiple purchase options and instance types in the same Auto Scaling group, so you can leverage the cost savings of Spot Instances with the stability of On-Demand and Reserved Instances within the same Auto Scaling group. In this chalk talk, we show you how Auto Scaling groups have made it easier than ever to deploy your applications.
+### CMP313 - Save by using multiple purchase options with Amazon EC2 Auto Scaling 
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95752&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97215&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+
+>Amazon EC2 Auto Scaling now makes it easier than ever to mix multiple purchase options and instance types in the same Auto Scaling group, so you can leverage the cost savings of Spot Instances with the stability of On-Demand and Reserved Instances within the same Auto Scaling group. In this chalk talk, we show you how Auto Scaling groups have made it easier than ever to deploy your applications.
 
 *CMP336 - Save on Big Data Workloads like Apache Spark and Hadoop *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98839&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98840&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
 Learn how you can save on big data workloads by running Spot Instances on Amazon EMR. Access significantly higher compute capacity and reduce the time to process big datasets at a fraction of the cost. With Amazon EMR you can optimize for the right instance mix across Spot and On-Demand and simplify the setup process. Finally, learn how to increase cluster resilience by configuring transient and long-running clusters for the right mix of On-Demand and Spot Instances.
