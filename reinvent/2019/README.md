@@ -27,6 +27,24 @@ Here is a complete list of re:Invent sessions where you can learn about cost and
 
 > Amazon EC2 Auto Scaling offers a hands-free capacity management experience to help customers maintain a healthy fleet, improve application availability, and reduce costs. In this session, we deep-dive into how Amazon EC2 Auto Scaling works to simplify continuous fleet management and automatic scaling with changing load. Netflix delivers shows like Sacred Games, Stranger Things, Money Heist, and many more to more than 150 million subscribers across 190+ countries around the world. Netflix shares how Amazon EC2 Auto Scaling allows its infrastructure to automatically adapt to changing traffic patterns in order to keep its audience entertained and its costs on target.
 
+### CON332 - Extreme infrastructure automation with Wavefront by VMware
+  
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98065&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+
+> In this session, learn from Wavefront by VMware how to scale containerized infrastructure while increasing efficiency. Join this session to learn about intelligent Amazon EC2 instance size selection, pod placement, cost-optimization automation using Amazon EC2 Spot Instances, and next-generation reserved instance management. This presentation is brought to you by Spotinst, an APN Partner.
+
+### CON308 - How Ticketmaster runs Kubernetes for 80% less without managing VMs
+  
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96848&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+
+> Serverless containers are the future of containers infrastructure. Matching and scaling the right infrastructure resource to ever-changing microservices deployments is a challenge. In this talk, the Ticketmaster engineering team reviews the evolution of containers deployments and the automatic scaling of infrastructure in Kubernetes. They discuss the tradeoffs and introduce a new approach to deploying serverless containers using Spotinst Ocean. Join this session to learn how Ticketmaster was able to run 100 percent of its Amazon EC2 on Spot Instances with programmatic fallback to On-Demand Instances or Reserved Instances across multiple AWS accounts. This presentation is brought to you by Spotinst, an APN Partner.
+
+### ARC209 - Running lean architectures: How to be cost-effective on AWS
+  
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97796&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97797&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+
+> Everybody can save money on AWS by optimizing your architecture! This session reviews a wide range of cost-optimization strategies, featuring real-world examples. In addition to Reserved Instances, we have a special focus on Spot Instances to get a discount of up to 90 percent. We also talk about leveraging AWS Auto Scaling, caching and offloading content to Amazon CloudFront to reduce backend load, and much more. Running serverless? Learn how to cut costs on serverless through minimizing AWS Lambda execution time and maximizing networking throughput. Additionally, we cover optimizing training and inference costs for machine learning on AWS.
 
 ## CHALK TALKS
 
@@ -77,27 +95,29 @@ Here is a complete list of re:Invent sessions where you can learn about cost and
 
 > In this builders session on containers, we cover how to optimize your Kubernetes clusters with Amazon Elastic Kubernetes Service (Amazon EKS) using a mixed worker node group of Amazon EC2 On-Demand and Spot Instances. We cover concepts of provisioning instances, scaling, and handling interruptions. This session provides a hands-on guide for developers and operations managers to explore.
 
-*CMP403 - Running enterprise test/dev on Amazon EC2 Spot Instances *- (session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95758&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97207&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 3 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97208&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 4 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97209&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-Join this builder session to learn how to run an enterprise test/dev on Amazon EC2 Spot Instances. If you are new to Spot Instances and would like to take advantage of the cost savings, test/dev is a great place to start. Load, integration, canary, and security testing all benefit from the elasticity and price savings associated with Spot Instances. Learn how to use the EC2 Fleet API to diversify and use different instance pools to run test/dev.
+### CMP403 - Running enterprise test/dev on Amazon EC2 Spot Instances
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95758&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97207&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 3](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97208&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 4](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97209&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
 
-*CMP404 - Running big data clusters on EMR with Spot Instances* - (session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95759&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97212&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 3 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97213&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-Join this builders session to learn how to run Big Data frameworks such as Apache Spark, Hadoop, and Hive through Amazon EMR while maximizing for scale, performance, and deep cost savings with Spot Instances. Learn how to configure clusters and instance fleets for the right mix of On-Demand and Spot Instances for long-running and transient workloads.
+> Join this builder session to learn how to run an enterprise test/dev on Amazon EC2 Spot Instances. If you are new to Spot Instances and would like to take advantage of the cost savings, test/dev is a great place to start. Load, integration, canary, and security testing all benefit from the elasticity and price savings associated with Spot Instances. Learn how to use the EC2 Fleet API to diversify and use different instance pools to run test/dev.
 
-*CMP413 - Deploying EC2 Auto Scaling in your CI/CD pipeline *- (session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98806&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98807&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 3 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98808&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-Continuous integration and continuous deployment (CI/CD) with Auto Scaling can accelerate feature delivery to your customers and ensure higher availability and lower costs for your applications. This session provides hands-on experience to deploy your web app in an Auto Scaling group and set up a CI/CD pipeline with AWS CodeDeploy and AWS CodePipeline. Learn the best practices for setting up your Auto Scaling groups and scaling policies for a resilient infrastructure environment at a lower cost.
+### CMP404 - Running big data clusters on EMR with Spot Instances
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95759&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97212&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 3](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97213&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+
+> Join this builders session to learn how to run Big Data frameworks such as Apache Spark, Hadoop, and Hive through Amazon EMR while maximizing for scale, performance, and deep cost savings with Spot Instances. Learn how to configure clusters and instance fleets for the right mix of On-Demand and Spot Instances for long-running and transient workloads.
+
+### CMP413 - Deploying EC2 Auto Scaling in your CI/CD pipeline
+  - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98806&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98807&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+  - [Session 3](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98808&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
+
+> Continuous integration and continuous deployment (CI/CD) with Auto Scaling can accelerate feature delivery to your customers and ensure higher availability and lower costs for your applications. This session provides hands-on experience to deploy your web app in an Auto Scaling group and set up a CI/CD pipeline with AWS CodeDeploy and AWS CodePipeline. Learn the best practices for setting up your Auto Scaling groups and scaling policies for a resilient infrastructure environment at a lower cost.
 
 _SPOT & AUTO SCALING IN OTHER TRACKS_
-
-Breakout Sessions
-
-*CON332 - Extreme infrastructure automation with Wavefront by VMware - *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=98065&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-In this session, learn from Wavefront by VMware how to scale containerized infrastructure while increasing efficiency. Join this session to learn about intelligent Amazon EC2 instance size selection, pod placement, cost-optimization automation using Amazon EC2 Spot Instances, and next-generation reserved instance management. This presentation is brought to you by Spotinst, an APN Partner.
-
-*CON308 - How Ticketmaster runs Kubernetes for 80% less without managing VMs - *(session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=96848&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-Serverless containers are the future of containers infrastructure. Matching and scaling the right infrastructure resource to ever-changing microservices deployments is a challenge. In this talk, the Ticketmaster engineering team reviews the evolution of containers deployments and the automatic scaling of infrastructure in Kubernetes. They discuss the tradeoffs and introduce a new approach to deploying serverless containers using Spotinst Ocean. Join this session to learn how Ticketmaster was able to run 100 percent of its Amazon EC2 on Spot Instances with programmatic fallback to On-Demand Instances or Reserved Instances across multiple AWS accounts. This presentation is brought to you by Spotinst, an APN Partner.
-
-*ARC209 - Running lean architectures: How to be cost-effective on AWS -* (session 1 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97796&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F), session 2 (https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97797&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F))
-Everybody can save money on AWS by optimizing your architecture! This session reviews a wide range of cost-optimization strategies, featuring real-world examples. In addition to Reserved Instances, we have a special focus on Spot Instances to get a discount of up to 90 percent. We also talk about leveraging AWS Auto Scaling, caching and offloading content to Amazon CloudFront to reduce backend load, and much more. Running serverless? Learn how to cut costs on serverless through minimizing AWS Lambda execution time and maximizing networking throughput. Additionally, we cover optimizing training and inference costs for machine learning on AWS.
 
 Chalk Talks
 
