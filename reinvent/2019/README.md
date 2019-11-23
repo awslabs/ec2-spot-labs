@@ -163,4 +163,6 @@ Here is a **COMPLETE** list of re:Invent sessions where you can learn about cost
 
 > Chalk talks are a highly interactive content format with a smaller audience. They begin with a 10–15-minute lecture delivered by an AWS expert, followed by a 45–50-minute Q&A session with the audience. The goal is to foster a technical discussion around real-world architecture challenges.Chalk talks are one hour and are presented by AWS experts. They have expert level content.
 
+## Logistics
+
 ![Know the campus](./campus.png)
