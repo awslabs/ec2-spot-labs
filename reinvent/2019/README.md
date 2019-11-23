@@ -11,7 +11,7 @@ Here is a **COMPLETE** list of re:Invent sessions where you can learn about cost
   - [Session 1](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=95739&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
   - [Session 2](https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=97223&csrftkn=UZWU-O509-DJPN-BGUB-UNAN-J3RA-7HDD-QO5F)
 
-> It’s easier than ever to grow your compute capacity and enable new types of cloud computing applications while maintaining the lowest TCO by blending EC2 Spot, On-Demand and RI purchase models. In this session, learn how to use the power of EC2 with AWS services such as Auto Scaling, ECS, EKS, EMR, and Batch to programmatically optimize costs while maintaining high performance and availability‚ all without breaking a sweat. Finally we will dive deep into how [***REMOVED***] can help you optimize your EC2 usage for cost and performance. 
+> It’s easier than ever to grow your compute capacity and enable new types of cloud computing applications while maintaining the lowest TCO by blending EC2 Spot, On-Demand and RI purchase models. In this session, learn how to use the power of EC2 with AWS services such as Auto Scaling, ECS, EKS, EMR, and Batch to programmatically optimize costs while maintaining high performance and availability‚ all without breaking a sweat. Finally we will dive deep into how EC2 Spot can help you optimize your EC2 usage for cost and performance. 
 
 ### CMP331 - Save up to 90% and Run Production Workloads on Spot
 
