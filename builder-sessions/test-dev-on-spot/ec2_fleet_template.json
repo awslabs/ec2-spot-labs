@@ -1,0 +1,24 @@
+{
+  "LaunchTemplateConfigs": [
+    {
+      "LaunchTemplateSpecification": {
+        "LaunchTemplateId": "%LAUNCH_TEMPLATE_ID%",
+        "Version": "1"
+      },
+      "Overrides": [
+        {
+          "InstanceType": "t2.small",
+          "SubnetId": "%SUBNET_ID_1%"
+        },
+        {
+          "InstanceType": "t2.small",
+          "SubnetId": "%SUBNET_ID_2%"
+        }
+      ]
+    }
+  ],
+  "TargetCapacitySpecification": {
+    "TotalTargetCapacity": 2,
+    "DefaultTargetCapacityType": "spot"
+  }
+}
