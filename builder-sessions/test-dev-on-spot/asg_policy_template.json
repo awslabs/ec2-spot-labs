@@ -14,8 +14,8 @@
         "WeightedCapacity": "2"
       },
       {
-        "InstanceType": "c5.xlarge",
-        "WeightedCapacity": "4"
+        "InstanceType": "m5.large",
+        "WeightedCapacity": "2"
       }
     ]
   },
