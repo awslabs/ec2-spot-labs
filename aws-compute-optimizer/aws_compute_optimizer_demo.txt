@@ -1,0 +1,21 @@
+AWS Compute Optimizer [DEMO]
+
+https://schmutze.signin.aws.amazon.com/console
+
+https://090765505187.signin.aws.amazon.com/console
+
+
+aws --profile co compute-optimizer get-enrollment-status
+
+aws --profile co compute-optimizer update-enrollment-status --status Active --include-member-accounts
+
+aws --profile co compute-optimizer get-recommendation-summaries
+
+aws --profile co compute-optimizer get-ec2-instance-recommendations
+
+aws --profile co compute-optimizer get-ec2-instance-recommendations --instance-arns arn:aws:ec2:us-east-1:090765505187:instance/i-0f4f4c06ad8afe81a
+
+aws --profile co compute-optimizer get-ec2-instance-recommendations --instance-arns arn:aws:ec2:us-east-1:090765505187:instance/i-0f4f4c06ad8afe81a | jq -r '.instanceRecommendations[].recommendationOptions[0].instanceType'              
+
+aws --profile co compute-optimizer get-auto-scaling-group-recommendations
+

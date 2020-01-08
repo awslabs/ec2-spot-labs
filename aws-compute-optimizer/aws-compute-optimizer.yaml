@@ -1,0 +1,348 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Example of EC2 Auto Scaling group using EC2 Spot Instances, automatically scaling
+  based on SQS queue depth
+Mappings:
+  CidrMappings:
+    vpc:
+      CIDR: 10.0.0.0/16
+  amazonLinuxAmi:
+    ap-northeast-1:
+      AMI: ami-0c3fd0f5d33134a76
+    ap-northeast-2:
+      AMI: ami-095ca789e0549777d
+    ap-northeast-3:
+      AMI: ami-0ee933a7f81beb045
+    ap-south-1:
+      AMI: ami-0d2692b6acea72ee6
+    ap-southeast-1:
+      AMI: ami-01f7527546b557442
+    ap-southeast-2:
+      AMI: ami-0dc96254d5535925f
+    ca-central-1:
+      AMI: ami-0d4ae09ec9361d8ac
+    eu-central-1:
+      AMI: ami-0cc293023f983ed53
+    eu-north-1:
+      AMI: ami-3f36be41
+    eu-west-1:
+      AMI: ami-0bbc25e23a7640b9b
+    eu-west-2:
+      AMI: ami-0d8e27447ec2c8410
+    eu-west-3:
+      AMI: ami-0adcddd3324248c4c
+    sa-east-1:
+      AMI: ami-058943e7d9b9cabfb
+    us-east-1:
+      AMI: ami-0b898040803850657
+    us-east-2:
+      AMI: ami-0d8f6eb4f641ef691
+    us-west-1:
+      AMI: ami-056ee704806822732
+    us-west-2:
+      AMI: ami-082b5a644766e0e6f
+Metadata:
+  Author:
+    Description: Chad Schmutzer <schmutze@amazon.com>
+  License:
+    Description: 'Copyright 2019 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+Outputs:
+  autoScalingGroup:
+    Description: The autoScalingGroup
+    Value:
+      Ref: autoScalingGroup
+  awsRegionId:
+    Description: The AWS Region ID your template was launched in
+    Value:
+      Ref: AWS::Region
+  instanceProfile:
+    Description: Instance profile ARN
+    Value:
+      Fn::GetAtt:
+      - instanceProfile
+      - Arn
+  publicSubnet1:
+    Description: Public subnet 1
+    Value:
+      Ref: publicSubnet1
+  publicSubnet2:
+    Description: Public subnet 2
+    Value:
+      Ref: publicSubnet2
+  vpc:
+    Description: The VPC
+    Value:
+      Ref: vpc
+Parameters:
+  desiredCapacity:
+    Default: 4
+    Description: Desired capacity
+    Type: Number
+  maxSize:
+    Default: 8
+    Description: Maximum capacity
+    Type: Number
+  minSize:
+    Default: 2
+    Description: Mininum capacity
+    Type: Number
+Resources:
+  attachGateway:
+    DependsOn:
+    - vpc
+    - internetGateway
+    Properties:
+      InternetGatewayId:
+        Ref: internetGateway
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::VPCGatewayAttachment
+  autoScalingGroup:
+    DependsOn:
+    - launchTemplate
+    - publicSubnet1
+    - publicSubnet2
+    Properties:
+      DesiredCapacity:
+        Ref: desiredCapacity
+      HealthCheckType: EC2
+      MaxSize:
+        Ref: maxSize
+      MinSize:
+        Ref: minSize
+      MixedInstancesPolicy:
+        InstancesDistribution:
+          OnDemandAllocationStrategy: prioritized
+          OnDemandBaseCapacity: 0
+          OnDemandPercentageAboveBaseCapacity: 100
+          SpotAllocationStrategy: capacity-optimized
+        LaunchTemplate:
+          LaunchTemplateSpecification:
+            LaunchTemplateId:
+              Ref: launchTemplate
+            Version: 1
+          Overrides:
+          - InstanceType: t2.large
+          - InstanceType: t3.large
+          - InstanceType: c4.large
+          - InstanceType: m4.large
+          - InstanceType: r4.large
+      VPCZoneIdentifier:
+      - Ref: publicSubnet1
+      - Ref: publicSubnet2
+    Type: AWS::AutoScaling::AutoScalingGroup
+  cloudWatchLogsGroup:
+    Properties:
+      RetentionInDays: 7
+    Type: AWS::Logs::LogGroup
+  instanceProfile:
+    DependsOn:
+    - instanceRole
+    Properties:
+      Path: /
+      Roles:
+      - Ref: instanceRole
+    Type: AWS::IAM::InstanceProfile
+  instanceRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStreams
+            Effect: Allow
+            Resource: arn:aws:logs:*:*:*
+          Version: 2012-10-17
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - cloudWatchLogsPolicy
+      - PolicyDocument:
+          Statement:
+          - Action: ec2:DescribeTags
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - ec2DescribeTagsPolicy
+    Type: AWS::IAM::Role
+  internetGateway:
+    DependsOn:
+    - vpc
+    Type: AWS::EC2::InternetGateway
+  launchTemplate:
+    DependsOn:
+    - instanceProfile
+    - cloudWatchLogsGroup
+    Properties:
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn:
+            Fn::GetAtt:
+            - instanceProfile
+            - Arn
+        ImageId:
+          Fn::FindInMap:
+          - amazonLinuxAmi
+          - Ref: AWS::Region
+          - AMI
+        TagSpecifications:
+        - ResourceType: instance
+          Tags:
+          - Key: Name
+            Value:
+              Ref: AWS::StackName
+        UserData:
+          Fn::Base64:
+            Fn::Sub: '#!/bin/bash -xe
+
+              yum -y install git
+
+              cd /root && git clone https://github.com/awslabs/ec2-spot-labs.git
+
+              REGION=${AWS::Region} CLOUDWATCHLOGSGROUP=${cloudWatchLogsGroup} bash /root/ec2-spot-labs/aws-compute-optimizer/user-data.sh
+
+              '
+    Type: AWS::EC2::LaunchTemplate
+  publicRoute:
+    DependsOn:
+    - publicRouteTable
+    - internetGateway
+    - attachGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: internetGateway
+      RouteTableId:
+        Ref: publicRouteTable
+    Type: AWS::EC2::Route
+  publicRouteTable:
+    DependsOn:
+    - vpc
+    - attachGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: Public Route Table
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::RouteTable
+  publicSubnet1:
+    DependsOn:
+    - attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 0
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::Select:
+        - 0
+        - Fn::Cidr:
+          - Fn::FindInMap:
+            - CidrMappings
+            - vpc
+            - CIDR
+          - 256
+          - 8
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet1RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet1
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet1
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  publicSubnet2:
+    DependsOn:
+    - attachGateway
+    Properties:
+      AvailabilityZone:
+        Fn::Select:
+        - 1
+        - Fn::GetAZs:
+            Ref: AWS::Region
+      CidrBlock:
+        Fn::Select:
+        - 1
+        - Fn::Cidr:
+          - Fn::FindInMap:
+            - CidrMappings
+            - vpc
+            - CIDR
+          - 256
+          - 8
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+      VpcId:
+        Ref: vpc
+    Type: AWS::EC2::Subnet
+  publicSubnet2RouteTableAssociation:
+    DependsOn:
+    - publicRouteTable
+    - publicSubnet2
+    - attachGateway
+    Properties:
+      RouteTableId:
+        Ref: publicRouteTable
+      SubnetId:
+        Ref: publicSubnet2
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  vpc:
+    Properties:
+      CidrBlock:
+        Fn::FindInMap:
+        - CidrMappings
+        - vpc
+        - CIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+      - Key: Name
+        Value:
+          Ref: AWS::StackName
+    Type: AWS::EC2::VPC
+...

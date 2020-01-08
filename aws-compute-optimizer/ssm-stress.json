@@ -1,0 +1,23 @@
+{
+    "Targets": [
+        {
+            "Key": "tag:Name",
+            "Values": [
+                "runningAmazonEC2WorkloadsAtScale"
+            ]
+        },
+        {
+            "Key": "tag:Env",
+            "Values": [
+                "prod"
+            ]
+        }
+    ],
+    "DocumentName": "AWS-RunShellScript",
+    "Comment": "runningAmazonEC2WorkloadsAtScale stress",
+    "Parameters": {
+        "commands": [
+            "stress-ng --matrix 0 -t 15m"
+        ]
+    }
+}
