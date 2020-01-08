@@ -12,15 +12,15 @@
       "Overrides": [
         {
           "InstanceType": "r4.xlarge",
-          "SubnetId": "subnet-0d32e94e2269a4dc4"
+          "SubnetId": "%publicSubnet%"
         },
         {
           "InstanceType": "c5.xlarge",
-          "SubnetId": "subnet-0d32e94e2269a4dc4"
+          "SubnetId": "%publicSubnet%"
         },
         {
           "InstanceType": "m5.xlarge",
-          "SubnetId": "subnet-0d32e94e2269a4dc4"
+          "SubnetId": "%publicSubnet%"
         }
       ]
     }

@@ -28,16 +28,25 @@ for CFK_STACK_OP_KEY in "${CFK_STACK_OP_KEYS_LIST[@]}"; do
     echo "$CFK_STACK_OP_KEY=$CFK_STACK_OP_VALUE"
     #sed -i.bak -e "s#%$CFK_STACK_OP_KEY%#$CFK_STACK_OP_VALUE#g"  user-data.txt
     sed -i.bak -e "s#%$CFK_STACK_OP_KEY%#$CFK_STACK_OP_VALUE#g"  EI_launch_template.json
+    sed -i.bak -e "s#%$CFK_STACK_OP_KEY%#$CFK_STACK_OP_VALUE#g"  ec2_fleet.json
+    
 done
 
 export AMI_ID=$(aws ec2 describe-images --owners amazon --filters 'Name=name,Values=Deep Learning AMI (Amazon Linux 2) Version*' 'Name=state,Values=available' --output json | jq -r '.Images |   sort_by(.CreationDate) | last(.[]).ImageId')
 echo "Amazon AMI_ID is $AMI_ID"
 
-sed -i.bak  -e "s#%ami-id%#$ami_id#g"  EI_launch_template.json
+sed -i.bak  -e "s#%ami-id%#$AMI_ID#g"  EI_launch_template.json
 
 LAUCH_TEMPLATE_ID=$(aws ec2 create-launch-template --launch-template-name $LAUNCH_TEMPLATE_NAME --version-description LAUNCH_TEMPLATE_VERSION --launch-template-data file://EI_launch_template.json | jq -r '.LaunchTemplate.LaunchTemplateId')
-#LAUCH_TEMPLATE_ID=lt-046437183d3b6bf53
+#LAUCH_TEMPLATE_ID=lt-0bc4d78f36f8d4efb
 echo "Amazon LAUCH_TEMPLATE_ID is $LAUCH_TEMPLATE_ID"
+
+FLEET_ID=$(aws ec2 create-fleet --cli-input-json file://ec2_fleet.json | jq -r '.FleetId')
+#FLEET_ID=fleet-a23a9a64-3f94-4fc2-8461-3d2c11b3f84e
+echo "Amazon LAUCH_TEMPLATE_ID is $FLEET_ID"
+
+aws ec2 describe-fleets --fleet-id $FLEET_ID
+
 
 exit 0
 

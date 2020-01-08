@@ -1,10 +1,10 @@
 {
-  "LaunchTemplateData": {
+  
     "EbsOptimized": true,
     "IamInstanceProfile": {
       "Arn": "%instanceProfile%"
     },
-    "ImageId": "%ami-id%",
+    "ImageId": "ami-02bd97932dabc037b",
     "InstanceType": "c5.xlarge",
     "KeyName": "awsajp_keypair",
     "Monitoring": {
@@ -30,5 +30,5 @@
       }
     ],
     "UserData": ""
-  }
+  
 }
