@@ -14,8 +14,8 @@ yum -y install \
 
 aws configure set default.region $REGION
 
-sed -i "s|region =|region = $REGION|g" /etc/awslogs/awscli.conf
-sed -i "s|cwlogs = cwlogs|cwlogs = $CLOUDWATCHLOGSGROUP|g" /etc/awslogs/awslogs.conf
+cp -av $WORKING_DIR/awslogs.conf /etc/awslogs/
+sed -i "s|%CLOUDWATCHLOGSGROUP%|$CLOUDWATCHLOGSGROUP|g" /etc/awslogs/awslogs.conf
 
 systemctl enable awslogsd.service
 systemctl start awslogsd.service
