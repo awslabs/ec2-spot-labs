@@ -16,7 +16,6 @@ aws configure set default.region $REGION
 
 cp -av $WORKING_DIR/awslogs.conf /etc/awslogs/
 sed -i "s|%CLOUDWATCHLOGSGROUP%|$CLOUDWATCHLOGSGROUP|g" /etc/awslogs/awslogs.conf
-
 systemctl enable awslogsd.service
 systemctl start awslogsd.service
 
@@ -27,6 +26,14 @@ touch /usr/share/collectd/types.db
 systemctl enable amazon-cloudwatch-agent.service
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
 
+cat >/etc/cron.hourly/stress.sh <<EOF
+#!/bin/bash
+
+perl -le 'sleep rand 900'
+stress-ng --matrix 0 -t 30m
+EOF
+
+chmod +x /etc/cron.hourly/stress.sh
 
 
 
