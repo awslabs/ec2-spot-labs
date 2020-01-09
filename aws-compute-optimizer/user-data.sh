@@ -30,7 +30,7 @@ cat >/etc/cron.hourly/stress.sh <<EOF
 #!/bin/bash
 
 perl -le 'sleep rand 900'
-stress-ng --matrix 0 -t 30m
+stress-ng --matrix 0 --vm 0 --vm-bytes 75% -t 30m
 EOF
 
 chmod +x /etc/cron.hourly/stress.sh

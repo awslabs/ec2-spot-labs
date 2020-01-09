@@ -1,7 +1,6 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: Example of EC2 Auto Scaling group using EC2 Spot Instances, automatically scaling
-  based on SQS queue depth
+Description: Example of automating
 Mappings:
   CidrMappings:
     vpc:
@@ -87,6 +86,9 @@ Parameters:
     Default: 4
     Description: Desired capacity
     Type: Number
+  instanceType:
+    Default: computeOptimizer
+    Type: AWS::SSM::Parameter::Value<String>
   maxSize:
     Default: 8
     Description: Maximum capacity
@@ -130,12 +132,6 @@ Resources:
             LaunchTemplateId:
               Ref: launchTemplate
             Version: 1
-          Overrides:
-          - InstanceType: t2.large
-          - InstanceType: t3.large
-          - InstanceType: c4.large
-          - InstanceType: m4.large
-          - InstanceType: r4.large
       VPCZoneIdentifier:
       - Ref: publicSubnet1
       - Ref: publicSubnet2
@@ -215,6 +211,8 @@ Resources:
           - amazonLinuxAmi
           - Ref: AWS::Region
           - AMI
+        InstanceType:
+          Ref: instanceType
         TagSpecifications:
         - ResourceType: instance
           Tags:
