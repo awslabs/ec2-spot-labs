@@ -86,16 +86,8 @@ Parameters:
     Default: 4
     Description: Desired capacity
     Type: Number
-  instanceType1:
-    Default: computeOptimizer1
-    Description: Instance type
-    Type: AWS::SSM::Parameter::Value<String>
-  instanceType2:
-    Default: computeOptimizer2
-    Description: Instance type
-    Type: AWS::SSM::Parameter::Value<String>
-  instanceType3:
-    Default: computeOptimizer3
+  instanceType:
+    Default: computeOptimizer
     Description: Instance type
     Type: AWS::SSM::Parameter::Value<String>
   maxSize:
@@ -141,13 +133,6 @@ Resources:
             LaunchTemplateId:
               Ref: launchTemplate
             Version: 1
-          Overrides:
-          - InstanceType:
-              Ref: instanceType1
-          - InstanceType:
-              Ref: instanceType2
-          - InstanceType:
-              Ref: instanceType3
       VPCZoneIdentifier:
       - Ref: publicSubnet1
       - Ref: publicSubnet2
@@ -288,6 +273,8 @@ Resources:
           - amazonLinuxAmi
           - Ref: AWS::Region
           - AMI
+        InstanceType:
+          Ref: instanceType
         TagSpecifications:
         - ResourceType: instance
           Tags:
@@ -420,3 +407,6 @@ Resources:
           Ref: AWS::StackName
     Type: AWS::EC2::VPC
 ...
+
+STAGESAVAILABLE	Original
+STAGESAVAILABLE	Processed
