@@ -1,19 +1,20 @@
 AWS Compute Optimizer [DEMO]
 
 
+# clone the GitHub repo
+git clone https://github.com/awslabs/ec2-spot-labs.git
+cd ec2-spot-labs/aws-compute-optimizer
 
-# Create a parameter for instance type in Systems Manager Parameter Store
+# Create a parameter for instance types in Systems Manager Parameter Store
 aws ssm put-parameter --name computeOptimizer1 --type String --value t2.medium
 aws ssm put-parameter --name computeOptimizer2 --type String --value t2.large
 aws ssm put-parameter --name computeOptimizer3 --type String --value t2.xlarge
 
-
 # create the CloudFormation stack
 aws cloudformation create-stack --stack-name opt1 --template-body file://aws-compute-optimizer.yaml --capabilities CAPABILITY_IAM
 
-
 # activate max instance lifetime in ASG
-aws autoscaling update-auto-scaling-group --auto-scaling-group-name opt3-autoScalingGroup-1318QK8TCCGJL --max-instance-lifetime 604800
+aws autoscaling update-auto-scaling-group --auto-scaling-group-name $(aws cloudformation describe-stacks --stack-name opt1 --query "Stacks[0].Outputs[?OutputKey=='autoScalingGroup'].OutputValue" --output text) --max-instance-lifetime 604800
 
 
 

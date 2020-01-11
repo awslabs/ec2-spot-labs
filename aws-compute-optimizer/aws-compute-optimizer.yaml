@@ -1,6 +1,7 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: Example of automating
+Description: Example of automating updates to EC2 Auto Scaling groups using recommendations
+  from AWS Compute Optimizer
 Mappings:
   CidrMappings:
     vpc:
@@ -102,6 +103,18 @@ Parameters:
     Default: 8
     Description: Maximum capacity
     Type: Number
+  metricCollectionRate:
+    AllowedValues:
+    - rate(1 minute)
+    - rate(5 minutes)
+    - rate(15 minutes)
+    - rate(1 hour)
+    - rate(4 hours)
+    - rate(8 hours)
+    - rate(12 hours)
+    - rate(1 day)
+    Default: rate(1 day)
+    Type: String
   minSize:
     Default: 2
     Description: Mininum capacity
@@ -216,22 +229,24 @@ Resources:
     - lambdaFunctionRole
     Properties:
       Code:
-        ZipFile: "import boto3\ndef handler(event, context):\n  instanceId = event['detail']['instance-id']\n\
-          \  instanceAction = event['detail']['instance-action']\n  try:\n    ec2client = boto3.client('ec2')\n\
-          \    describeTags = ec2client.describe_tags(Filters=[{'Name': 'resource-id','Values':[instanceId]},{'Name':'key','Values':['loadBalancerTargetGroup']}])\n\
-          \  except:\n    print(\"No action being taken. Unable to describe tags for instance\
-          \ id:\", instanceId)\n    return\n  try:\n    elbv2client = boto3.client('elbv2')\n\
-          \    deregisterTargets = elbv2client.deregister_targets(TargetGroupArn=describeTags['Tags'][0]['Value'],Targets=[{'Id':instanceId}])\n\
-          \  except:\n    print(\"No action being taken. Unable to deregister targets for instance\
-          \ id:\", instanceId)\n    return\n  print(\"Spot Instance interruption notice detected.\
-          \ Detaching instance from target:\")\n  print(instanceId, describeTags['Tags'][0]['Value'],\
-          \ deregisterTargets, sep=\",\")\n  return\n"
+        ZipFile:
+          Fn::Sub: "import boto3\n\ndef handler(event, context):\n\n  client = boto3.client('compute-optimizer')\n\
+            \  response = client.get_auto_scaling_group_recommendations(\n  )\n  print(response)\n\
+            \n  client = boto3.client('ssm')\n\n  response = client.put_parameter(\n    Name='computeOptimizer1',\n\
+            \    Value='c3.large',\n    Type='String',\n    Overwrite=True\n  )\n  print(response)\n\
+            \n  response = client.put_parameter(\n    Name='computeOptimizer2',\n    Value='c4.large',\n\
+            \    Type='String',\n    Overwrite=True\n  )\n  print(response)\n\n  response =\
+            \ client.put_parameter(\n    Name='computeOptimizer3',\n    Value='c5.large',\n\
+            \    Type='String',\n    Overwrite=True\n  )\n  print(response)\n\n  client = boto3.client('cloudformation')\n\
+            \  \n  response = client.update_stack(\n    StackName='opt4',\n    UsePreviousTemplate=True,\n\
+            \    Capabilities=[\n        'CAPABILITY_IAM'\n    ]\n  )\n  print(response)\n\n\
+            \  return\n"
       Handler: index.handler
       Role:
         Fn::GetAtt:
         - lambdaFunctionRole
         - Arn
-      Runtime: python3.6
+      Runtime: python3.7
     Type: AWS::Lambda::Function
   lambdaFunctionPermission:
     Properties:
@@ -259,10 +274,42 @@ Resources:
       Policies:
       - PolicyDocument:
           Statement:
-          - Action: elasticloadbalancing:DeregisterTargets
+          - Action:
+            - ec2:DescribeInstances
+            - ec2:DescribeLaunchTemplates
+            - ec2:DescribeLaunchTemplateData
+            - ec2:GetLaunchTemplateData
+            - ec2:RunInstances
+            - ec2:CreateTags
+            - autoscaling:DescribeAutoScalingGroups
+            - autoscaling:DescribeScalingActivities
+            - cloudwatch:GetMetricData
+            - compute-optimizer:GetAutoScalingGroupRecommendations
+            - compute-optimizer:GetEnrollmentStatus
+            - compute-optimizer:GetRecommendationSummaries
+            - compute-optimizer:GetEC2InstanceRecommendations
+            - compute-optimizer:GetEC2RecommendationProjectedMetrics
+            - autoscaling:UpdateAutoScalingGroup
+            - ssm:GetParameters
+            - ssm:PutParameter
+            - cloudformation:DescribeStackEvents
+            - cloudformation:DescribeStacks
+            - cloudformation:UpdateStack
+            - iam:GetInstanceProfile
             Effect: Allow
             Resource: '*'
-          - Action: ec2:DescribeTags
+          - Action:
+            - iam:PassRole
+            Condition:
+              StringEquals:
+                iam:PassedToService: ec2.amazonaws.com
+            Effect: Allow
+            Resource: '*'
+          - Action:
+            - iam:PassRole
+            Condition:
+              StringEquals:
+                iam:PassedToService: autoscaling.amazonaws.com
             Effect: Allow
             Resource: '*'
           Version: '2012-10-17'
@@ -405,6 +452,34 @@ Resources:
       SubnetId:
         Ref: publicSubnet2
     Type: AWS::EC2::SubnetRouteTableAssociation
+  scheduledRule:
+    DependsOn: lambdaFunction
+    Properties:
+      Description: Schedule rule to run AWS Compute Optimizer lambda function
+      ScheduleExpression:
+        Ref: metricCollectionRate
+      State: ENABLED
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - lambdaFunction
+          - Arn
+        Id: Version1
+    Type: AWS::Events::Rule
+  scheduledRulePermissions:
+    DependsOn:
+    - lambdaFunction
+    - scheduledRule
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: lambdaFunction
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - scheduledRule
+        - Arn
+    Type: AWS::Lambda::Permission
   vpc:
     Properties:
       CidrBlock:
