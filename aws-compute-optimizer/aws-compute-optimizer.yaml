@@ -45,7 +45,7 @@ Metadata:
   Author:
     Description: Chad Schmutzer <schmutze@amazon.com>
   License:
-    Description: 'Copyright 2019 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+    Description: 'Copyright 2020 Amazon.com, Inc. and its affiliates. All Rights Reserved.
 
       Licensed under the Amazon Software License (the "License"). You may not use this file
       except in compliance with the License. A copy of the License is located at
@@ -87,16 +87,8 @@ Parameters:
     Default: 4
     Description: Desired capacity
     Type: Number
-  instanceType1:
-    Default: computeOptimizer1
-    Description: Instance type
-    Type: AWS::SSM::Parameter::Value<String>
-  instanceType2:
-    Default: computeOptimizer2
-    Description: Instance type
-    Type: AWS::SSM::Parameter::Value<String>
-  instanceType3:
-    Default: computeOptimizer3
+  instanceType:
+    Default: instanceType
     Description: Instance type
     Type: AWS::SSM::Parameter::Value<String>
   maxSize:
@@ -139,28 +131,14 @@ Resources:
       DesiredCapacity:
         Ref: desiredCapacity
       HealthCheckType: EC2
+      LaunchTemplate:
+        LaunchTemplateId:
+          Ref: launchTemplate
+        Version: 1
       MaxSize:
         Ref: maxSize
       MinSize:
         Ref: minSize
-      MixedInstancesPolicy:
-        InstancesDistribution:
-          OnDemandAllocationStrategy: prioritized
-          OnDemandBaseCapacity: 0
-          OnDemandPercentageAboveBaseCapacity: 100
-          SpotAllocationStrategy: capacity-optimized
-        LaunchTemplate:
-          LaunchTemplateSpecification:
-            LaunchTemplateId:
-              Ref: launchTemplate
-            Version: 1
-          Overrides:
-          - InstanceType:
-              Ref: instanceType1
-          - InstanceType:
-              Ref: instanceType2
-          - InstanceType:
-              Ref: instanceType3
       VPCZoneIdentifier:
       - Ref: publicSubnet1
       - Ref: publicSubnet2
@@ -335,6 +313,8 @@ Resources:
           - amazonLinuxAmi
           - Ref: AWS::Region
           - AMI
+        InstanceType:
+          Ref: instanceType
         TagSpecifications:
         - ResourceType: instance
           Tags:
