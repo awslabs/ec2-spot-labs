@@ -1,0 +1,32 @@
+      Code:
+        ZipFile:
+          Fn::Sub: |
+            import boto3
+
+            def handler(event, context):
+
+              client = boto3.client('compute-optimizer')
+              response = client.get_auto_scaling_group_recommendations(
+              )
+              print(response)
+  
+              client = boto3.client('ssm')
+
+              response = client.put_parameter(
+                Name='instanceType',
+                Value='c3.large',
+                Type='String',
+                Overwrite=True
+              )
+              print(response)
+
+              client = boto3.client('ec2')
+
+              response = client.create_launch_template_version(
+                LaunchTemplateId='${launchTemplate}',
+                SourceVersion='1',
+                LaunchTemplateData={
+                  'InstanceType': 'c5.large'
+                }
+                
+              return

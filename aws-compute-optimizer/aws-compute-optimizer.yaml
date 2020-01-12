@@ -70,6 +70,10 @@ Outputs:
       Fn::GetAtt:
       - instanceProfile
       - Arn
+  launchTemplate:
+    Description: Launch template ID
+    Value:
+      Ref: launchTemplate
   publicSubnet1:
     Description: Public subnet 1
     Value:
@@ -208,17 +212,37 @@ Resources:
     Properties:
       Code:
         ZipFile:
-          Fn::Sub: "import boto3\n\ndef handler(event, context):\n\n  client = boto3.client('compute-optimizer')\n\
-            \  response = client.get_auto_scaling_group_recommendations(\n  )\n  print(response)\n\
-            \n  client = boto3.client('ssm')\n\n  response = client.put_parameter(\n    Name='computeOptimizer1',\n\
-            \    Value='c3.large',\n    Type='String',\n    Overwrite=True\n  )\n  print(response)\n\
-            \n  response = client.put_parameter(\n    Name='computeOptimizer2',\n    Value='c4.large',\n\
-            \    Type='String',\n    Overwrite=True\n  )\n  print(response)\n\n  response =\
-            \ client.put_parameter(\n    Name='computeOptimizer3',\n    Value='c5.large',\n\
-            \    Type='String',\n    Overwrite=True\n  )\n  print(response)\n\n  client = boto3.client('cloudformation')\n\
-            \  \n  response = client.update_stack(\n    StackName='opt4',\n    UsePreviousTemplate=True,\n\
-            \    Capabilities=[\n        'CAPABILITY_IAM'\n    ]\n  )\n  print(response)\n\n\
-            \  return\n"
+          Fn::Sub: |
+            import boto3
+
+            def handler(event, context):
+
+              client = boto3.client('compute-optimizer')
+              response = client.get_auto_scaling_group_recommendations(
+              )
+              print(response)
+  
+              client = boto3.client('ssm')
+
+              response = client.put_parameter(
+                Name='instanceType',
+                Value='c3.large',
+                Type='String',
+                Overwrite=True
+              )
+              print(response)
+
+              client = boto3.client('ec2')
+
+              response = client.create_launch_template_version(
+                LaunchTemplateId='${launchTemplate}',
+                SourceVersion='1',
+                LaunchTemplateData={
+                  'InstanceType': 'c5.large'
+                }
+              )
+                
+              return
       Handler: index.handler
       Role:
         Fn::GetAtt:

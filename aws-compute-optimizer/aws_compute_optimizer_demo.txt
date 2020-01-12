@@ -7,8 +7,6 @@ cd ec2-spot-labs/aws-compute-optimizer
 
 # Create a parameter for instance types in Systems Manager Parameter Store
 aws ssm put-parameter --name instanceType1 --type String --value t2.medium
-aws ssm put-parameter --name instanceType2 --type String --value t2.large
-aws ssm put-parameter --name instanceType3 --type String --value t2.xlarge
 
 # create the CloudFormation stack
 aws cloudformation create-stack --stack-name opt1 --template-body file://aws-compute-optimizer.yaml --capabilities CAPABILITY_IAM
@@ -16,7 +14,8 @@ aws cloudformation create-stack --stack-name opt1 --template-body file://aws-com
 # activate max instance lifetime in ASG
 aws autoscaling update-auto-scaling-group --auto-scaling-group-name $(aws cloudformation describe-stacks --stack-name opt1 --query "Stacks[0].Outputs[?OutputKey=='autoScalingGroup'].OutputValue" --output text) --max-instance-lifetime 604800
 
-
+# configure the ASG to use $LATEST for launch template
+aws autoscaling update-auto-scaling-group --auto-scaling-group-name $(aws cloudformation describe-stacks --stack-name opt1 --query "Stacks[0].Outputs[?OutputKey=='autoScalingGroup'].OutputValue" --output text) --launch-template LaunchTemplateId=$(aws cloudformation describe-stacks --stack-name opt1 --query "Stacks[0].Outputs[?OutputKey=='launchTemplate'].OutputValue" --output text),Version='$Latest'
 
 
 
