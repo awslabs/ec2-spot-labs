@@ -281,37 +281,16 @@ Resources:
             - ec2:DescribeLaunchTemplates
             - ec2:DescribeLaunchTemplateData
             - ec2:GetLaunchTemplateData
-            - ec2:RunInstances
-            - ec2:CreateTags
-            - autoscaling:DescribeAutoScalingGroups
-            - autoscaling:DescribeScalingActivities
+            - ec2:CreateLaunchTemplateVersion
             - cloudwatch:GetMetricData
             - compute-optimizer:GetAutoScalingGroupRecommendations
-            - compute-optimizer:GetEnrollmentStatus
             - compute-optimizer:GetRecommendationSummaries
             - compute-optimizer:GetEC2InstanceRecommendations
             - compute-optimizer:GetEC2RecommendationProjectedMetrics
-            - autoscaling:UpdateAutoScalingGroup
             - ssm:GetParameters
             - ssm:PutParameter
-            - cloudformation:DescribeStackEvents
-            - cloudformation:DescribeStacks
-            - cloudformation:UpdateStack
-            - iam:GetInstanceProfile
             Effect: Allow
             Resource: '*'
-          - Action:
-            - iam:PassRole
-            Condition:
-              StringEquals:
-                iam:PassedToService: ec2.amazonaws.com
-            Effect: Allow
-            Resource: '*'
-          - Action:
-            - iam:PassRole
-            Condition:
-              StringEquals:
-                iam:PassedToService: autoscaling.amazonaws.com
             Effect: Allow
             Resource: '*'
           Version: '2012-10-17'
