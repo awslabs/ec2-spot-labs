@@ -88,7 +88,7 @@ Outputs:
       Ref: vpc
 Parameters:
   desiredCapacity:
-    Default: 4
+    Default: 5
     Description: Desired capacity
     Type: Number
   instanceType:
@@ -96,7 +96,7 @@ Parameters:
     Description: Instance type
     Type: AWS::SSM::Parameter::Value<String>
   maxSize:
-    Default: 8
+    Default: 5
     Description: Maximum capacity
     Type: Number
   metricCollectionRate:
@@ -112,7 +112,7 @@ Parameters:
     Default: rate(1 day)
     Type: String
   minSize:
-    Default: 2
+    Default: 5
     Description: Mininum capacity
     Type: Number
 Resources:
