@@ -277,6 +277,7 @@ Resources:
       - PolicyDocument:
           Statement:
           - Action:
+            - autoscaling:DescribeAutoScalingGroups
             - ec2:DescribeInstances
             - ec2:DescribeLaunchTemplates
             - ec2:DescribeLaunchTemplateData
