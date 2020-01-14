@@ -217,30 +217,42 @@ Resources:
 
             def handler(event, context):
 
+              client = boto3.client('autoscaling')
+              response = client.describe_auto_scaling_groups(
+                AutoScalingGroupNames = [
+                  '${autoScalingGroup}'
+                ]
+              )
+              autoScalingGroupArn = response['AutoScalingGroups'][0]['AutoScalingGroupARN']
+              print(autoScalingGroupArn)
+
               client = boto3.client('compute-optimizer')
               response = client.get_auto_scaling_group_recommendations(
+                autoScalingGroupArns = [
+                  autoScalingGroupArn
+                ]
               )
-              print(response)
+              recommendedInstanceType = response['autoScalingGroupRecommendations'][0]['recommendationOptions'][0]['configuration']['instanceType']
+              print(recommendedInstanceType)
   
               client = boto3.client('ssm')
-
               response = client.put_parameter(
-                Name='instanceType',
-                Value='c3.large',
-                Type='String',
-                Overwrite=True
+                Name = 'instanceType',
+                Value = recommendedInstanceType,
+                Type = 'String',
+                Overwrite = True
               )
               print(response)
 
               client = boto3.client('ec2')
-
               response = client.create_launch_template_version(
-                LaunchTemplateId='${launchTemplate}',
-                SourceVersion='1',
-                LaunchTemplateData={
-                  'InstanceType': 'c5.large'
+                LaunchTemplateId = '${launchTemplate}',
+                SourceVersion = '1',
+                LaunchTemplateData = {
+                  'InstanceType': recommendedInstanceType
                 }
               )
+              print(response)
                 
               return
       Handler: index.handler
