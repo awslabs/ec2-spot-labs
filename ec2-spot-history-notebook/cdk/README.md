@@ -88,3 +88,21 @@ $ export AWS_SPOT_REPO="https://github.com/ruecarlo/ec2-spot-labs.git"
 ```
 
 This will change the configuration to load the right repository.
+
+
+## Installing it using Cloud 9 
+The easier way to setup and deploy your environment is using Cloud9 following this instructions:
+
+* Create a Cloud9 environment and login to it: 
+* On the console run the following commands:
+
+```
+npm install -g aws-cdk
+pip install virtualenv
+git clone https://github.com/awslabs/ec2-spot-labs.git
+cd $HOME/environment/ec2-spot-labs/ec2-spot-history-notebook/cdk
+virtualenv .env
+source .env/bin/activate
+pip install -r requirements.txt 
+cdk deploy
+```
