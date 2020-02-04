@@ -6,5 +6,5 @@ from spot_historic_notebook.spot_historic_notebook_stack import CdkSpotHistoricN
 
 
 app = core.App()
-CdkSpotHistoricNotebookStack(app, "spot_historic_notebook")
+CdkSpotHistoricNotebookStack(app, "Spot-Historic-Notebook")
 app.synth()

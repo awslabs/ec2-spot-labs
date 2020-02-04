@@ -48,3 +48,6 @@ env.bak/
 venv.bak/
 
 .env/lib/python3.7/
+
+*.egg-info
+**/**.egg-info

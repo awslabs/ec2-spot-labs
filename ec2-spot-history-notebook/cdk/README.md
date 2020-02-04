@@ -1,13 +1,19 @@
 
-# Welcome to your CDK Python project!
+# Spot Historic Price Notebook 
 
-This is a blank project for Python development with CDK.
+The content in this folder uses [CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html)
+to deploy the infrastructure, IAM roles and policies required to run a 
+[Sagemaker Notebook](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks.html) that is
+ready and has been setup to execute the spot historic price notebook
+
+To execute this project, you just need to follow the usual steps to work with CDK.
+You can follow the [CDK Getting Started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) 
+page content, install node/npm and cdk.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the .env
-directory.  To create the virtualenv it assumes that there is a `python3`
+This project is set up like a standard Python project.  There is also a .env
+virtualenv directory.  To create the virtualenv it assumes that there is a `python3`
 (or `python` for Windows) executable in your path with access to the `venv`
 package. If for any reason the automatic creation of the virtualenv fails,
 you can create the virtualenv manually.
@@ -43,11 +49,15 @@ At this point you can now synthesize the CloudFormation template for this code.
 $ cdk synth
 ```
 
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
+Finally to drive the installation of the presentation
+
+```
+$ cdk deploy
+```
+
 
 ## Useful commands
+Other useful `cdk` commands:
 
  * `cdk ls`          list all stacks in the app
  * `cdk synth`       emits the synthesized CloudFormation template
@@ -55,4 +65,26 @@ command.
  * `cdk diff`        compare deployed stack with current state
  * `cdk docs`        open CDK documentation
 
-Enjoy!
+
+## Things to note
+
+### Changing the profile used to create the account.
+
+By default CDK will use the default profile. To change the profile use the following command 
+before executing any of the `cdk` commands.
+
+```
+$ export AWS_PROFILE=my_profile
+```
+
+### Changing the github repository url
+
+By default the URL pointsto [https://github.com/awslabs/ec2-spot-labs.git](https://github.com/awslabs/ec2-spot-labs.git)
+You can modify the default repository to load by executing the following command 
+before executing any of the `cdk` commands
+
+```
+$ export AWS_SPOT_REPO="https://github.com/ruecarlo/ec2-spot-labs.git"
+```
+
+This will change the configuration to load the right repository.

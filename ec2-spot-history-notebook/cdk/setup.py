@@ -15,8 +15,8 @@ setuptools.setup(
 
     author="Carlos Manzanedo Rueda <ruecarlo@amazon.com>",
 
-    package_dir={"": "cdk"},
-    packages=setuptools.find_packages(where="cdk"),
+    package_dir={"": "spot_historic_notebook"},
+    packages=setuptools.find_packages(where="spot_historic_notebook"),
 
     install_requires=[
         "aws-cdk.core",
