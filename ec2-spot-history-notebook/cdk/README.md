@@ -1,21 +1,17 @@
 # Spot Historic Price Notebook 
 
-The content in this folder uses [CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html)
-to deploy the infrastructure, IAM roles and policies required to run a 
-[Sagemaker Notebook](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks.html) 
-ready to fetch and display EC2 Spot historic prices using a Jupyter notebook
+The content in this folder uses [CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html) to deploy the infrastructure, IAM roles and policies required to run a [Sagemaker Notebook](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks.html) ready to fetch and display EC2 Spot historic prices using a Jupyter notebook
 
-## Using Cloud9 to deploy the CDK project 
+## Deploying CDK project using Cloud9   
 The easier way to setup and deploy your environment is using Cloud9 following this instructions:
 
-* Create a Cloud9 environment and login to it: 
+* Create a Cloud9 environment : 
 * On the console run the following commands:
 
 ```
-npm install -g aws-cdk
+npm install -g --force aws-cdk
 pip install virtualenv
 git clone https://github.com/awslabs/ec2-spot-labs.git
-git checkout spot_history_notebook
 cd $HOME/environment/ec2-spot-labs/ec2-spot-history-notebook/cdk
 virtualenv .env
 source .env/bin/activate
@@ -25,17 +21,11 @@ cdk deploy
 
 ## Setting up the project with CDK
 
-To execute this project, you just need to follow the usual steps required to work with CDK projects.
-You can follow the [CDK Getting Started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) 
-page content, install node/npm and aws cdk.
+To execute this project, you just need to follow the usual steps required to work with CDK projects. You can follow the [CDK Getting Started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) page content, install node/npm and aws cdk.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
-This project is set up like a standard Python project.  There is also a `.env`
-virtualenv directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+This project is set up like a standard Python project.  There is also a `.env` virtualenv directory.  To create the virtualenv it assumes that there is a `python3` (or `python` for Windows) executable in your path with access to the `venv` package. If for any reason the automatic creation of the virtualenv fails, you can create the virtualenv manually.
 
 To manually create a virtualenv on MacOS and Linux:
 
@@ -43,8 +33,7 @@ To manually create a virtualenv on MacOS and Linux:
 $ python3 -m venv .env
 ```
 
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
+After the init process completes and the virtualenv is created, you can use the following step to activate your virtualenv.
 
 ```
 $ source .env/bin/activate
@@ -107,22 +96,3 @@ $ export AWS_SPOT_REPO="https://github.com/ruecarlo/ec2-spot-labs.git"
 ```
 
 This will change the configuration to load the right repository.
-
-
-### Using Cloud9 to deploy the CDK project 
-The easier way to setup and deploy your environment is using Cloud9 following this instructions:
-
-* Create a Cloud9 environment and login to it: 
-* On the console run the following commands:
-
-```
-npm install -g aws-cdk
-pip install virtualenv
-git clone https://github.com/awslabs/ec2-spot-labs.git
-git checkout spot_history_notebook
-cd $HOME/environment/ec2-spot-labs/ec2-spot-history-notebook/cdk
-virtualenv .env
-source .env/bin/activate
-pip install -r requirements.txt 
-cdk deploy
-```
