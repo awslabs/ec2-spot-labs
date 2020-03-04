@@ -1,18 +1,37 @@
-
 # Spot Historic Price Notebook 
 
 The content in this folder uses [CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html)
 to deploy the infrastructure, IAM roles and policies required to run a 
-[Sagemaker Notebook](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks.html) that is
-ready and has been setup to execute the spot historic price notebook
+[Sagemaker Notebook](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks.html) 
+ready to fetch and display EC2 Spot historic prices using a Jupyter notebook
 
-To execute this project, you just need to follow the usual steps to work with CDK.
+## Using Cloud9 to deploy the CDK project 
+The easier way to setup and deploy your environment is using Cloud9 following this instructions:
+
+* Create a Cloud9 environment and login to it: 
+* On the console run the following commands:
+
+```
+npm install -g aws-cdk
+pip install virtualenv
+git clone https://github.com/awslabs/ec2-spot-labs.git
+git checkout spot_history_notebook
+cd $HOME/environment/ec2-spot-labs/ec2-spot-history-notebook/cdk
+virtualenv .env
+source .env/bin/activate
+pip install -r requirements.txt 
+cdk deploy
+```
+
+## Setting up the project with CDK
+
+To execute this project, you just need to follow the usual steps required to work with CDK projects.
 You can follow the [CDK Getting Started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) 
-page content, install node/npm and cdk.
+page content, install node/npm and aws cdk.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
-This project is set up like a standard Python project.  There is also a .env
+This project is set up like a standard Python project.  There is also a `.env`
 virtualenv directory.  To create the virtualenv it assumes that there is a `python3`
 (or `python` for Windows) executable in your path with access to the `venv`
 package. If for any reason the automatic creation of the virtualenv fails,
@@ -66,9 +85,9 @@ Other useful `cdk` commands:
  * `cdk docs`        open CDK documentation
 
 
-## Things to note
+### Things to note
 
-### Changing the profile used to create the account.
+#### Changing the profile used to create the account.
 
 By default CDK will use the default profile. To change the profile use the following command 
 before executing any of the `cdk` commands.
@@ -77,11 +96,11 @@ before executing any of the `cdk` commands.
 $ export AWS_PROFILE=my_profile
 ```
 
-### Changing the github repository url
+#### Changing the github repository url
 
-By default the URL pointsto [https://github.com/awslabs/ec2-spot-labs.git](https://github.com/awslabs/ec2-spot-labs.git)
+By default the URL points to [https://github.com/awslabs/ec2-spot-labs.git](https://github.com/awslabs/ec2-spot-labs.git)
 You can modify the default repository to load by executing the following command 
-before executing any of the `cdk` commands
+before executing any of the `cdk` commands. This might be useful for example when working on Pull requests.
 
 ```
 $ export AWS_SPOT_REPO="https://github.com/ruecarlo/ec2-spot-labs.git"
@@ -90,7 +109,7 @@ $ export AWS_SPOT_REPO="https://github.com/ruecarlo/ec2-spot-labs.git"
 This will change the configuration to load the right repository.
 
 
-## Installing it using Cloud 9 
+### Using Cloud9 to deploy the CDK project 
 The easier way to setup and deploy your environment is using Cloud9 following this instructions:
 
 * Create a Cloud9 environment and login to it: 
@@ -100,6 +119,7 @@ The easier way to setup and deploy your environment is using Cloud9 following th
 npm install -g aws-cdk
 pip install virtualenv
 git clone https://github.com/awslabs/ec2-spot-labs.git
+git checkout spot_history_notebook
 cd $HOME/environment/ec2-spot-labs/ec2-spot-history-notebook/cdk
 virtualenv .env
 source .env/bin/activate
