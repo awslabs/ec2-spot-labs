@@ -1,6 +1,6 @@
 # Spot Historic Price Notebook 
 
-The content in this folder uses [CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html) to deploy the infrastructure, IAM roles and policies required to run a [Sagemaker Notebook](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks.html) ready to fetch and display EC2 Spot historic prices using a Jupyter notebook
+The content in this folder uses [CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html) to deploy the infrastructure, IAM roles and policies required to run a [Sagemaker Notebook](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks.html) ready to fetch and display EC2 Spot historic prices using a Jupyter notebook. You can see how that notebook looks like [here](./ec2-spot-historic-prices.ipynb). 
 
 ## Deploying CDK project using Cloud9   
 The easier way to setup and deploy your environment is using Cloud9 following this instructions:

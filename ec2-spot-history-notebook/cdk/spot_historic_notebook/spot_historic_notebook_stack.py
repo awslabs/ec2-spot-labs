@@ -7,7 +7,10 @@ from aws_cdk import (
 import os
 import boto3
 import uuid
+import base64
 
+
+RESOURCE_PATH = "./resources/on_create.sh"
 profile = os.getenv("AWS_PROFILE", "default")
 github_repo = os.getenv("AWS_SPOT_REPO", "https://github.com/awslabs/ec2-spot-labs.git")
 
@@ -40,8 +43,6 @@ class CdkSpotHistoricNotebookStack(core.Stack):
         notebook_uuid=str(uuid.uuid4())
         notebook_uuid=str(notebook_uuid[0:notebook_uuid.find('-')])
         notebook_instance_id = 'spot-history-notebook-'+notebook_uuid
-        print("Notebook id : {}".format(notebook_instance_id))
-
 
         notebook_instance = sagemaker_.CfnNotebookInstance(
             self,
@@ -52,7 +53,7 @@ class CdkSpotHistoricNotebookStack(core.Stack):
             subnet_id=default_subnet,
             notebook_instance_name=notebook_instance_id,
             role_arn=nrole.role_arn,
-            default_code_repository=github_repo
+            default_code_repository=github_repo,
         )
 
         notebook_url = "https://{}.console.aws.amazon.com/sagemaker/home?region={}#/notebook-instances/openNotebook/{}?view=classic".format(
