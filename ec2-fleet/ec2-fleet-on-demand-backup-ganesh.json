@@ -1,0 +1,62 @@
+{
+  "SpotOptions": {
+    "AllocationStrategy": "capacity-optimized",
+    "InstanceInterruptionBehavior": "terminate"
+  },
+  "ExcessCapacityTerminationPolicy": "termination",
+  "LaunchTemplateConfigs": [
+    {
+      "LaunchTemplateSpecification": {
+        "LaunchTemplateName": "ganesh",
+        "Version": "1"
+      },
+      "Overrides": [
+        {
+          "InstanceType": "c3.large",
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "InstanceType": "c3.large",
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        },
+        {
+          "InstanceType": "c3.large",
+          "SubnetId": "subnet-0437dfe009676c434"
+        },
+        {
+          "InstanceType": "c4.large",
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "InstanceType": "c4.large",
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        },
+        {
+          "InstanceType": "c4.large",
+          "SubnetId": "subnet-0437dfe009676c434"
+        },
+        {
+          "InstanceType": "c5.large",
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "InstanceType": "c5.large",
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        },
+        {
+          "InstanceType": "c5.large",
+          "SubnetId": "subnet-0437dfe009676c434"
+        }
+      ]
+    }
+  ],
+  "TargetCapacitySpecification": {
+    "TotalTargetCapacity": 10,
+    "OnDemandTargetCapacity": 5,
+    "SpotTargetCapacity": 5,
+    "DefaultTargetCapacityType": "spot"
+  },
+  "TerminateInstancesWithExpiration": true,
+  "Type": "maintain",
+  "ReplaceUnhealthyInstances": true
+}
