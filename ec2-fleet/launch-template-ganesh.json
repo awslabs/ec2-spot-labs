@@ -1,0 +1,35 @@
+{
+    "LaunchTemplateVersions": [
+        {
+            "LaunchTemplateId": "lt-06bc0101ca634756f",
+            "LaunchTemplateName": "ganesh",
+            "VersionNumber": 1,
+            "CreateTime": "2020-03-17T04:49:49+00:00",
+            "CreatedBy": "arn:aws:iam::753949184587:user/schmutze",
+            "DefaultVersion": true,
+            "LaunchTemplateData": {
+                "ImageId": "ami-0fc61db8544a617ed",
+                "TagSpecifications": [
+                    {
+                        "ResourceType": "instance",
+                        "Tags": [
+                            {
+                                "Key": "Name",
+                                "Value": "ganesh"
+                            }
+                        ]
+                    },
+                    {
+                        "ResourceType": "volume",
+                        "Tags": [
+                            {
+                                "Key": "Name",
+                                "Value": "ganesh"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}
