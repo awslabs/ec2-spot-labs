@@ -1,3 +1,6 @@
+# This workshop is now available on https://ec2spotworkshops.com/ along with other great EC2 Spot workshops.
+
+
 # Amazon EC2 Spot Fleet web app: Workshop guide
   
   

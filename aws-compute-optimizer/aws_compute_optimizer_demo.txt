@@ -1,0 +1,36 @@
+AWS Compute Optimizer [DEMO]
+
+
+# clone the GitHub repo
+git clone https://github.com/awslabs/ec2-spot-labs.git
+cd ec2-spot-labs/aws-compute-optimizer
+
+# Create a parameter for instance types in Systems Manager Parameter Store
+aws ssm put-parameter --name instanceType1 --type String --value t2.medium
+
+# create the CloudFormation stack
+aws cloudformation create-stack --stack-name opt1 --template-body file://aws-compute-optimizer.yaml --capabilities CAPABILITY_IAM
+
+# activate max instance lifetime in ASG
+aws autoscaling update-auto-scaling-group --auto-scaling-group-name $(aws cloudformation describe-stacks --stack-name opt1 --query "Stacks[0].Outputs[?OutputKey=='autoScalingGroup'].OutputValue" --output text) --max-instance-lifetime 604800
+
+# configure the ASG to use $LATEST for launch template
+aws autoscaling update-auto-scaling-group --auto-scaling-group-name $(aws cloudformation describe-stacks --stack-name opt1 --query "Stacks[0].Outputs[?OutputKey=='autoScalingGroup'].OutputValue" --output text) --launch-template LaunchTemplateId=$(aws cloudformation describe-stacks --stack-name opt1 --query "Stacks[0].Outputs[?OutputKey=='launchTemplate'].OutputValue" --output text),Version='$Latest'
+
+
+
+# general Compute Optimizer commands to run
+aws compute-optimizer get-enrollment-status
+
+aws compute-optimizer update-enrollment-status --status Active --include-member-accounts
+
+aws compute-optimizer get-recommendation-summaries
+
+aws compute-optimizer get-ec2-instance-recommendations
+
+aws compute-optimizer get-ec2-instance-recommendations --instance-arns arn:aws:ec2:us-east-1:090765505187:instance/i-0f4f4c06ad8afe81a
+
+aws compute-optimizer get-ec2-instance-recommendations --instance-arns arn:aws:ec2:us-east-1:090765505187:instance/i-0f4f4c06ad8afe81a | jq -r '.instanceRecommendations[].recommendationOptions[0].instanceType'              
+
+aws compute-optimizer get-auto-scaling-group-recommendations
+

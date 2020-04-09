@@ -1,0 +1,8 @@
+.ipynb_checkpoints
+*.gz
+*.test
+VOCdevkit
+*.rec
+*.lst
+n.txt
+*.jpg

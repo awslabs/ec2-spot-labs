@@ -1,2 +1,6 @@
 terra*
 .terraform/*
+<<<<<<< HEAD
+=======
+misc/*
+>>>>>>> 9b91236a8d7d299b1ba0e68850194ed5933c9f92

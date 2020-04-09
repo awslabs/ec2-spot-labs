@@ -1,0 +1,27 @@
+AWS Fargate Spot [DEMO]
+
+https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-capacity-providers.html
+
+https://aws.amazon.com/fargate/pricing/
+
+demo ETL (extract, transform, load)
+create cluster
+explain capacity providers, only use Spot
+launch tasks from ETL task def
+
+demo web app
+create cluster
+explain capacity providers, use Fargate and Fargate Spot
+launch service from web-app task def
+
+
+
+
+aws ecs describe-clusters --clusters fargate-web-app --region ap-northeast-1
+
+for task in $(aws ecs list-tasks --cluster fargate-web-app --region ap-northeast-1 --output text | awk '{print $2}'); do aws ecs describe-tasks --cluster fargate-web-app --tasks $task --region ap-northeast-1; done
+
+aws ecs list-tasks --cluster fargate-web-app --region ap-northeast-1 --output text
+
+aws ecs list-tags-for-resource --resource-arn arn:aws:ecs:ap-northeast-1:753949184587:cluster/fargate-web-app --region ap-northeast-1
+

@@ -74,14 +74,30 @@ cd $MOUNT_POINT
 mkdir datasets
 mkdir checkpoints
 
-
    umount $MOUNT_POINT
-   yum -y removed httpd
-   rm -rf /var/www/
    aws ec2 detach-volume --volume-id $SECONDARY_VOLUME_ID
 
+aws ec2 describe-volumes --volume-id $SECONDARY_VOLUME_ID
 
+aws iam create-role \
+    --role-name DL-Training \
+    --assume-role-policy-document \
+    '{"Version":"2012-10-17","Statement": [{"Sid":"","Effect":"Allow","Principal":{"Service":"ec2.amazonaws.com"}, "Action":"sts:AssumeRole"}]}'
+    
 
+IAM_POLICY_ARN=$(aws iam create-policy \
+    --policy-name ec2-permissions-dl-training  \
+    --policy-document file://ec2-permissions-dl-training.json | jq -r '.Policy.Arn')
+
+echo "IAM_POLICY_ARN is $IAM_POLICY_ARN"
+
+aws iam attach-role-policy \
+    --policy-arn $IAM_POLICY_ARN \
+    --role-name DL-Training
+    
+
+    
+    
          
          
          
