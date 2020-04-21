@@ -22,16 +22,15 @@ Both the Lambda function execution and the output of your commands is logged on 
 
 To set up the Spot interruption handler, follow these steps:
 
-1. Clone this repository to your local machine
-1. ZIP the Lambda function (index.py)
+1. Download the index.py file to your local computer and zip it. 
 1. Upload the zipped Lambda function to an Amazon S3 Bucket in the region you want to deploy the Spot Interruption Handler.
 1. Deploy the cloudformation.yml template and fill in the parameters:
     - **LambdaFunctionS3Bucket:** The name of the S3 bucket where you have uploaded the zipped function.
     - **LambdaFunctionS3Key:** The S3 key where you have uploaded the zipped function
-    - **ASGSSMParameterPrefix:** The prefix of your Systems Manager Parameters where you will configure the commands you will run on the different ASGs. This defaults to /  spot-instance-interruption-handler/run_commands/. If you leave the default settings, your parameters will need to be named **/spot-instance-interruption-handler/run_commands/  <auto-scaling-group-name>**
-    - **EnableRunCommandOutputLogging:** Enable logging to CloudWatch logs of the output of RunCommand (by default is set to True, you can disable it setting this to False)
+    - **ASGSSMParameterPrefix:** The prefix of your Systems Manager Parameters where you will configure the commands you will run on the different ASGs. This defaults to /  spot-instance-interruption-handler/run_commands/. If you leave the default settings, your parameters will need to be named */spot-instance-interruption-handler/run_commands/  \<auto-scaling-group-name\>*
+    - **EnableRunCommandOutputLogging:** Enable logging to CloudWatch logs of the output of RunCommand (by default is set to *True*, you can disable it setting this to *False*)
 
-Once the CloudFormation template is deployed, the Spot Interruption Handler will be triggered when any Spot instance in your account gets an Interruption Notice. If the instance that is going to be interrupted is part of an AutoScaling group, it will put the to-be-interrupted instance in draining state and request Auto Scaling to attempt to launch replacement capacity using the configured Spot Instance types and allocation strategy. If there are no Parameters configured in AWS Systems Manager matching your *prefix/\<auto-scaling-group-name\>* no more actions will be taken. If you have configured a parameter for your Auto Scaling group, the Lambda function will call Run Command with the commands you have set up. Both String and StringList parameters are valid. You can find an example Parameter for an Auto Scaling group named **SampleWebApp-AutoScalingGroup-1CRZJOLJHNXBI** on the image below.
+Once the CloudFormation template is deployed, the Spot Interruption Handler will be triggered when any Spot instance in your account within the AWS region it's deployed gets an Interruption Notice. If the instance that is going to be interrupted is part of an AutoScaling group, it will put the to-be-interrupted instance in draining state and request Auto Scaling to attempt to launch replacement capacity using the configured Spot Instance types and allocation strategy. If there are no Parameters configured in AWS Systems Manager matching your *prefix/\<auto-scaling-group-name\>* no more actions will be taken. If you have configured a parameter for your Auto Scaling group, the Lambda function will call Run Command with the commands you have set up. Both String and StringList parameters are valid. You can find an example Parameter for an Auto Scaling group named **SampleWebApp-AutoScalingGroup-1CRZJOLJHNXBI** on the image below.
 
 ![Parameter Store Example](/ec2-spot-interruption-handler/images/ParameterStore.png)
 
