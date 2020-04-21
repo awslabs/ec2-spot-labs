@@ -8,7 +8,7 @@ Optionally, you can also configure a set of commands to be invoked on your to-be
 
 You can set up commands you want to execute when your Spot Instances on a specific Auto Scaling group are interrupted by creating a parameter within AWS Systems Manager [Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) with the commands you want to run. The Lambda function checks if a Parameter exists for the Auto Scaling group that the instance belongs to, if it exists, it will then call RunCommand referencing the parameter, otherwise the function finishes here. With default settings, the parameter name needs to be "/spot-instance-interruption-handler/run_commands/<auto-scaling-group-name>".
 
-![Architecture](/images/architecture.png)
+![Architecture](/ec2-spot-interruption-handler/images/architecture.png)
 
 You can delay the execution of termination commands to x seconds before the Spot instance interruption if, for example, you're allowing time for in-flight http requests to complete; before you graceuflly stop your application using the wait_x_seconds_before_interruption.sh bash script (it defaults to 30 seconds before interruption, but you can pass your desired time as parameter. It also requires [jq](https://stedolan.github.io/jq/) installed on the instance). Below you can find an example.
 
@@ -33,7 +33,7 @@ To set up the Spot interruption handler, follow these steps:
 
 Once the CloudFormation template is deployed, the Spot Interruption Handler will trigger upon Spot interruption and put the to-be-interrupted instance in draining state and launch replacement capacity for your instances that are part of an Auto Scaling group. If there are no Parameters in Systems Manager matching your prefix/<auto-scaling-group-name> no more actions will be taken. If you have configured parameters for your Auto Scaling group, the Lambda function will call Run Command with the commands you have set up. Both String and StringList parameters are valid. You can find an example on the image below.
 
-![Parameter Store Example](/images/ParameterStore.png)
+![Parameter Store Example](/ec2-spot-interruption-handler/images/ParameterStore.png)
 
 You can test this with an existing Auto Scaling group on your account or deploying the sample web application on the sample-asg folder.
 
