@@ -1,6 +1,6 @@
 ## Simulate an Interruption
 
-This CloudFormation template deploys a simple web application on an Auto Scaling group composed of Spot instances fronted by an Application Load Balancer. The instances run on Amazon Linux 2 which comes with the SSM agent installed and they're configured with an IAM Instance Profile in order to receive commands from Systems Manager and log the output in CloudWatch logs. They run a simple httpd server showing plain text displaying the instance id, instance type and AZ.
+This CloudFormation template deploys a simple web application on an Auto Scaling group composed of Spot instances fronted by an Application Load Balancer. The instances run Amazon Linux 2 which comes with the SSM agent installed and they're configured with an IAM Instance Profile in order to receive commands from Systems Manager and log the output in CloudWatch logs. They run a simple httpd server showing plain text displaying the instance id, instance type and AZ.
 
 The template creates also a Systems Manager Parameter where you can specify commands when receiving a Spot Interruption notice for instances of the Auto Scaling group it creates; by default it just executes 'echo hello world' for demo purposes. All these configurations can be modified on the CloudFormation template parameters.
 
