@@ -48,13 +48,13 @@ Resources:
             EnableRunCommandOutputLogging: !Ref EnableRunCommandOutputLogging
       Timeout: 5
 
-  SpotInterruptionPermissionForCWEToInvokeLambda:
+  SpotInterruptionPermissionForEventBridgeToInvokeLambda:
     Type: AWS::Lambda::Permission
     Properties:
         FunctionName: !GetAtt SpotInterruptionHandlerFunction.Arn
         Action: lambda:InvokeFunction
         Principal: events.amazonaws.com
-        SourceArn: !GetAtt SpotInterruptionCloudWatchEventRule.Arn
+        SourceArn: !GetAtt SpotInterruptionEventRule.Arn
 
 
   SpotInterruptionLambdaFunctionRole:
@@ -115,7 +115,7 @@ Resources:
               - ssm:SendCommand
               Resource: '*'
 
-  SpotInterruptionCloudWatchEventRule:
+  SpotInterruptionEventRule:
     DependsOn:
     - SpotInterruptionHandlerFunction
     Properties:
