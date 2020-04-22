@@ -97,7 +97,7 @@ If you want to configure a custom prefix for your AWS Systems Manager parameters
 ```bash
 sam deploy \
     --template-file packaged.yaml \
-    --stack-name ec2-spot-interruption-logging-insights \
+    --stack-name ec2-spot-interruption-handler \
     --capabilities CAPABILITY_IAM \
     --parameter-overrides \
     ASGSSMParameterPrefix=REPLACE_THIS_WITH_THE_NAME_YOU_WANT \
