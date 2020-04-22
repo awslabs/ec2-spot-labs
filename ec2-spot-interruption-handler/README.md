@@ -33,8 +33,8 @@ The Lambda function execution and the output of your commands is logged on Amazo
 Search for ec2-spot-interruption-handler in the Serverless Application Repository and follow the instructions to deploy. (Make sure you've checked the box labeled: Show apps that create custom IAM roles or resource policies)
 
 If needed, you can modify the following parameters:
-    - **ASGSSMParameterPrefix:** The prefix of your Systems Manager Parameters where you will configure the commands you will run on the different ASGs. This defaults to /spot-instance-interruption-handler/run_commands/. If you leave the default settings, your parameters will need to be named */spot-instance-interruption-handler/run_commands/  \<auto-scaling-group-name\>*
-    - **EnableRunCommandOutputLogging:** Enable logging to CloudWatch logs of the output of RunCommand (by default is set to *True*, you can disable it setting this to *False*)
+ - **ASGSSMParameterPrefix:** The prefix of your Systems Manager Parameters where you will configure the commands youwill run on the different ASGs. This defaults to /spot-instance-interruption-handler/run_commands/. If you leave thedefault settings, your parameters will need to be named */spot-instance-interruption-handler/run_commands/ \<auto-scaling-group-name\>*
+ - **EnableRunCommandOutputLogging:** Enable logging to CloudWatch logs of the output of RunCommand (by default is setto *True*, you can disable it setting this to *False*)
 
 ### Deployment (Local)
 
