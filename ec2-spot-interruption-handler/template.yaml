@@ -1,53 +1,43 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Metadata:
-  Author:
-    Description: Isaac Vallhonrat <ivallhon@amazon.com>
-  License:
-    Description: 'Copyright 2020 Amazon.com, Inc. and its affiliates. All Rights Reserved.
-      Licensed under the Amazon Software License (the "License"). You may not use this file
-      except in compliance with the License. A copy of the License is located at
-      http://aws.amazon.com/asl/
-      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
-      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-      License for the specific language governing permissions and limitations under the License.'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  spot-interruption-handler
+
+  Sample solution to handle EC2 Spot instance interruption events.
+
+Globals:
+  Function:
+    Timeout: 30
+
 Parameters:
-    LambdaFunctionS3Bucket:
-        Type: String
-        Description: "S3 bucket where you have uploaded the zipped Lambda function"
-    LambdaFunctionS3Key:
-        Type: String
-        Description: "Key where the you have uploaded the zipped Lambda function"
-    ASGSSMParameterPrefix:
-        Type: String
-        Default: "/spot-instance-interruption-handler/run_commands/"
-        Description: "Prefix for SSM Parameters containing commands per Auto Scaling group including the trailing /"
-    EnableRunCommandOutputLogging:
-        Type: String
-        Default: "True"
-        AllowedValues:
-            - "True"
-            - "False" 
-        Description: "Enable logging to CloudWatch Logs of RunCommand commands invoked by Lambda"
+  ASGSSMParameterPrefix:
+      Type: String
+      Default: "/spot-instance-interruption-handler/run_commands/"
+      Description: "Prefix for SSM Parameters containing commands per Auto Scaling group including the trailing /"
+  EnableRunCommandOutputLogging:
+      Type: String
+      Default: "True"
+      AllowedValues:
+          - "True"
+          - "False" 
+      Description: "Enable logging to CloudWatch Logs of RunCommand commands invoked by Lambda"
 
 Resources:
   SpotInterruptionHandlerFunction:
-    Type: AWS::Lambda::Function
+    Type: AWS::Serverless::Function
     DependsOn:
     - SpotInterruptionLambdaFunctionRole
     Properties:
       FunctionName: SpotInterruptionHandler
+      CodeUri: spot-interruption-handler/
       Handler: index.handler
       Role: !GetAtt SpotInterruptionLambdaFunctionRole.Arn
-      Code:
-        S3Bucket: !Ref LambdaFunctionS3Bucket
-        S3Key: !Ref LambdaFunctionS3Key
       Runtime: python3.7
       Environment:
         Variables:
             ASGSSMParameterPrefix: !Ref ASGSSMParameterPrefix
             EnableRunCommandOutputLogging: !Ref EnableRunCommandOutputLogging
-      Timeout: 5
-
+        
   SpotInterruptionPermissionForEventBridgeToInvokeLambda:
     Type: AWS::Lambda::Permission
     Properties:
@@ -55,8 +45,7 @@ Resources:
         Action: lambda:InvokeFunction
         Principal: events.amazonaws.com
         SourceArn: !GetAtt SpotInterruptionEventRule.Arn
-
-
+  
   SpotInterruptionLambdaFunctionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -114,7 +103,7 @@ Resources:
               Action:
               - ssm:SendCommand
               Resource: '*'
-
+  
   SpotInterruptionEventRule:
     DependsOn:
     - SpotInterruptionHandlerFunction
@@ -134,3 +123,4 @@ Resources:
         Id:
           Ref: SpotInterruptionHandlerFunction
     Type: AWS::Events::Rule
+  

@@ -11,9 +11,9 @@ When receiving an interruption notice, the function calls the Auto Scaling API t
 
 Optionally, you can also configure a set of commands to be executed on your to-be-interrupted instance using AWS Systems Manager [Run Command](https://docs.aws.amazon.com/systems-manager/latest/userguide/execute-remote-commands.html); like gracefully stopping your application, deregister agents... In order to use this feature, your instances need to run the [AWS Systems Manager agent](https://docs.aws.amazon.com/systems-manager/latest/userguide/ssm-agent.html) (that comes pre-installed on Amazon Linux 2) and have an IAM Instance Profile with permissions to access the Systems manager API. You can find more configuration details [here](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-setting-up.html).
 
-You can set up commands you want to execute when your Spot Instances on a specific Auto Scaling group are interrupted by creating a parameter within AWS Systems Manager [Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) with the commands you want to run. The Lambda function checks if a Parameter exists for the Auto Scaling group that the instance belongs to, if it exists, it will then call RunCommand referencing the parameter, otherwise the function finishes here. With default settings, the parameter name needs to be */spot-instance-interruption-handler/run_commands/\<auto-scaling-group-name\>* .
-
 ![Architecture](/ec2-spot-interruption-handler/images/architecture.png)
+
+You can set up commands you want to execute when your Spot Instances on a specific Auto Scaling group are interrupted by creating a parameter within AWS Systems Manager [Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) with the commands you want to run. The Lambda function checks if a Parameter exists for the Auto Scaling group that the instance belongs to, if it exists, it will then call RunCommand referencing the parameter, otherwise the function finishes here. With default settings, the parameter name needs to be */spot-instance-interruption-handler/run_commands/\<auto-scaling-group-name\>* .
 
 You can delay the execution of termination commands to x seconds before the Spot instance interruption if, for example, you're allowing time for in-flight http requests to complete before you graceuflly stop your application using the wait_x_seconds_before_interruption.sh bash script (it defaults to 30 seconds before interruption, but you can pass your desired time as parameter. It also requires [jq](https://stedolan.github.io/jq/) installed on the instance). Below you can find an example list of commands that will execute "echo executing termination commands" 60 seconds before the instance is going to be interrupted.
 
@@ -21,25 +21,88 @@ You can delay the execution of termination commands to x seconds before the Spot
 curl -s -o /tmp/wait_x_seconds_before_interruption.sh "https://raw.githubusercontent.com/awslabs/ec2-spot-labs/master/ec2-spot-interruption-handler/wait_x_seconds_before_interruption.sh"; chmod u+x /tmp/wait_x_seconds_before_interruption.sh; /tmp/wait_x_seconds_before_interruption.sh 60; echo "executing termination commands"
 ```
 
-Both the Lambda function execution and the output of your commands is logged on Amazon CloudWatch Logs on the /aws/lambda/SpotInterruptionHandler and /aws/ssm/AWS-RunShellScript log groups respectively.
-
-## Setup instructions
-
-To set up the Spot interruption handler, follow these steps:
-
-1. Download the index.py file to your local computer and zip it. 
-1. Upload the zipped Lambda function to an Amazon S3 Bucket in the region you want to deploy the Spot Interruption Handler.
-1. Deploy the cloudformation.yml template and fill in the parameters:
-    - **LambdaFunctionS3Bucket:** The name of the S3 bucket where you have uploaded the zipped function.
-    - **LambdaFunctionS3Key:** The S3 key where you have uploaded the zipped function
-    - **ASGSSMParameterPrefix:** The prefix of your Systems Manager Parameters where you will configure the commands you will run on the different ASGs. This defaults to /spot-instance-interruption-handler/run_commands/. If you leave the default settings, your parameters will need to be named */spot-instance-interruption-handler/run_commands/  \<auto-scaling-group-name\>*
-    - **EnableRunCommandOutputLogging:** Enable logging to CloudWatch logs of the output of RunCommand (by default is set to *True*, you can disable it setting this to *False*)
-
-Once the CloudFormation template is deployed, the Spot Interruption Handler will be triggered when any Spot instance in your account within the AWS region it's deployed gets an Interruption Notice. If the instance that is going to be interrupted is part of an AutoScaling group, it will put the to-be-interrupted instance in draining state and request Auto Scaling to attempt to launch replacement capacity using the configured Spot Instance types and allocation strategy. If there are no Parameters configured in AWS Systems Manager matching your *prefix/\<auto-scaling-group-name\>* no more actions will be taken. If you have configured a parameter for your Auto Scaling group, the Lambda function will call Run Command with the commands you have set up. Both String and StringList parameters are valid. You can find an example Parameter for an Auto Scaling group named **SampleWebApp-AutoScalingGroup-1CRZJOLJHNXBI** on the image below.
+You can find an example Parameter for an Auto Scaling group named **SampleWebApp-AutoScalingGroup-1CRZJOLJHNXBI** on the image below:
 
 ![Parameter Store Example](/ec2-spot-interruption-handler/images/ParameterStore.png)
 
-You can test this with an existing Auto Scaling group on your account or deploying the sample web application CloudFormation template on the sample-asg folder.
+The Lambda function execution and the output of your commands is logged on Amazon CloudWatch Logs on the /aws/lambda/SpotInterruptionHandler and /aws/ssm/AWS-RunShellScript log groups respectively.
+
+## Deploying the solution
+
+### Deploy via Serverless Application Repository
+Search for ec2-spot-interruption-handler in the Serverless Application Repository and follow the instructions to deploy. (Make sure you've checked the box labeled: Show apps that create custom IAM roles or resource policies)
+
+If needed, you can modify the following parameters:
+    - **ASGSSMParameterPrefix:** The prefix of your Systems Manager Parameters where you will configure the commands you will run on the different ASGs. This defaults to /spot-instance-interruption-handler/run_commands/. If you leave the default settings, your parameters will need to be named */spot-instance-interruption-handler/run_commands/  \<auto-scaling-group-name\>*
+    - **EnableRunCommandOutputLogging:** Enable logging to CloudWatch logs of the output of RunCommand (by default is set to *True*, you can disable it setting this to *False*)
+
+### Deployment (Local)
+
+#### Requirements
+
+Note: For easiest deployment, create a Cloud9 instance and use the provided environment to deploy the function.
+
+* AWS CLI already configured with Administrator permission
+* [Python 3 installed](https://www.python.org/downloads/)
+* [Docker installed](https://www.docker.com/community-edition)
+* [SAM CLI installed](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+
+#### Deployment Steps
+
+Once you've installed the requirements listed above, open a terminal sesssion as you'll need to run through a few commands to deploy the solution.
+
+Firstly, we need a `S3 bucket` where we can upload our Lambda functions packaged as ZIP before we deploy anything - If you don't have a S3 bucket to store code artifacts then this is a good time to create one:
+
+```bash
+aws s3 mb s3://BUCKET_NAME
+```
+Next, clone the ec2-spot-labs repository to your local workstation or to your Cloud9 environment.
+
+```
+git clone https://github.com/awslabs/ec2-spot-labs.git
+```
+
+Next, change directories to the root directory for this example solution.
+
+```
+cd ec2-spot-labs/ec2-spot-interruption-handler
+```
+
+Next, run the folllowing command to build the Lambda function:
+
+```bash
+sam build --use-container
+```
+
+Next, run the following command to package our Lambda function to S3:
+
+```bash
+sam package \
+    --output-template-file packaged.yaml \
+    --s3-bucket REPLACE_THIS_WITH_YOUR_S3_BUCKET_NAME
+```
+
+Next, the following command will create a Cloudformation Stack and deploy your SAM resources.
+
+```bash
+sam deploy \
+    --template-file packaged.yaml \
+    --stack-name ec2-spot-interruption-handler \
+    --capabilities CAPABILITY_IAM \
+```
+
+If you want to configure a custom prefix for your AWS Systems Manager parameters or disable Systems Manager Run Command logging to Cloudwatch logs you can override defaults:
+
+
+```bash
+sam deploy \
+    --template-file packaged.yaml \
+    --stack-name ec2-spot-interruption-logging-insights \
+    --capabilities CAPABILITY_IAM \
+    --parameter-overrides \
+    ASGSSMParameterPrefix=REPLACE_THIS_WITH_THE_NAME_YOU_WANT \
+    CEnableRunCommandOutputLogging=REPLACE_THIS_WITH_NUMBER_OF_DAYS_TO_RETAIN_LOGS  
+```
 
 ## Costs of the solution
 
