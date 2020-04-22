@@ -90,7 +90,7 @@ Resources:
       Roles: 
         - !Ref SSMIAMRole
 
-  ELBSecurityGroup:
+  SampleWebAppELBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: "Security group for apache instances"
@@ -104,7 +104,7 @@ Resources:
           ToPort: 80
       VpcId: !Ref VPC
 
-  EC2SecurityGroup:
+  SampleWebAppEC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for apache instances
@@ -112,13 +112,13 @@ Resources:
         - CidrIp: "0.0.0.0/0"
           IpProtocol: -1
       SecurityGroupIngress:
-        - SourceSecurityGroupId: !Ref ELBSecurityGroup
+        - SourceSecurityGroupId: !Ref SampleWebAppELBSecurityGroup
           IpProtocol: tcp
           FromPort: 80
           ToPort: 80
       VpcId: !Ref VPC
 
-  LaunchTemplate:
+  SampleWebAppLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     DependsOn: InternetGatewayAttachment
     Properties:
@@ -127,7 +127,7 @@ Resources:
         InstanceType: !Ref PrimaryInstanceType
         KeyName: !Ref EC2KeyPair
         SecurityGroupIds: 
-          - !Ref EC2SecurityGroup
+          - !Ref SampleWebAppEC2SecurityGroup
         IamInstanceProfile: 
           Arn: !GetAtt SSMInstanceProfile.Arn
         UserData:
@@ -142,8 +142,14 @@ Resources:
               My instance type is $(curl -s http://169.254.169.254/latest/meta-data/instance-type)
               I'm on Availability Zone $(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)" > /var/www/html/index.html
               service httpd start
+        TagSpecifications:
+          - ResourceType: instance
+            Tags: 
+              - Key: 'SpotInterruptionHandler/enabled'
+                Value: 'true'
+          
     
-  AutoScalingGroup:
+  SampleWebAppAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     DependsOn: InternetGatewayAttachment
     Properties:
@@ -162,32 +168,32 @@ Resources:
           SpotAllocationStrategy: capacity-optimized
         LaunchTemplate:
           LaunchTemplateSpecification: 
-            LaunchTemplateId: !Ref LaunchTemplate
-            Version: !GetAtt LaunchTemplate.DefaultVersionNumber
+            LaunchTemplateId: !Ref SampleWebAppLaunchTemplate
+            Version: !GetAtt SampleWebAppLaunchTemplate.DefaultVersionNumber
           Overrides: 
             - InstanceType: !Ref SpotInstanceType1
             - InstanceType: !Ref SpotInstanceType2
             - InstanceType: !Ref SpotInstanceType3
       TargetGroupARNs:
-        - !Ref TargetGroup
+        - !Ref SampleWebAppTargetGroup
       Tags:
         - Key: Name
           Value: !Ref EnvironmentName
           PropagateAtLaunch: true
   
-  LoadBalancer:
+  SampleWebAppLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     DependsOn: InternetGatewayAttachment
     Properties:
       SecurityGroups: 
-        - !Ref ELBSecurityGroup 
+        - !Ref SampleWebAppELBSecurityGroup 
       Subnets: 
         - !Ref PublicSubnet1
         - !Ref PublicSubnet2
         - !Ref PublicSubnet3
       Scheme: internet-facing
 
-  TargetGroup:
+  SampleWebAppTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     DependsOn: InternetGatewayAttachment
     Properties:
@@ -203,17 +209,17 @@ Resources:
   ALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
-      LoadBalancerArn: !Ref LoadBalancer
+      LoadBalancerArn: !Ref SampleWebAppLoadBalancer
       Port: 80
       Protocol: HTTP
       DefaultActions:
         - Type: forward
-          TargetGroupArn: !Ref TargetGroup
+          TargetGroupArn: !Ref SampleWebAppTargetGroup
 
   SSMASGParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Join [ "" , [ !Ref SSMParameterPrefix, !Ref AutoScalingGroup ] ]
+      Name: !Join [ "" , [ !Ref SSMParameterPrefix, !Ref SampleWebAppAutoScalingGroup ] ]
       Type: String
       Value: !Ref InstanceTerminationCommands
               

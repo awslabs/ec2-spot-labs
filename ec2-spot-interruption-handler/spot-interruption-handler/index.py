@@ -11,25 +11,36 @@ asgclient = boto3.client('autoscaling')
 ssmclient = boto3.client('ssm')
 
 
-def get_asg_from_instance_id(instance_id):
+def get_interruption_handling_properties(instance_id):
     # Describe tags for the instance that will be interrupted
     try:
-        instanceDescr = ec2client.describe_instances(InstanceIds=[instance_id])
-        describeTags = instanceDescr['Reservations'][0]['Instances'][0]
+        describe_tags_response = ec2client.describe_instances(InstanceIds=[instance_id])
+        instance_tags = describe_tags_response['Reservations'][0]['Instances'][0]['Tags']
     except ClientError as e:
         error_message = "Unable to describe tags for instance id: {id}. ".format(id=instance_id) 
         logger.error( error_message + e.response['Error']['Message'])
         # Instance does not exist or cannot be described
         raise e
 
-    # Check if the instance belongs to ASG
-    for tag in describeTags['Tags']:
-        if tag['Key'] =='aws:autoscaling:groupName':
-            # ASG group found, returns the autoscaling group name
-            return tag['Value']
+    interruption_handling_properties = {
+        'controller-type': '',
+        'controller-id': '',
+        'managed': False }
     
-    # The instance exists, but doesn't seem to be part of an ASG
-    return None
+    # Check if instance belongs to an ASG or to a Spot Fleet
+    for tag in instance_tags:
+        if tag['Key'] == 'aws:autoscaling:groupName':
+            # Instance belongs to an Auto Scaling group
+            interruption_handling_properties['controller-type'] = 'auto-scaling-group'
+            interruption_handling_properties['controller-id'] = tag['Value']
+        elif tag['Key'] == 'aws:ec2spot:fleet-request-id':
+            # Instance belongs to a Spot Fleet
+            interruption_handling_properties['controller-type'] = 'spot-fleet'
+            interruption_handling_properties['controller-id'] = tag['Value']
+        elif tag['Key'] == 'SpotInterruptionHandler/enabled':
+            interruption_handling_properties['managed'] = tag['Value'].lower() == 'true'
+
+    return interruption_handling_properties
 
 def detach_instance_from_asg(instance_id,as_group_name):
     try:
@@ -45,11 +56,11 @@ def detach_instance_from_asg(instance_id,as_group_name):
         logger.error( error_message + e.response['Error']['Message'])
         raise e
 
-def asg_has_defined_interruption_commands(asg_name):
+def controller_has_defined_interruption_commands(asg_name):
     # Check if an SSM parameter store with interruption commandshas been set up 
     # for the Auto Scaling group 
     
-    ssm_parameter_name = os.environ['ASGSSMParameterPrefix'] + asg_name
+    ssm_parameter_name = os.environ['SSMParameterPrefix'] + asg_name
     
     try:
         ssmclient.get_parameter(Name=ssm_parameter_name)
@@ -60,7 +71,7 @@ def asg_has_defined_interruption_commands(asg_name):
 def run_commands_on_instance(instance_id, asg_name):
     # SSM RunCommand RunShellScript with commands configured in ParameterStore
 
-    parameter_store_commands = ["{{ssm:" + os.environ['ASGSSMParameterPrefix'] + asg_name + "}}"]
+    parameter_store_commands = ["{{ssm:" + os.environ['SSMParameterPrefix'] + asg_name + "}}"]
     
     # Reference commands directly from SSM Parameter Store, limit execution timeout to 2 minutes
     document_parameters= {
@@ -83,11 +94,13 @@ def run_commands_on_instance(instance_id, asg_name):
             TimeoutSeconds=30)
         logger.info("Running commands on instance {instanceid}. Command id: {id} ".format(
                 instanceid=instance_id,id=response['Command']['CommandId']))
+    except ssmclient.exceptions.InvalidInstanceId:
+        logger.error ("SSM Agent is not running, or not registered to the endpoint or you don't have permissions to access the instance")
+        raise e
     except ClientError as e:
         error_message = "Could not execute commands on instance {id}. ".format(id=instance_id)
         logger.error( error_message + e.response['Error']['Message'])
-        raise e
-        
+        raise e     
         
 def handler(event, context):
     
@@ -96,25 +109,35 @@ def handler(event, context):
     logger.info("Handling spot instance interruption notification for instance {id}".format(
         id=instance_id))
     
-    # Check the Auto Scaling group where the instance belongs
-    auto_scaling_group_name = get_asg_from_instance_id(instance_id)
+    interruption_handling_properties = get_interruption_handling_properties(instance_id)
+    
+    #if the instance is tagged as managed and belongs to an Auto Scaling group or a Spot Fleet
+    if interruption_handling_properties['managed']:
+        if interruption_handling_properties['controller-id'] != '':
+            # if it's an Auto Scaling group call detachInstances
+            if interruption_handling_properties['controller-type'] == 'auto-scaling-group':
+                detach_instance_from_asg(instance_id, interruption_handling_properties['controller-id'])
+                logger.info("INFO: Instance {id} has been successfully detached from {asg_name}".format(
+                id=instance_id,asg_name=interruption_handling_properties['controller-id']))
 
-    if auto_scaling_group_name is None:
-        info_message = "No action taken. Instance {id} does not belong to an AutoScaling group.".format(
-            id=instance_id) 
-        
+            # If interruption commands have been set up for the Auto Scaling group or Spot Fleet, execute them
+            if controller_has_defined_interruption_commands(interruption_handling_properties['controller-id']):
+                run_commands_on_instance(instance_id, interruption_handling_properties['controller-id'])
+            else:
+                logging.info("No SSM Parameter with commands associated with {controller} group {id}".format(
+                    controller=interruption_handling_properties['controller-type'], id=interruption_handling_properties['controller-id']))
+        else:
+            info_message = "No action taken. Instance {id} is not part of an Auto Scaling group or Spot Fleet.".format(
+                id=instance_id)
+            logger.info(info_message)
+            return(info_message)
+    else:
+        info_message = "No action taken. Instance {id} is not managed by SpotInterruptionHandler.".format(
+            id=instance_id)
         logger.info(info_message)
         return(info_message)
-    
-    # Detach instance from ASG
-    detach_instance_from_asg(instance_id, auto_scaling_group_name)
-
-    # If interruption commands have been set up for the Auto Scaling group, execute them
-    if asg_has_defined_interruption_commands(auto_scaling_group_name):
-        run_commands_on_instance(instance_id,auto_scaling_group_name)
-    else:
-        logging.info("No SSM Parameter with commands associated with Auto Scaling group {asg}".format(
-            asg=auto_scaling_group_name))
-
-    return("INFO: Instance {id} has been successfully detached from {asg_name}".format(
-        id=instance_id,asg_name=auto_scaling_group_name))
+ 
+    info_message = "Interruption response actions completed for instance {id} belonging to {controller}".format(
+        id=instance_id,controller=interruption_handling_properties['controller-id'])
+    logger.info(info_message)
+    return(info_message)
