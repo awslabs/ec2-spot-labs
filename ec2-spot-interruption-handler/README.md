@@ -108,4 +108,5 @@ sam deploy \
 
 - Amazon EventBridge events for AWS service events are free of charge. Pricing details can be found [here](https://aws.amazon.com/eventbridge/pricing/)
 - If you already use all the monthly free tier that AWS Lambda provides, Lambda pricing applies. Otherwise, the usage of this will be covered by the free tier. More info [here](https://aws.amazon.com/lambda/pricing/)
-- AWS Systems Manager Run Command doesn't incurr additional charges (limits apply). Parameter Store has also a Standard tier that doesn't incurr charges. Pricing details can be found [here](https://aws.amazon.com/cloudwatch/pricing/)
+- AWS Systems Manager Run Command doesn't incurr additional charges (limits apply). Parameter Store has also a Standard tier that doesn't incurr charges. Pricing details can be found [here](https://aws.amazon.com/systems-manager/pricing/)
+- AWS Lambda and Run Command log its output to CloudWatch logs. You can find pricing for CloudWatch Logs [here](https://aws.amazon.com/cloudwatch/pricing/)
