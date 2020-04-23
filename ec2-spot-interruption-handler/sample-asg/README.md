@@ -31,17 +31,15 @@ The template creates also a Systems Manager Parameter where you can specify comm
 1. On a separate browser window, open the EC2 Console and copy the instance id of one of the instances you want to simulate the interruption for, and paste it on the placeholders <instance-id> of the interruption event above to mock a Spot interruption. Then click on "Create" to save the interruption event.
 
 1. On the Lambda console, click on "Test" to execute the Lambda function with the mock event. On the logs, you should see something similar to this:
-    '''
-    START RequestId: 7c395289-27db-432c-aa5c-5772ce18f4a5 Version: $LATEST
-    [INFO]	2020-04-09T17:35:02.42Z	7c395289-27db-432c-aa5c-5772ce18f4a5	Handling spot instance interruption notification for instance i-xxxxxxxxxx
-
-    [INFO]	2020-04-09T17:35:02.732Z	7c395289-27db-432c-aa5c-5772ce18f4a5	At 2020-04-09T17:35:02Z instance i-xxxxxxxxxx was detached in response to a user request.
-
-    [INFO]	2020-04-09T17:35:02.985Z	7c395289-27db-432c-aa5c-5772ce18f4a5	Running commands on instance i-xxxxxxxxx. Command id: dd694db5-681f-4ff9-813e-fbf434a3a51a 
-
-    END RequestId: 7c395289-27db-432c-aa5c-5772ce18f4a5
-    REPORT RequestId: 7c395289-27db-432c-aa5c-5772ce18f4a5	Duration: 961.14 ms	Billed Duration: 1000 ms	Memory Size: 128 MB	Max Memory Used: 86 MB	Init Duration: 425.92 ms	
-    '''
+    ```
+    START RequestId: f7f511dd-310e-42b2-bda0-d7a9c7ece68c Version: $LATEST
+    [INFO]	2020-04-22T19:18:49.900Z	f7f511dd-310e-42b2-bda0-d7a9c7ece68c	Handling spot instance interruption notification for instance i-04bcbb54d672a6986
+    [INFO]	2020-04-22T19:18:50.402Z	f7f511dd-310e-42b2-bda0-d7a9c7ece68c	At 2020-04-22T19:18:50Z instance i-xxxxx was detached in response to a user request.
+    [INFO]	2020-04-22T19:18:50.402Z	f7f511dd-310e-42b2-bda0-d7a9c7ece68c	INFO: Instance i-xxxxx has been successfully detached from    SampleApp-SampleWebAppAutoScalingGroup-KZZNN7T2110M
+    [INFO]	2020-04-22T19:18:50.684Z	f7f511dd-310e-42b2-bda0-d7a9c7ece68c	Running commands on instance i-xxxxx. Command id: 11ae52df-771c-49f7-bc66-ee20ea4d25f4 
+    [INFO]	2020-04-22T19:18:50.684Z	f7f511dd-310e-42b2-bda0-d7a9c7ece68c	Interruption response actions completed for instance i-xxxxx belonging to     SampleApp-SampleWebAppAutoScalingGroup-KZZNN7T2110M
+    END RequestId: f7f511dd-310e-42b2-bda0-d7a9c7ece68c	
+    ```
 
 1. Go to the EC2 Auto Scaling [console](https://console.aws.amazon.com/ec2/autoscaling/home?#AutoScalingGroups:) and select the Auto Scaling group of your instance. You will see the instance is in "draining" mode and also a replacement instance has been launched. 
 
