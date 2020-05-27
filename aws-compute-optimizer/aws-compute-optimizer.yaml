@@ -113,7 +113,7 @@ Parameters:
     Type: String
   minSize:
     Default: 5
-    Description: Mininum capacity
+    Description: Minimum capacity
     Type: Number
 Resources:
   attachGateway:

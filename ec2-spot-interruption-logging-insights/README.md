@@ -2,7 +2,7 @@
 
 This is a sample solution for logging instance details in response to EC2 Spot Instance Interruption Warnings and analyzing them with CloudWatch Log Insights. 
 
-Using CloudWatch Events, an event rule subscribes to EC2 Spot Instance Interruption Warnings, and triggers a Lambda function which collects details about the instance being interrupted and logs that information to a CloudWatch Logs Group. The solution can be configured to log any details you require about your instance, and by default logs InstanceId, InstanceType and all Tags. This information can then be used to develop visualizions with CloudWatch Logs Insights.
+Using CloudWatch Events, an event rule subscribes to EC2 Spot Instance Interruption Warnings, and triggers a Lambda function which collects details about the instance being interrupted and logs that information to a CloudWatch Logs Group. The solution can be configured to log any details you require about your instance, and by default logs InstanceId, InstanceType and all Tags. This information can then be used to develop visualizations with CloudWatch Logs Insights.
 
 ## Overview
 
@@ -95,7 +95,7 @@ Note: For easiest deployment, create a Cloud9 instance and use the provided envi
 
 #### Deployment Steps
 
-Once you've installed the requirements listed above, open a terminal sesssion as you'll need to run through a few commands to deploy the solution.
+Once you've installed the requirements listed above, open a terminal session as you'll need to run through a few commands to deploy the solution.
 
 Firstly, we need a `S3 bucket` where we can upload our Lambda functions packaged as ZIP before we deploy anything - If you don't have a S3 bucket to store code artifacts then this is a good time to create one:
 
@@ -114,7 +114,7 @@ Next, change directories to the root directory for this example solution.
 cd ec2-spot-labs/ec2-spot-interruption-logging-insights
 ```
 
-Next, run the folllowing command to build the Lambda function:
+Next, run the following command to build the Lambda function:
 
 ```bash
 sam build --use-container

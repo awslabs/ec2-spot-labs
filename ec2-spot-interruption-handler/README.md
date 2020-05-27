@@ -15,7 +15,7 @@ Optionally, you can also configure a set of commands to be executed on your to-b
 
 You can set up commands you want to execute when your Spot Instances on a specific Auto Scaling group or Spot Fleet are interrupted by creating a parameter within AWS Systems Manager [Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) with the commands you want to run. The Lambda function checks if a Parameter exists for the Auto Scaling group that the instance belongs to, if it exists, it will then call RunCommand referencing the parameter, otherwise the function finishes here. With default settings, the parameter name needs to be */spot-instance-interruption-handler/run_commands/\<auto-scaling-group-name\>* or */spot-instance-interruption-handler/run_commands/\<spot-fleet-id\>*.
 
-You can delay the execution of termination commands to x seconds before the Spot instance interruption if, for example, you're allowing time for in-flight http requests to complete before you graceuflly stop your application using the wait_x_seconds_before_interruption.sh bash script (it defaults to 30 seconds before interruption, but you can pass your desired time as parameter. It also requires [jq](https://stedolan.github.io/jq/) installed on the instance). Below you can find an example list of commands that will execute "echo executing termination commands" 60 seconds before the instance is going to be interrupted.
+You can delay the execution of termination commands to x seconds before the Spot instance interruption if, for example, you're allowing time for in-flight http requests to complete before you gracefully stop your application using the wait_x_seconds_before_interruption.sh bash script (it defaults to 30 seconds before interruption, but you can pass your desired time as parameter. It also requires [jq](https://stedolan.github.io/jq/) installed on the instance). Below you can find an example list of commands that will execute "echo executing termination commands" 60 seconds before the instance is going to be interrupted.
 
 ```bash
 curl -s -o /tmp/wait_x_seconds_before_interruption.sh "https://raw.githubusercontent.com/awslabs/ec2-spot-labs/master/ec2-spot-interruption-handler/wait_x_seconds_before_interruption.sh"; chmod u+x /tmp/wait_x_seconds_before_interruption.sh; /tmp/wait_x_seconds_before_interruption.sh 60; echo "executing termination commands"
@@ -33,8 +33,8 @@ The Lambda function execution and the output of your commands is logged on Amazo
 Search for ec2-spot-interruption-handler in the Serverless Application Repository and follow the instructions to deploy. (Make sure you've checked the box labeled: Show apps that create custom IAM roles or resource policies)
 
 If needed, you can modify the following parameters:
- - **SSMParameterPrefix:** The prefix of your Systems Manager Parameters where you will configure the commands youwill run on the different ASGs. This defaults to /spot-instance-interruption-handler/run_commands/. If you leave thedefault settings, your parameters will need to be named */spot-instance-interruption-handler/run_commands/ \<auto-scaling-group-name\>*
- - **EnableRunCommandOutputLogging:** Enable logging to CloudWatch logs of the output of RunCommand (by default is setto *True*, you can disable it setting this to *False*)
+ - **SSMParameterPrefix:** The prefix of your Systems Manager Parameters where you will configure the commands you will run on the different ASGs. This defaults to /spot-instance-interruption-handler/run_commands/. If you leave the default settings, your parameters will need to be named */spot-instance-interruption-handler/run_commands/ \<auto-scaling-group-name\>*
+ - **EnableRunCommandOutputLogging:** Enable logging to CloudWatch logs of the output of RunCommand (by default is set to *True*, you can disable it setting this to *False*)
 
 ### Deployment (Local)
 
@@ -49,7 +49,7 @@ Note: For easiest deployment, create a Cloud9 instance and use the provided envi
 
 #### Deployment Steps
 
-Once you've installed the requirements listed above, open a terminal sesssion as you'll need to run through a few commands to deploy the solution.
+Once you've installed the requirements listed above, open a terminal session as you'll need to run through a few commands to deploy the solution.
 
 Firstly, we need a `S3 bucket` where we can upload our Lambda functions packaged as ZIP before we deploy anything - If you don't have a S3 bucket to store code artifacts then this is a good time to create one:
 
@@ -68,7 +68,7 @@ Next, change directories to the root directory for this example solution.
 cd ec2-spot-labs/ec2-spot-interruption-handler
 ```
 
-Next, run the folllowing command to build the Lambda function:
+Next, run the following command to build the Lambda function:
 
 ```bash
 sam build --use-container
@@ -108,5 +108,5 @@ sam deploy \
 
 - Amazon EventBridge events for AWS service events are free of charge. Pricing details can be found [here](https://aws.amazon.com/eventbridge/pricing/)
 - If you already use all the monthly free tier that AWS Lambda provides, Lambda pricing applies. Otherwise, the usage of this will be covered by the free tier. More info [here](https://aws.amazon.com/lambda/pricing/)
-- AWS Systems Manager Run Command doesn't incurr additional charges (limits apply). Parameter Store has also a Standard tier that doesn't incurr charges. Pricing details can be found [here](https://aws.amazon.com/systems-manager/pricing/)
+- AWS Systems Manager Run Command doesn't incur additional charges (limits apply). Parameter Store has also a Standard tier that doesn't incur charges. Pricing details can be found [here](https://aws.amazon.com/systems-manager/pricing/)
 - AWS Lambda and Run Command log its output to CloudWatch logs. You can find pricing for CloudWatch Logs [here](https://aws.amazon.com/cloudwatch/pricing/)

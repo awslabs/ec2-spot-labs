@@ -34,7 +34,7 @@ Here is a diagram of the resulting architecture:
 To save time on the initial setup, a CloudFormation template will be used to create the Amazon VPC with subnets, as well as various supporting resources including IAM policies and roles, security groups, and a VPC endpoint for you to run the steps for the workshop in.
 
 **To create the stack**
-1.	You can view and download the CloudFormation temlpate from GitHub [here](https://github.com/awslabs/ec2-spot-labs/blob/master/ec2-spot-elastic-inference/EI_Spot_CFN.yaml)
+1.	You can view and download the CloudFormation template from GitHub [here](https://github.com/awslabs/ec2-spot-labs/blob/master/ec2-spot-elastic-inference/EI_Spot_CFN.yaml)
 2.	Take a moment to review the CloudFormation template so you understand the resources it will be creating.
 3.	Browse to the [AWS CloudFormation console](https://console.aws.amazon.com/cloudformation).
 Note: Make sure you are in the appropriate AWS Region 
@@ -123,7 +123,7 @@ aws ec2 describe-launch-template-versions  --launch-template-name EI_spot
 
 | Parameter     | Description   |
 | ------------- | ------------- |
-| **LaunchTemplateName**  | Update the LauchTemplateName as “EI_spot” as created above  |
+| **LaunchTemplateName**  | Update the LaunchTemplateName as “EI_spot” as created above  |
 | **%publicSubnet%**  | Update the subnet from the “publicSubnet” of CloudFormation Outputs tab. For example, “subnet-0XXXXXXXXXXX”  |
 | **InstanceType**    | **Optional** - The provided EC2 fleet json has some instance types. Please update the Instance Types as required |
 | **"TotalTargetCapacity": “X”, "OnDemandTargetCapacity": “Y”, "SpotTargetCapacity": “Z”, "DefaultTargetCapacityType": ""**  | **Optional** – The provided EC2 fleet json has some values on TotalTargetCapacity, OnDemandTargetCapacity, SpotTargetCapacity and DefaultTargetCapacityType. According to your compute target capacity, update TotalTargetCapacity, OnDemandTargetCapacity, SpotTargetCapacity and DefaultTargetCapacityType if needed. |

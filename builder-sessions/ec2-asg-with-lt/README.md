@@ -1,4 +1,4 @@
-**_Pre-requesites: Amazon Web Services (AWS) developer account to launch EC2 instances. AWS CLI installed in terminal and configured with credentials to talk to AWS. All steps work only in us-east-1 region_**
+**_Pre-requisites: Amazon Web Services (AWS) developer account to launch EC2 instances. AWS CLI installed in terminal and configured with credentials to talk to AWS. All steps work only in us-east-1 region_**
 
 ## AutoScaling Groups with LaunchTemplates
 

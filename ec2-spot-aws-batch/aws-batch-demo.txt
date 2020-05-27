@@ -1,4 +1,4 @@
-1. Open job defintion and review
+1. Open job definition and review
 
 $ open aws-batch-demo-job-definition.json
 
