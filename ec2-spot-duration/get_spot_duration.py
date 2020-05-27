@@ -124,7 +124,7 @@ unix_now = time.time()
 
 sorted_list = list(result.keys())
 sorted_list.sort(key=lambda x: (result.get(x, 0), x))
-print "Duration\tInstance Type\tAvailability Zone"
+print ("Duration\tInstance Type\tAvailability Zone")
 for it in sorted_list:
     date = result.get(it, 0)
-    print "%.1f\t%s\t%s" % ((unix_now - date)/3600.0, it[0], it[1])
+    print ("%.1f\t%s\t%s" % ((unix_now - date)/3600.0, it[0], it[1]))
