@@ -1,0 +1,75 @@
+proxy:
+  secretToken: "f0a5942015e402116c5c47fa69782a1b50c19975ec2f7c97fdb172fbb7c92258"
+singleuser:
+  nodeSelector:
+      intent: apps
+  memory:
+    limit: 2G
+    guarantee: 2G
+  cpu:
+    limit: 2
+    guarantee: 2
+
+  image:
+    name: jupyter/minimal-notebook
+    tag: 2343e33dec46
+  storage:
+    type: "static"
+    static:
+      pvcName: "efs-persist"
+      subPath: 'home/{username}'
+  extraEnv:
+    CHOWN_HOME: 'yes'
+  uid: 0
+  fsGid: 0
+  cmd: "start-singleuser.sh"
+  profileList:
+    - display_name: "Minimal environment"
+      description: "To avoid too much bells and whistles: Python."
+      default: true
+    - display_name: "Datascience environment"
+      description: "If you want the additional bells and whistles: Python, R, and Julia."
+      kubespawner_override:
+        image: jupyter/datascience-notebook:2343e33dec46
+    - display_name: "Spark environment"
+      description: "The Jupyter Stacks spark image!"
+      kubespawner_override:
+        image: jupyter/all-spark-notebook:2343e33dec46 
+    - display_name: "GPU Server"
+      description: "Spawns a notebook server with access to a GPU"
+      kubespawner_override:
+        image: 110066426187.dkr.ecr.us-west-2.amazonaws.com/cuda-jupyterlab-tf-gpu:latest
+        extra_resource_limits:
+          nvidia.com/gpu: "1"
+hub:
+  nodeSelector:
+    intent: controlapps
+  extraConfig: |
+    c.Spawner.cmd = ['start.sh','jupyterhub-singleuser','--allow-root']
+    c.KubeSpawner.args = ['--allow-root']
+    
+  db:
+    type: postgres
+    url: "postgresql+psycopg2://jupyterhubpg:secretsss@pgdb-postgresql.default.svc.cluster.local:5432/jupyterhub"
+  cookieSecret: "f0a5942015e402116c5c47fa69782a1b50c19975ec2f7c97fdb172fbb7c92258"
+  userScheduler:
+    enabled: true
+  podPriority:
+    enabled: true
+  userPlaceholder:
+    enabled: true
+    replicas: 4
+  userPods:
+    nodeAffinity:
+      matchNodePurpose: require
+  corePods:
+    nodeAffinity:
+      matchNodePurpose: require
+cull:
+  enabled: true
+  timeout: 3600
+  every: 300
+auth:
+  admin:
+    users:
+      - admin

@@ -1,0 +1,9 @@
+postgresqlPassword: "secretsss"
+postgresqlDatabase: "jupyterhub"
+postgresqlUsername: "jupyterhubpg"
+master:
+    nodeSelector: 
+        intent: controlapps
+slave:
+    nodeSelector: 
+        intent: controlapps

@@ -1,0 +1,32 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+    name: k8-jhub
+    region: us-west-2
+nodeGroups:
+    - name: dev-p2-GPU
+      minSize: 2
+      maxSize: 10
+      desiredCapacity: 2
+      volumeSize: 100
+      VolumeType: gp2
+      instancesDistribution:
+        instanceTypes: ["p2.xlarge","p2.8xlarge","p2.16xlarge"] 
+        onDemandBaseCapacity: 0
+        onDemandPercentageAboveBaseCapacity: 0
+        spotAllocationStrategy: capacity-optimized
+      labels:
+        lifecycle: Ec2Spot
+        intent: apps
+        aws.amazon.com/spot: "true"
+        hub.jupyter.org/node-purpose: "user"
+        k8s.amazonaws.com/accelerator: nvidia-tesla-k80
+      tags:
+        k8s.io/cluster-autoscaler/node-template/label/lifecycle: Ec2Spot
+        k8s.io/cluster-autoscaler/node-template/label/intent: apps
+        k8s.io/cluster-autoscaler/node-template/label/aws.amazon.com/spot: "true"
+      iam:
+        withAddonPolicies:
+          autoScaler: true
+          cloudWatch: true
+          albIngress: true

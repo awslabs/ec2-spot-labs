@@ -1,0 +1,71 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+    name: k8-jhub
+    region: us-west-2
+managedNodeGroups:
+    - name: dev-m5x-od
+      minSize: 1
+      maxSize: 2
+      instanceType: m5.xlarge
+      desiredCapacity: 1
+      privateNetworking: true
+      labels:
+        lifecycle: OnDemand
+        intent: controlapps
+        hub.jupyter.org/node-purpose: "core"
+      iam:
+        withAddonPolicies:
+          autoScaler: true
+          cloudWatch: true
+          albIngress: true
+nodeGroups:
+    - name: dev-4vcpu-16gb-spot
+      minSize: 2
+      maxSize: 10
+      desiredCapacity: 2
+      volumeSize: 100
+      instancesDistribution:
+        instanceTypes: ["m5.xlarge", "m5d.xlarge", "m4.xlarge","t3.xlarge","t3a.xlarge","m5a.xlarge","t2.xlarge"] 
+        onDemandBaseCapacity: 0
+        onDemandPercentageAboveBaseCapacity: 0
+        spotAllocationStrategy: capacity-optimized
+      labels:
+        lifecycle: Ec2Spot
+        intent: apps
+        aws.amazon.com/spot: "true"
+        hub.jupyter.org/node-purpose: "user"
+      tags:
+        k8s.io/cluster-autoscaler/node-template/label/lifecycle: Ec2Spot
+        k8s.io/cluster-autoscaler/node-template/label/intent: apps
+        k8s.io/cluster-autoscaler/node-template/label/aws.amazon.com/spot: "true"
+      iam:
+        withAddonPolicies:
+          autoScaler: true
+          cloudWatch: true
+          albIngress: true
+    - name: dev-p2-GPU
+      minSize: 2
+      maxSize: 10
+      desiredCapacity: 2
+      volumeSize: 100
+      instancesDistribution:
+        instanceTypes: ["p2.xlarge","p2.8xlarge","p2.16xlarge"] 
+        onDemandBaseCapacity: 0
+        onDemandPercentageAboveBaseCapacity: 0
+        spotAllocationStrategy: capacity-optimized
+      labels:
+        lifecycle: Ec2Spot
+        intent: apps
+        aws.amazon.com/spot: "true"
+        hub.jupyter.org/node-purpose: "user"
+        k8s.amazonaws.com/accelerator: nvidia-tesla-k80
+      tags:
+        k8s.io/cluster-autoscaler/node-template/label/lifecycle: Ec2Spot
+        k8s.io/cluster-autoscaler/node-template/label/intent: apps
+        k8s.io/cluster-autoscaler/node-template/label/aws.amazon.com/spot: "true"
+      iam:
+        withAddonPolicies:
+          autoScaler: true
+          cloudWatch: true
+          albIngress: true
