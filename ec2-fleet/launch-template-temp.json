@@ -1,0 +1,16 @@
+{
+    "LaunchTemplateName": "temp1",
+    "VersionDescription": "temp1",
+    "LaunchTemplateData": {
+        "NetworkInterfaces": [
+            {
+                "AssociatePublicIpAddress": false,
+                "DeleteOnTermination": true,
+                "DeviceIndex": 0,
+                "SecondaryPrivateIpAddressCount": 1
+            }
+        ],
+        "ImageId": "ami-0b898040803850657",
+        "InstanceType": "c3.large"
+    }
+}

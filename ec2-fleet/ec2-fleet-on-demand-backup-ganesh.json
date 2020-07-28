@@ -3,7 +3,6 @@
     "AllocationStrategy": "capacity-optimized",
     "InstanceInterruptionBehavior": "terminate"
   },
-  "ExcessCapacityTerminationPolicy": "termination",
   "LaunchTemplateConfigs": [
     {
       "LaunchTemplateSpecification": {
@@ -51,12 +50,11 @@
     }
   ],
   "TargetCapacitySpecification": {
-    "TotalTargetCapacity": 10,
-    "OnDemandTargetCapacity": 5,
-    "SpotTargetCapacity": 5,
+    "TotalTargetCapacity": 2,
+    "OnDemandTargetCapacity": 1,
+    "SpotTargetCapacity": 1,
     "DefaultTargetCapacityType": "spot"
   },
-  "TerminateInstancesWithExpiration": true,
-  "Type": "maintain",
-  "ReplaceUnhealthyInstances": true
+  "Type": "instant",
+  "ReplaceUnhealthyInstances": false
 }
