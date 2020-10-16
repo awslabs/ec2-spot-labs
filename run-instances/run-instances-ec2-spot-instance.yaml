@@ -1,0 +1,25 @@
+---
+ImageId: ami-0947d2ba12ee1ff75
+InstanceMarketOptions:
+  MarketType: spot
+  SpotOptions:
+    InstanceInterruptionBehavior: terminate
+    SpotInstanceType: one-time
+InstanceType: c5.large
+MaxCount: 1
+MinCount: 1
+SubnetId: subnet-0437dfe009676c434
+TagSpecifications:
+- ResourceType: instance
+  Tags:
+  - Key: Name
+    Value: myInstance
+- ResourceType: volume
+  Tags:
+  - Key: Name
+    Value: myVolume
+- ResourceType: spot-instances-request
+  Tags:
+  - Key: Name
+    Value: mySpotInstanceRequest
+...
