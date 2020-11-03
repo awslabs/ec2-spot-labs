@@ -3,8 +3,8 @@ ImageId: ami-0947d2ba12ee1ff75
 InstanceMarketOptions:
   MarketType: spot
   SpotOptions:
-    InstanceInterruptionBehavior: terminate
-    SpotInstanceType: one-time
+    SpotInstanceType: persistent
+    InstanceInterruptionBehavior: stop
 InstanceType: c5.large
 MaxCount: 1
 MinCount: 1
