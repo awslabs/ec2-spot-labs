@@ -3,7 +3,7 @@
 The content in this folder uses [CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html) to deploy the infrastructure, IAM roles and policies required to run a [Sagemaker Notebook](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks.html) ready to fetch and display EC2 Spot historic prices using a Jupyter notebook. You can see how that notebook looks like [here](./ec2-spot-historic-prices.ipynb). 
 
 ## Deploying CDK project using Cloud9   
-The easier way to setup and deploy your environment is using Cloud9 following this instructions:
+The easier way to setup and deploy your environment is using Cloud9 following this instructions. 
 
 * Create a Cloud9 environment : 
 * On the console run the following commands:
@@ -18,6 +18,14 @@ source .env/bin/activate
 pip install -r requirements.txt 
 cdk deploy
 ```
+
+Once you are done, you can destroy the cdk deployment and delete the cloud9 environment.
+```
+cdk destroy
+```
+
+**Note** the user you run this with, should be able to create Cloud9 environments create deploy CloudFormation stacks, add extra IAM roles and have access to Sagemaker.
+
 
 ## Setting up the project with CDK
 
