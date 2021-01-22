@@ -1,0 +1,53 @@
+ # Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ #
+ # Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ # software and associated documentation files (the "Software"), to deal in the Software
+ # without restriction, including without limitation the rights to use, copy, modify,
+ # merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ # permit persons to whom the Software is furnished to do so.
+ #
+ # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ # INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ # PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ # HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+---
+# cluster.yaml
+# A cluster with two managed nodegroups one Spot another OnDemand
+---
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: sparkonk8
+  region: us-west-2
+
+managedNodeGroups:
+  - name: managed-ng-od
+    minSize: 1
+    maxSize: 10
+    desiredCapacity: 1
+    instanceTypes: ["m5.xlarge"] 
+    iam:
+      attachPolicyARNs:
+      - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+      - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+      - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+      - <<Policy ARN>>
+      withAddonPolicies:
+        autoScaler: true
+  - name: managed-ng-spot
+    minSize: 1
+    maxSize: 20
+    desiredCapacity: 1
+    instanceTypes: ["m5.4xlarge", "m5d.4xlarge", "m4.4xlarge","m5a.4xlarge","m5ad.4xlarge","m5n.4xlarge"] 
+    spot: True
+    iam:
+      attachPolicyARNs:
+      - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+      - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+      - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+      - <<Policy ARN>>
+      withAddonPolicies:
+        autoScaler: true
