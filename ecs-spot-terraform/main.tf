@@ -222,9 +222,13 @@ resource "aws_ecs_cluster" "ecs_cluster" {
   capacity_providers = ["FARGATE", "FARGATE_SPOT", aws_ecs_capacity_provider.cp_od.name,aws_ecs_capacity_provider.cp_spot.name]
 
   default_capacity_provider_strategy {
-    capacity_provider = aws_ecs_capacity_provider.cp_spot.name
-    weight            = "1"
-  }
+      capacity_provider = aws_ecs_capacity_provider.cp_spot.name
+      weight            = "1"
+    }
+  default_capacity_provider_strategy {
+      capacity_provider = aws_ecs_capacity_provider.cp_od.name
+      weight            = "1"
+    }
   # by default container insights are enabled, adding this setting if customer wants to disable it
   setting {
     name = "containerInsights"
