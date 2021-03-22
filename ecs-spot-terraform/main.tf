@@ -105,8 +105,6 @@ resource "aws_autoscaling_group" "ecs_spot_asg" {
       }
       override {
         instance_type     = "c5.xlarge"
-        # Optional configure instance weights to set capacity in units instead of number of instances
-        #weighted_capacity = "4"
       }
       override {
         instance_type     = "c4.xlarge"
@@ -191,8 +189,6 @@ resource "aws_ecs_capacity_provider" "cp_spot" {
     managed_termination_protection = "ENABLED"
 
     managed_scaling {
-      maximum_scaling_step_size = 1000
-      minimum_scaling_step_size = 1
       status                    = "ENABLED"
       target_capacity           = 100
     }
@@ -207,8 +203,6 @@ resource "aws_ecs_capacity_provider" "cp_od" {
     managed_termination_protection = "ENABLED"
 
     managed_scaling {
-      maximum_scaling_step_size = 1000
-      minimum_scaling_step_size = 1
       status                    = "ENABLED"
       target_capacity           = 100
     }
