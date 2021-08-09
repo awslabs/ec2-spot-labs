@@ -1,0 +1,28 @@
+{
+  "LaunchTemplate": {
+    "LaunchTemplateSpecification": {
+      "LaunchTemplateId": "%LAUNCH_TEMPLATE_ID%",
+      "Version": "1"
+    },
+    "Overrides": [
+      {
+        "InstanceType": "t2.small",
+        "WeightedCapacity": "1"
+      },
+      {
+        "InstanceType": "c5.large",
+        "WeightedCapacity": "2"
+      },
+      {
+        "InstanceType": "m5.large",
+        "WeightedCapacity": "2"
+      }
+    ]
+  },
+  "InstancesDistribution": {
+    "SpotAllocationStrategy": "capacity-optimized",
+    "OnDemandBaseCapacity": 0,
+    "OnDemandPercentageAboveBaseCapacity": 0
+  }
+}
+

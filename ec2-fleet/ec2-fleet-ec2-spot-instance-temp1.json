@@ -1,0 +1,38 @@
+{
+  "SpotOptions": {
+    "AllocationStrategy": "capacity-optimized",
+    "InstanceInterruptionBehavior": "terminate"
+  },
+  "LaunchTemplateConfigs": [
+    {
+      "LaunchTemplateSpecification": {
+        "LaunchTemplateName": "temp1",
+        "Version": "$Default"
+      },
+      "Overrides": [
+        {
+          "SubnetId": "subnet-0fc4d2543f3dcc255"
+        },
+        {
+          "SubnetId": "subnet-09b9d0dbca4bae8a5"
+        }
+      ]
+    }
+  ],
+  "TargetCapacitySpecification": {
+    "TotalTargetCapacity": 2,
+    "DefaultTargetCapacityType": "spot"
+  },
+  "Type": "maintain",
+  "TagSpecifications": [
+    {
+      "ResourceType": "fleet",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "temp1"
+        }
+      ]
+    }
+  ]
+}

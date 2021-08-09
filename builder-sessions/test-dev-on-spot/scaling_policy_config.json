@@ -4,7 +4,5 @@
     "MetricName": "Success",
     "Namespace": "ReInvent-EC2SpotTestDev-Metrics",
     "Statistic": "Average"
-  },
-  "ScaleOutCooldown": 30,
-  "DisableScaleIn": true
+  }
 }

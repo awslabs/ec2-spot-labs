@@ -1,0 +1,314 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Metadata:
+  Author:
+    Description: Isaac Vallhonrat <ivallhon@amazon.com>
+  License:
+    Description: 'Copyright 2020 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+      http://aws.amazon.com/asl/
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+
+Parameters:
+  AmazonLinux2LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+
+  PrimaryInstanceType:
+    Type: String
+    Default: "t2.medium"
+    Description: "Primary Instance type of the Auto Scaling group"
+
+  SpotInstanceType1: 
+    Type: String
+    Default: "t3.medium"
+    Description: "Possible instance type to use for Spot"
+  SpotInstanceType2: 
+    Type: String
+    Default: "t3a.medium"
+    Description: "Possible instance type to use for Spot"
+
+  SpotInstanceType3: 
+    Type: String
+    Default: "t3.large"
+    Description: "Possible instance type to use for Spot"
+
+  EC2KeyPair:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: "Key pair for your EC2 Instances"
+
+  EnvironmentName:
+    Type: String
+    Default: "Spot Interruption Handling sample"
+    Description: "Name of the environment to be deployed"
+
+  InstanceTerminationCommands:
+    Type: String
+    Default: "echo hello world"
+    Description: "Commands to execute on the instance when intercepting an interruption"
+
+  SSMParameterPrefix:
+    Type: String
+    Default: "/spot-instance-interruption-handler/run_commands/"
+    Description: "Prefix for Interruption Handler parameters"
+  
+Resources:
+  SSMIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "ec2.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      ManagedPolicyArns: [ "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore" ]
+      Policies:
+        - PolicyName: AllowSSMWriteLogsToCloudWatch
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                  - logs:PutLogEvents
+                Resource: '*'
+
+  SSMInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    DependsOn: SSMIAMRole
+    Properties:
+      Roles: 
+        - !Ref SSMIAMRole
+
+  SampleWebAppELBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for apache instances"
+      SecurityGroupEgress:
+        - CidrIp: "0.0.0.0/0"
+          IpProtocol: -1
+      SecurityGroupIngress:
+        - CidrIp: "0.0.0.0/0"
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+      VpcId: !Ref VPC
+
+  SampleWebAppEC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for apache instances
+      SecurityGroupEgress:
+        - CidrIp: "0.0.0.0/0"
+          IpProtocol: -1
+      SecurityGroupIngress:
+        - SourceSecurityGroupId: !Ref SampleWebAppELBSecurityGroup
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+      VpcId: !Ref VPC
+
+  SampleWebAppLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      LaunchTemplateData:
+        ImageId: !Ref AmazonLinux2LatestAmiId
+        InstanceType: !Ref PrimaryInstanceType
+        KeyName: !Ref EC2KeyPair
+        SecurityGroupIds: 
+          - !Ref SampleWebAppEC2SecurityGroup
+        IamInstanceProfile: 
+          Arn: !GetAtt SSMInstanceProfile.Arn
+        UserData:
+          Fn::Base64: 
+            !Sub |
+              #!/bin/bash
+              yum update -y
+              amazon-linux-extras install epel -y
+              yum -y install httpd jq  
+              echo "hello world! 
+              My instance-id is $(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+              My instance type is $(curl -s http://169.254.169.254/latest/meta-data/instance-type)
+              I'm on Availability Zone $(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)" > /var/www/html/index.html
+              service httpd start
+        TagSpecifications:
+          - ResourceType: instance
+            Tags: 
+              - Key: 'SpotInterruptionHandler/enabled'
+                Value: 'true'
+          
+    
+  SampleWebAppAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      MinSize: "0"
+      MaxSize: "3"
+      DesiredCapacity: "2"
+      VPCZoneIdentifier: 
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+        - !Ref PublicSubnet3 
+      MixedInstancesPolicy:
+        InstancesDistribution:
+          OnDemandAllocationStrategy: prioritized
+          OnDemandBaseCapacity: 0
+          OnDemandPercentageAboveBaseCapacity: 0
+          SpotAllocationStrategy: capacity-optimized
+        LaunchTemplate:
+          LaunchTemplateSpecification: 
+            LaunchTemplateId: !Ref SampleWebAppLaunchTemplate
+            Version: !GetAtt SampleWebAppLaunchTemplate.DefaultVersionNumber
+          Overrides: 
+            - InstanceType: !Ref SpotInstanceType1
+            - InstanceType: !Ref SpotInstanceType2
+            - InstanceType: !Ref SpotInstanceType3
+      TargetGroupARNs:
+        - !Ref SampleWebAppTargetGroup
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+          PropagateAtLaunch: true
+  
+  SampleWebAppLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      SecurityGroups: 
+        - !Ref SampleWebAppELBSecurityGroup 
+      Subnets: 
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+        - !Ref PublicSubnet3
+      Scheme: internet-facing
+
+  SampleWebAppTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Port: "80"
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: "90"
+        - Key: load_balancing.algorithm.type
+          Value: "least_outstanding_requests"
+      VpcId: !Ref VPC
+  
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref SampleWebAppLoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref SampleWebAppTargetGroup
+
+  SSMASGParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Join [ "" , [ !Ref SSMParameterPrefix, !Ref SampleWebAppAutoScalingGroup ] ]
+      Type: String
+      Value: !Ref InstanceTerminationCommands
+              
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: "10.0.0.0/24"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet (AZ1)
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, !GetAZs  '' ]
+      CidrBlock: "10.0.1.0/24"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet (AZ2)
+
+  PublicSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 2, !GetAZs  '' ]
+      CidrBlock: "10.0.2.0/24"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet (AZ3)
+  
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Routes
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet2
+  
+  PublicSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet3

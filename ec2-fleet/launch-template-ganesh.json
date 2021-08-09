@@ -1,0 +1,33 @@
+{
+    "LaunchTemplateVersions": [
+        {
+            "LaunchTemplateId": "lt-06bc0101ca634756f",
+            "LaunchTemplateName": "ganesh",
+            "VersionNumber": 1,
+            "DefaultVersion": true,
+            "LaunchTemplateData": {
+                "ImageId": "ami-0fc61db8544a617ed",
+                "TagSpecifications": [
+                    {
+                        "ResourceType": "instance",
+                        "Tags": [
+                            {
+                                "Key": "Name",
+                                "Value": "ganesh"
+                            }
+                        ]
+                    },
+                    {
+                        "ResourceType": "volume",
+                        "Tags": [
+                            {
+                                "Key": "Name",
+                                "Value": "ganesh"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

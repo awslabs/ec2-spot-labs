@@ -1,7 +1,6 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-Description: Example of EC2 Auto Scaling group using EC2 Spot Instances, automatically scaling
-  based on SQS queue depth
+Description: Example of automating
 Mappings:
   CidrMappings:
     vpc:
@@ -43,7 +42,7 @@ Mappings:
       AMI: ami-082b5a644766e0e6f
 Metadata:
   Author:
-    Description: Ran Sheinberg <ranshein@amazon.com>, Chad Schmutzer <schmutze@amazon.com>
+    Description: Chad Schmutzer <schmutze@amazon.com>
   License:
     Description: 'Copyright 2019 Amazon.com, Inc. and its affiliates. All Rights Reserved.
 
@@ -78,27 +77,21 @@ Outputs:
     Description: Public subnet 2
     Value:
       Ref: publicSubnet2
-  s3BucketId:
-    Description: The S3 bucket ID
-    Value:
-      Ref: s3Bucket
-  sqsQueueArn:
-    Description: The SQS queue ARN
-    Value:
-      Fn::GetAtt:
-      - sqsQueue
-      - Arn
   vpc:
     Description: The VPC
     Value:
       Ref: vpc
 Parameters:
   desiredCapacity:
-    Default: 2
+    Default: 4
     Description: Desired capacity
     Type: Number
+  instanceType:
+    Default: computeOptimizer
+    Description: Instance type
+    Type: AWS::SSM::Parameter::Value<String>
   maxSize:
-    Default: 12
+    Default: 8
     Description: Maximum capacity
     Type: Number
   minSize:
@@ -121,7 +114,6 @@ Resources:
     - launchTemplate
     - publicSubnet1
     - publicSubnet2
-    - autoScalingServiceLinkedRole
     Properties:
       DesiredCapacity:
         Ref: desiredCapacity
@@ -132,63 +124,23 @@ Resources:
         Ref: minSize
       MixedInstancesPolicy:
         InstancesDistribution:
+          OnDemandAllocationStrategy: prioritized
           OnDemandBaseCapacity: 0
-          OnDemandPercentageAboveBaseCapacity: 0
+          OnDemandPercentageAboveBaseCapacity: 100
           SpotAllocationStrategy: capacity-optimized
         LaunchTemplate:
           LaunchTemplateSpecification:
             LaunchTemplateId:
               Ref: launchTemplate
             Version: 1
-          Overrides:
-          - InstanceType: t3.large
-          - InstanceType: c4.large
-          - InstanceType: c5.large
-          - InstanceType: m4.large
-          - InstanceType: m5.large
-          - InstanceType: r4.large
-          - InstanceType: r5.large
       VPCZoneIdentifier:
       - Ref: publicSubnet1
       - Ref: publicSubnet2
     Type: AWS::AutoScaling::AutoScalingGroup
-  autoScalingPolicy:
-    DependsOn:
-    - autoScalingGroup
-    - sqsQueue
-    Properties:
-      AutoScalingGroupName:
-        Ref: autoScalingGroup
-      PolicyType: TargetTrackingScaling
-      TargetTrackingConfiguration:
-        CustomizedMetricSpecification:
-          Dimensions:
-          - Name: QueueName
-            Value:
-              Fn::GetAtt:
-              - sqsQueue
-              - QueueName
-          MetricName: ApproximateNumberOfMessagesVisible
-          Namespace: AWS/SQS
-          Statistic: Sum
-          Unit: Count
-        TargetValue: 2
-    Type: AWS::AutoScaling::ScalingPolicy
-  autoScalingServiceLinkedRole:
-    Properties:
-      AWSServiceName: autoscaling.amazonaws.com
-      Description: Default Service-Linked Role enables access to AWS Services and Resources
-        used or managed by Auto Scaling
-    Type: AWS::IAM::ServiceLinkedRole
   cloudWatchLogsGroup:
     Properties:
       RetentionInDays: 7
     Type: AWS::Logs::LogGroup
-  ec2FleetServiceLinkedRole:
-    Properties:
-      AWSServiceName: ec2fleet.amazonaws.com
-      Description: Default EC2 Fleet Service Linked Role
-    Type: AWS::IAM::ServiceLinkedRole
   instanceProfile:
     DependsOn:
     - instanceRole
@@ -198,9 +150,6 @@ Resources:
       - Ref: instanceRole
     Type: AWS::IAM::InstanceProfile
   instanceRole:
-    DependsOn:
-    - sqsQueue
-    - s3Bucket
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -213,22 +162,9 @@ Resources:
         Version: 2012-10-17
       ManagedPolicyArns:
       - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
       Path: /
       Policies:
-      - PolicyDocument:
-          Statement:
-          - Action: sqs:*
-            Effect: Allow
-            Resource:
-              Fn::GetAtt:
-              - sqsQueue
-              - Arn
-          Version: 2012-10-17
-        PolicyName:
-          Fn::Join:
-          - '-'
-          - - Ref: AWS::StackName
-            - sqsQueuePolicy
       - PolicyDocument:
           Statement:
           - Action:
@@ -246,21 +182,6 @@ Resources:
             - cloudWatchLogsPolicy
       - PolicyDocument:
           Statement:
-          - Action: s3:ListBucket
-            Effect: Allow
-            Resource:
-            - Fn::Join:
-              - ''
-              - - 'arn:aws:s3:::'
-                - Ref: s3Bucket
-          Version: '2012-10-17'
-        PolicyName:
-          Fn::Join:
-          - '-'
-          - - Ref: AWS::StackName
-            - s3BucketListPolicy
-      - PolicyDocument:
-          Statement:
           - Action: ec2:DescribeTags
             Effect: Allow
             Resource: '*'
@@ -270,48 +191,75 @@ Resources:
           - '-'
           - - Ref: AWS::StackName
             - ec2DescribeTagsPolicy
-      - PolicyDocument:
-          Statement:
-          - Action:
-            - s3:PutObject*
-            - s3:GetObject
-            - s3:DeleteObject
-            Effect: Allow
-            Resource:
-            - Fn::Join:
-              - ''
-              - - 'arn:aws:s3:::'
-                - Ref: s3Bucket
-                - /*
-          Version: '2012-10-17'
-        PolicyName:
-          Fn::Join:
-          - '-'
-          - - Ref: AWS::StackName
-            - s3BucketReadWritePolicy
-      - PolicyDocument:
-          Statement:
-          - Action:
-            - autoscaling:SetInstanceProtection
-            - autoscaling:SetInstanceHealth
-            Effect: Allow
-            Resource: arn:aws:autoscaling:*:*:autoScalingGroup:*:autoScalingGroupName/*
-          Version: '2012-10-17'
-        PolicyName:
-          Fn::Join:
-          - '-'
-          - - Ref: AWS::StackName
-            - autoScalingGroupPolicy
     Type: AWS::IAM::Role
   internetGateway:
     DependsOn:
     - vpc
     Type: AWS::EC2::InternetGateway
+  lambdaFunction:
+    DependsOn:
+    - lambdaFunctionRole
+    Properties:
+      Code:
+        ZipFile: "import boto3\ndef handler(event, context):\n  instanceId = event['detail']['instance-id']\n\
+          \  instanceAction = event['detail']['instance-action']\n  try:\n    ec2client = boto3.client('ec2')\n\
+          \    describeTags = ec2client.describe_tags(Filters=[{'Name': 'resource-id','Values':[instanceId]},{'Name':'key','Values':['loadBalancerTargetGroup']}])\n\
+          \  except:\n    print(\"No action being taken. Unable to describe tags for instance\
+          \ id:\", instanceId)\n    return\n  try:\n    elbv2client = boto3.client('elbv2')\n\
+          \    deregisterTargets = elbv2client.deregister_targets(TargetGroupArn=describeTags['Tags'][0]['Value'],Targets=[{'Id':instanceId}])\n\
+          \  except:\n    print(\"No action being taken. Unable to deregister targets for instance\
+          \ id:\", instanceId)\n    return\n  print(\"Spot Instance interruption notice detected.\
+          \ Detaching instance from target:\")\n  print(instanceId, describeTags['Tags'][0]['Value'],\
+          \ deregisterTargets, sep=\",\")\n  return\n"
+      Handler: index.handler
+      Role:
+        Fn::GetAtt:
+        - lambdaFunctionRole
+        - Arn
+      Runtime: python3.6
+    Type: AWS::Lambda::Function
+  lambdaFunctionPermission:
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+        - lambdaFunction
+        - Arn
+      Principal: events.amazonaws.com
+    Type: AWS::Lambda::Permission
+  lambdaFunctionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action: elasticloadbalancing:DeregisterTargets
+            Effect: Allow
+            Resource: '*'
+          - Action: ec2:DescribeTags
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName:
+          Fn::Join:
+          - '-'
+          - - Ref: AWS::StackName
+            - lambdaFunctionRole
+    Type: AWS::IAM::Role
   launchTemplate:
     DependsOn:
     - instanceProfile
-    - s3Bucket
-    - sqsQueue
     - cloudWatchLogsGroup
     Properties:
       LaunchTemplateData:
@@ -325,6 +273,8 @@ Resources:
           - amazonLinuxAmi
           - Ref: AWS::Region
           - AMI
+        InstanceType:
+          Ref: instanceType
         TagSpecifications:
         - ResourceType: instance
           Tags:
@@ -339,8 +289,7 @@ Resources:
 
               cd /root && git clone https://github.com/awslabs/ec2-spot-labs.git
 
-              REGION=${AWS::Region} S3BUCKET=${s3Bucket} SQSQUEUE=${sqsQueue} CLOUDWATCHLOGSGROUP=${cloudWatchLogsGroup}
-              bash /root/ec2-spot-labs/sqs-ec2-spot-asg/user-data.sh
+              REGION=${AWS::Region} CLOUDWATCHLOGSGROUP=${cloudWatchLogsGroup} bash /root/ec2-spot-labs/aws-compute-optimizer/user-data.sh
 
               '
     Type: AWS::EC2::LaunchTemplate
@@ -443,39 +392,6 @@ Resources:
       SubnetId:
         Ref: publicSubnet2
     Type: AWS::EC2::SubnetRouteTableAssociation
-  s3Bucket:
-    DependsOn:
-    - sqsQueue
-    - sqsQueuePolicy
-    Properties:
-      NotificationConfiguration:
-        QueueConfigurations:
-        - Event: s3:ObjectCreated:*
-          Queue:
-            Fn::GetAtt:
-            - sqsQueue
-            - Arn
-    Type: AWS::S3::Bucket
-  sqsQueue:
-    Properties:
-      VisibilityTimeout: 900
-    Type: AWS::SQS::Queue
-  sqsQueuePolicy:
-    DependsOn:
-    - sqsQueue
-    Properties:
-      PolicyDocument:
-        Statement:
-        - Action:
-          - sqs:SendMessage
-          Effect: Allow
-          Principal:
-            Service: s3.amazonaws.com
-          Resource: '*'
-        Version: 2012-10-17
-      Queues:
-      - Ref: sqsQueue
-    Type: AWS::SQS::QueuePolicy
   vpc:
     Properties:
       CidrBlock:
@@ -491,3 +407,6 @@ Resources:
           Ref: AWS::StackName
     Type: AWS::EC2::VPC
 ...
+
+STAGESAVAILABLE	Original
+STAGESAVAILABLE	Processed

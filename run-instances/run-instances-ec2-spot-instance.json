@@ -1,0 +1,43 @@
+{
+  "ImageId": "ami-0947d2ba12ee1ff75",
+  "InstanceType": "c5.large",
+  "MaxCount": 1,
+  "MinCount": 1,
+  "SubnetId": "subnet-0437dfe009676c434",
+  "TagSpecifications": [
+    {
+      "ResourceType": "instance",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "myInstance"
+        }
+      ]
+    },
+    {
+      "ResourceType": "volume",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "myVolume"
+        }
+      ]
+    },
+    {
+      "ResourceType": "spot-instances-request",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "mySpotInstanceRequest"
+        }
+      ]
+    }
+  ],
+  "InstanceMarketOptions": {
+    "MarketType": "spot",
+    "SpotOptions": {
+      "SpotInstanceType": "one-time",
+      "InstanceInterruptionBehavior": "terminate"
+    }
+  }
+}

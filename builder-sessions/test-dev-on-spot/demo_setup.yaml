@@ -4,7 +4,7 @@ Description: '
   Creates an HTTP web server, publicly accessible at "webServerPublicDns" included in the output of
   this template.
 
-  Creates prerequisites for launching an EC2 Fleet to test this web server. These prerequisites are:
+  Creates prerequisites for launching an Auto Scaling Group to test this web server. These prerequisites are:
     1. a VPC
     2. two subnets
     3. a Launch Template, which includes the EC2 UserData that triggers the test script
@@ -46,9 +46,9 @@ Parameters:
     Description: AMI to be used by the web server
     Type: String
     AllowedPattern : .+
-  testFleetAmi:
+  testAsgAmi:
     Default: ami-0ff8a91507f77f867
-    Description: AMI to be used by the test Fleet
+    Description: AMI to be used by the test Auto Scaling Group
     Type: String
     AllowedPattern : .+
   s3Bucket:
@@ -60,7 +60,7 @@ Parameters:
     Description: Name of the web server startup script
     Type: String
     AllowedPattern : .+
-  testFleetScript:
+  testAsgScript:
     Default: test_simple_server.py
     Description: Name of the testing script. The region and testing target DNS will be passed as arguments to this script
     Type: String
@@ -72,24 +72,22 @@ Outputs:
       Fn::GetAtt:
       - webServerInstance
       - PublicDnsName
-  testFleetLaunchTemplate:
-    Description: Launch Template to be used for the testing Fleet
+  testAsgLaunchTemplate:
+    Description: Launch Template to be used for the testing Auto Scaling Group
     Value:
-      Ref: testFleetLaunchTemplate
-  testFleetSubnet1:
-    Description: Subnet 1 where the test fleet can launch
+      Ref: testAsgLaunchTemplate
+  spotItnLaunchTemplate:
+    Description: Launch Template with no EC2 User Data to be used for Spot Interruption Notice testing
     Value:
-      Ref: testFleetSubnet1
-  testFleetSubnet2:
-    Description: Subnet 2 where the test fleet can launch
+      Ref: spotItnLaunchTemplate
+  testAsgSubnet1:
+    Description: Subnet 1 where the test Auto Scaling Group can launch
     Value:
-      Ref: testFleetSubnet2
-  spotFleetRoleArn:
-    Description: IAM role required to launch a Spot Fleet
+      Ref: testAsgSubnet1
+  testAsgSubnet2:
+    Description: Subnet 2 where the test Auto Scaling Group can launch
     Value:
-      Fn::GetAtt:
-      - spotFleetRole
-      - Arn
+      Ref: testAsgSubnet2
   spotInterruptionSnsTopic:
     Description: SNS topic that is published to when Spot Instances are interrupted
     Value:
@@ -249,9 +247,9 @@ Resources:
             - Fn::Sub: "aws s3 cp s3://${s3Bucket}/${webServerScript} ."
             - Fn::Sub: "chmod +x ${webServerScript}"
             - Fn::Sub: "nohup ./${webServerScript} &"
-  testFleetInternetGateway:
+  testAsgInternetGateway:
     Type: AWS::EC2::InternetGateway
-  testFleetVpc:
+  testAsgVpc:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock:
@@ -261,39 +259,39 @@ Resources:
         - cidr
       EnableDnsSupport: true
       EnableDnsHostnames: true
-  testFleetVpcGatewayAttachment:
+  testAsgVpcGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     DependsOn:
-    - testFleetInternetGateway
-    - testFleetVpc
+    - testAsgInternetGateway
+    - testAsgVpc
     Properties:
       InternetGatewayId:
-        Ref: testFleetInternetGateway
+        Ref: testAsgInternetGateway
       VpcId:
-        Ref: testFleetVpc
-  testFleetRouteTable:
+        Ref: testAsgVpc
+  testAsgRouteTable:
     Type: AWS::EC2::RouteTable
     DependsOn:
-    - testFleetVpc
+    - testAsgVpc
     Properties:
       VpcId:
-        Ref: testFleetVpc
-  testFleetRoute:
+        Ref: testAsgVpc
+  testAsgRoute:
     Type: AWS::EC2::Route
     DependsOn:
-    - testFleetInternetGateway
-    - testFleetRouteTable
-    - testFleetVpcGatewayAttachment
+    - testAsgInternetGateway
+    - testAsgRouteTable
+    - testAsgVpcGatewayAttachment
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId:
-        Ref: testFleetInternetGateway
+        Ref: testAsgInternetGateway
       RouteTableId:
-        Ref: testFleetRouteTable
-  testFleetSubnet1:
+        Ref: testAsgRouteTable
+  testAsgSubnet1:
     Type: AWS::EC2::Subnet
     DependsOn:
-    - testFleetVpcGatewayAttachment
+    - testAsgVpcGatewayAttachment
     Properties:
       AvailabilityZone:
         Fn::Select:
@@ -307,21 +305,21 @@ Resources:
         - cidr
       MapPublicIpOnLaunch: true
       VpcId:
-        Ref: testFleetVpc
-  testFleetSubnet1RouteTableAssociation:
+        Ref: testAsgVpc
+  testAsgSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     DependsOn:
-    - testFleetRouteTable
-    - testFleetSubnet1
+    - testAsgRouteTable
+    - testAsgSubnet1
     Properties:
       RouteTableId:
-        Ref: testFleetRouteTable
+        Ref: testAsgRouteTable
       SubnetId:
-        Ref: testFleetSubnet1
-  testFleetSubnet2:
+        Ref: testAsgSubnet1
+  testAsgSubnet2:
     Type: AWS::EC2::Subnet
     DependsOn:
-    - testFleetVpcGatewayAttachment
+    - testAsgVpcGatewayAttachment
     Properties:
       AvailabilityZone:
         Fn::Select:
@@ -335,21 +333,21 @@ Resources:
         - cidr
       MapPublicIpOnLaunch: true
       VpcId:
-        Ref: testFleetVpc
-  testFleetSubnet2RouteTableAssociation:
+        Ref: testAsgVpc
+  testAsgSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     DependsOn:
-    - testFleetRouteTable
-    - testFleetSubnet2
+    - testAsgRouteTable
+    - testAsgSubnet2
     Properties:
       RouteTableId:
-        Ref: testFleetRouteTable
+        Ref: testAsgRouteTable
       SubnetId:
-        Ref: testFleetSubnet2
-  testFleetSecurityGroup:
+        Ref: testAsgSubnet2
+  testAsgSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     DependsOn:
-    - testFleetVpc
+    - testAsgVpc
     Properties:
       GroupDescription: Enable SSH access
       SecurityGroupIngress:
@@ -359,7 +357,7 @@ Resources:
         CidrIp:
           Ref: sourceCidr
       VpcId:
-        Ref: testFleetVpc
+        Ref: testAsgVpc
   s3AndCloudWatchFromS3Role:
     Type: AWS::IAM::Role
     Properties:
@@ -380,7 +378,7 @@ Resources:
             - Effect: Allow
               Action: cloudwatch:PutMetricData
               Resource: '*'
-      - PolicyName: ReInvent-EC2SpotTestDev-S3FromTestFleetPolicy
+      - PolicyName: ReInvent-EC2SpotTestDev-S3FromTestAsgPolicy
         PolicyDocument:
           Version: 2012-10-17
           Statement:
@@ -388,35 +386,35 @@ Resources:
               Action: 's3:*'
               Resource:
               - Fn::Sub: 'arn:aws:s3:::${s3Bucket}/*'
-  testFleetInstanceProfile:
+  testAsgInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     DependsOn:
     - s3AndCloudWatchFromS3Role
     Properties:
       Roles:
       - Ref: s3AndCloudWatchFromS3Role
-  testFleetLaunchTemplate:
+  testAsgLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     DependsOn:
-    - testFleetInstanceProfile
-    - testFleetSecurityGroup
+    - testAsgInstanceProfile
+    - testAsgSecurityGroup
     Properties:
-      LaunchTemplateName: ReInvent-EC2SpotTestDev-TestFleetTemplate
+      LaunchTemplateName: ReInvent-EC2SpotTestDev-TestAsgTemplate
       LaunchTemplateData:
         IamInstanceProfile:
           Name:
-            Ref: testFleetInstanceProfile
+            Ref: testAsgInstanceProfile
         ImageId:
-          Ref: testFleetAmi
+          Ref: testAsgAmi
         KeyName:
           Ref: keyName
         SecurityGroupIds:
-        - Ref: testFleetSecurityGroup
+        - Ref: testAsgSecurityGroup
         TagSpecifications:
         - ResourceType: instance
           Tags:
           - Key: ReInvent-EC2SpotTestDev
-            Value: TestFleet
+            Value: TestAsg
         UserData:
           Fn::Base64:
             Fn::Join:
@@ -425,29 +423,37 @@ Resources:
               - "yum -y update"
               - "yum -y install aws-cli"
               - "yum -y install python27-boto3.noarch"
-              - Fn::Sub: "aws s3 cp s3://${s3Bucket}/${testFleetScript} ."
-              - Fn::Sub: "chmod +x ${testFleetScript}"
+              - Fn::Sub: "aws s3 cp s3://${s3Bucket}/${testAsgScript} ."
+              - Fn::Sub: "chmod +x ${testAsgScript}"
               - Fn::Join:
                 - " "
-                - - Fn::Sub: "nohup ./${testFleetScript} ${AWS::Region}"
+                - - Fn::Sub: "nohup ./${testAsgScript} ${AWS::Region}"
                   - Fn::GetAtt:
                     - webServerInstance
                     - PublicDnsName
                   - "&"
-  spotFleetRole:
-    Type: AWS::IAM::Role
+  spotItnLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    DependsOn:
+    - testAsgInstanceProfile
+    - testAsgSecurityGroup
     Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - spotfleet.amazonaws.com
-          Action:
-          - sts:AssumeRole
-      ManagedPolicyArns:
-      - "arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole"
+      LaunchTemplateName: ReInvent-EC2SpotTestDev-SpotItnTemplate
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Name:
+            Ref: testAsgInstanceProfile
+        ImageId:
+          Ref: testAsgAmi
+        KeyName:
+          Ref: keyName
+        SecurityGroupIds:
+        - Ref: testAsgSecurityGroup
+        TagSpecifications:
+        - ResourceType: instance
+          Tags:
+          - Key: ReInvent-EC2SpotTestDev
+            Value: TestSpotItn
   spotInterruptionSnsTopic:
     Type: AWS::SNS::Topic
     Properties:
