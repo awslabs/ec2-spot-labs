@@ -559,7 +559,7 @@ Resources:
             - spotfleet.amazonaws.com
         Version: 2012-10-17
       ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetRole
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole
       Path: /
     Type: AWS::IAM::Role
   vpc:
