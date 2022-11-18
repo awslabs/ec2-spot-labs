@@ -1,0 +1,512 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Setup AWS CloudProvider for Spinnaker
+
+Metadata:
+  Author:
+    Description: Sandeep Palavalasa <palavas@amazon.com>
+  License:
+    Description: 'Copyright 2017 Amazon.com, Inc. and its affiliates. All Rights Reserved.
+
+      Licensed under the Amazon Software License (the "License"). You may not use this file
+      except in compliance with the License. A copy of the License is located at
+
+      http://aws.amazon.com/asl/
+
+      or in the "license" file accompanying this file. This file is distributed on an "AS IS"
+      BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      License for the specific language governing permissions and limitations under the License.'
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Spinnaker Instance Configurations
+        Parameters:
+          - EC2KeyPairName
+          - CurrentIP
+          - SpinnakerVersion
+
+      - Label:
+          default: Deployment VPC Configurations
+        Parameters:
+          - AvailabilityZones
+          - NumberOfAZs
+          - VPCCIDR
+          - PublicSubnet1CIDR
+          - PublicSubnet2CIDR
+          - PublicSubnet3CIDR
+          - PublicSubnet4CIDR
+          - CreatePrivateSubnets
+          - PrivateSubnet1ACIDR
+          - PrivateSubnet2ACIDR
+          - PrivateSubnet3ACIDR
+          - PrivateSubnet4ACIDR
+          - CreateSecurityGroupsForElbAndInstances
+
+    ParameterLabels:
+      AvailabilityZones:
+        default: Availability Zones
+      CreatePrivateSubnets:
+        default: Create private subnets
+      NumberOfAZs:
+        default: Number of Availability Zones
+      PrivateSubnet1ACIDR:
+        default: Private subnet 1A CIDR
+      PrivateSubnet2ACIDR:
+        default: Private subnet 2A CIDR
+      PrivateSubnet3ACIDR:
+        default: Private subnet 3A CIDR
+      PrivateSubnet4ACIDR:
+        default: Private subnet 4A CIDR
+      PublicSubnet1CIDR:
+        default: Public subnet 1 CIDR
+      PublicSubnet2CIDR:
+        default: Public subnet 2 CIDR
+      PublicSubnet3CIDR:
+        default: Public subnet 3 CIDR
+      PublicSubnet4CIDR:
+        default: Public subnet 4 CIDR
+      CreateSecurityGroupsForElbAndInstances:
+        default: Create Security Groups for ELB and EC2 Instances
+      VPCCIDR:
+        default: VPC CIDR
+      EC2KeyPairName:
+        default: EC2 Key Pair for Spinnaker Instance
+      CurrentIP:
+        default: Your current IP address (used to limit access to SSH services on Spinnaker instances)
+      SpinnakerVersion:
+        default: The version of the Spinnaker to be installed on the Instance
+
+Parameters:
+  AvailabilityZones:
+    Description: 'List of Availability Zones to use for the subnets in the VPC. Note:
+      The logical order is preserved.'
+    Type: List<AWS::EC2::AvailabilityZone::Name>
+  NumberOfAZs:
+    AllowedValues:
+      - '2'
+      - '3'
+      - '4'
+    Default: '3'
+    Description: Number of Availability Zones to use in the VPC. This must match your
+      selections in the list of Availability Zones parameter.
+    Type: String
+  VPCCIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.100.0.0/16
+    Description: CIDR block for the VPC
+    Type: String
+  PublicSubnet1CIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.100.128.0/20
+    Description: CIDR block for the public DMZ subnet 1 located in Availability Zone
+      1
+    Type: String
+  PublicSubnet2CIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.100.144.0/20
+    Description: CIDR block for the public DMZ subnet 2 located in Availability Zone
+      2
+    Type: String
+  PublicSubnet3CIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.100.160.0/20
+    Description: CIDR block for the public DMZ subnet 3 located in Availability Zone
+      3
+    Type: String
+  PublicSubnet4CIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.100.176.0/20
+    Description: CIDR block for the public DMZ subnet 4 located in Availability Zone
+      4
+    Type: String
+  CreatePrivateSubnets:
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'true'
+    Description: Set to false to create only public subnets. If false, the CIDR parameters
+      for ALL private subnets will be ignored.
+    Type: String
+  PrivateSubnet1ACIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.100.0.0/19
+    Description: CIDR block for private subnet 1A located in Availability Zone 1
+    Type: String
+  PrivateSubnet2ACIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.100.32.0/19
+    Description: CIDR block for private subnet 2A located in Availability Zone 2
+    Type: String
+  PrivateSubnet3ACIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.100.64.0/19
+    Description: CIDR block for private subnet 3A located in Availability Zone 3
+    Type: String
+  PrivateSubnet4ACIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.100.96.0/19
+    Description: CIDR block for private subnet 4A located in Availability Zone 4
+    Type: String
+  CreateSecurityGroupsForElbAndInstances:
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'true'
+    Description: Set to true to create Security Groups for ELB and EC2 Instances for a sample application
+    Type: String
+  EC2KeyPairName:
+    Description: "The name of an existing EC2 KeyPair to enable SSH access."
+    Type: "AWS::EC2::KeyPair::KeyName"
+    AllowedPattern: ".+"
+  CurrentIP:
+    Description: Your current IP address (used to limit access to SSH services on EC2 instances)
+    Type: String
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\/([0-9]|[1-2][0-9]|3[0-2])$
+    ConstraintDescription: must be specified in CIDR notation (e.g, 123.45.67.0/24)
+    Default: 0.0.0.0/0
+  SpinnakerVersion:
+    Description: Your current IP address (used to limit access to SSH services on EC2 instances)
+    Type: String
+    AllowedPattern: ^\d{1,}\.\d{1,}\.\d{1,}$
+    ConstraintDescription: must be valid Spinnaker version (e.g, 1.25.0)
+    Default: 1.25.0
+
+Conditions:
+  CreateSGForElbAndInstancesCondition: !Equals [ !Ref 'CreateSecurityGroupsForElbAndInstances', 'true' ]
+
+Mappings:
+  # ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20190320
+  AMI:
+    ap-northeast-1:
+      AMI: ami-023a7615a07affbe5
+    ap-northeast-2:
+      AMI: ami-0e67aff698cb24c1d
+    ap-northeast-3:
+      AMI: ami-049b6e4838d9ae7a4
+    ap-south-1:
+      AMI: ami-0db0b3ab7df22e366
+    ap-southeast-1:
+      AMI: ami-06fb5332e8e3e577a
+    ap-southeast-2:
+      AMI: ami-0987943c813a8426b
+    ca-central-1:
+      AMI: ami-0e625dfca3e5a33bd
+    eu-central-1:
+      AMI: ami-0e1ce3e0deb8896d2
+    eu-north-1:
+      AMI: ami-01996625fff6b8fcc
+    eu-west-1:
+      AMI: ami-0dc8d444ee2a42d8a
+    eu-west-2:
+      AMI: ami-0e169fa5b2b2f88ae
+    eu-west-3:
+      AMI: ami-089d839e690b09b28
+    sa-east-1:
+      AMI: ami-0f2c5d4cfd5301fac
+    us-east-1:
+      AMI: ami-00ddb0e5626798373
+    us-east-2:
+      AMI: ami-0dd9f0e7df0f0a138
+    us-gov-east-1:
+      AMI: ami-79d13708
+    us-gov-west-1:
+      AMI: ami-36bbd557
+    us-west-1:
+      AMI: ami-0a741b782c2c8632d
+    us-west-2:
+      AMI: ami-0ac73f33a1888c64a
+
+
+Resources:
+  ### VPC resources for deploying applications ###
+  DeploymentVPCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        AvailabilityZones: !Join 
+          - ','
+          - !Ref AvailabilityZones
+        NumberOfAZs: !Ref NumberOfAZs
+        VPCCIDR: !Ref VPCCIDR
+        PublicSubnet1CIDR: !Ref PublicSubnet1CIDR
+        PublicSubnet2CIDR: !Ref PublicSubnet2CIDR
+        PublicSubnet3CIDR: !Ref PublicSubnet3CIDR
+        PublicSubnet4CIDR: !Ref PublicSubnet4CIDR
+        CreatePrivateSubnets: !Ref CreatePrivateSubnets
+        PrivateSubnet1ACIDR: !Ref PrivateSubnet1ACIDR
+        PrivateSubnet2ACIDR: !Ref PrivateSubnet2ACIDR
+        PrivateSubnet3ACIDR: !Ref PrivateSubnet3ACIDR
+        PrivateSubnet4ACIDR: !Ref PrivateSubnet4ACIDR
+        PublicSubnetTag2: 'immutable_metadata={"purpose":"public-subnet"}' # Spinnaker need these immutable metadata to detech the Subnets 
+        PrivateSubnetATag2: 'immutable_metadata={"purpose":"private-subnet"}'
+      TemplateURL: https://aws-quickstart.s3.amazonaws.com/quickstart-aws-vpc/templates/aws-vpc.template.yaml
+  
+  ### Spinnaker Instance Resources ###
+  SpinnakerInstanceSecurityGroup: 
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: Spinnaker Instance Security Group
+      GroupDescription: A Security Group that allows ingress access for SSH to Spinnaker Instance
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: !Ref CurrentIP
+
+  SpinnakerInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 
+        Fn::Join:
+        - ''
+        - - SpinnakerInstanceRole-
+          - Ref: AWS::StackName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+
+  SpinnakerInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName:
+        Fn::Join:
+        - ''
+        - - SpinnakerInstanceProfile-
+          - Ref: AWS::StackName
+      Roles:
+      - !Ref SpinnakerInstanceRole
+      InstanceProfileName: SpinnakerInstanceRole
+
+  SpinnakerInstancePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref SpinnakerInstanceRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Resource: !GetAtt SpinnakerManagedRole.Arn
+          - Action:
+            - "ec2:DescribeRegions"
+            - "ec2:DescribeAvailabilityZones"
+            Effect: Allow
+            Resource: "*"
+      PolicyName: 
+        Fn::Join:
+        - ''
+        - - SpinnakerInstanceAssumeManagedRole-
+          - Ref: AWS::StackName
+
+  ### Spinnaker Managed Account Setup ###
+  SpinnakerManagedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 
+        Fn::Join:
+        - ''
+        - - spinnakerManaged-
+          - Ref: AWS::StackName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS: !GetAtt SpinnakerInstanceRole.Arn
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/PowerUserAccess
+
+  SpinnakerManagedPolicy:
+      Type: AWS::IAM::Policy
+      DependsOn: SpinnakerManagedRole
+      Properties:
+        Roles:
+          - !Ref SpinnakerManagedRole
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Action: iam:PassRole
+              Effect: Allow
+              Resource: "*" # You should restrict this only to certain set of roles, if required
+        PolicyName: 
+          Fn::Join:
+          - ''
+          - - SpinnakerPassRole-
+            - Ref: AWS::StackName
+
+  ## Spinnaker Managing Setup ###
+  BaseIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: BaseIAMRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+        Version: "2012-10-17"
+      Path: /
+  
+  # Creates Instance Profile to be used by any APP created by Spinnaker. Spinnaker has passRole access only to this instance Profile
+  BaseInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: BaseIAMRole
+      Path: /
+      Roles:
+        - !Ref BaseIAMRole
+
+  SpinnakerAssumeRolePolicy:
+    Type: AWS::IAM::Policy
+    DependsOn: SpinnakerManagedRole
+    Properties:
+      Roles: 
+        - !Ref SpinnakerInstanceRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Resource: 
+              - !GetAtt SpinnakerManagedRole.Arn # This is the current account
+      PolicyName: 
+        Fn::Join:
+        - ''
+        - - SpinnakerAssumeRolePolicy-
+          - Ref: AWS::StackName
+  
+  SecurityGroupDemoWebAppALB: # A Security Group that allows ingress access for HTTP on ALBs and used to access the DemoWebApp environment
+    Condition: CreateSGForElbAndInstancesCondition
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: DeploymentVPCStack
+    Properties:
+      GroupName: Demo-ALB-SecurityGroup
+      GroupDescription: A Security Group that allows ingress access for HTTP on ALBs and used to access the DemoWebApp test environment
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      VpcId: !GetAtt DeploymentVPCStack.Outputs.VPCID
+
+  SecurityGroupDemoWebAppEC2: # A Security Group that allows ingress access for SSH and the default port that the DemoWebApp application will run on
+    Condition: CreateSGForElbAndInstancesCondition
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: SecurityGroupDemoWebAppALB
+    Properties:
+      GroupName: Demo-EC2-SecurityGroup
+      GroupDescription: A Security Group that allows ingress access for SSH and the default port that a Jenkins Master will run on
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: !Ref CurrentIP
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: !Ref CurrentIP
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        SourceSecurityGroupId: !Ref SecurityGroupDemoWebAppALB
+      VpcId: !GetAtt DeploymentVPCStack.Outputs.VPCID
+
+  SpinnakerInstance:
+    Type: AWS::EC2::Instance
+    DependsOn: 
+      - SpinnakerInstanceSecurityGroup
+      - SpinnakerManagedRole
+    Properties:
+      ImageId: !FindInMap [AMI, !Ref 'AWS::Region', 'AMI']
+      InstanceType: "m5.4xlarge"
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeSize: 100
+            DeleteOnTermination: "true"
+      IamInstanceProfile: "SpinnakerInstanceRole"
+      KeyName: !Ref "EC2KeyPairName"
+      SecurityGroupIds:
+        - !Ref SpinnakerInstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: Spinnaker
+      UserData:
+          Fn::Base64:
+            !Sub |
+              #!/bin/bash
+              set -ex
+
+              # Install dependencies for installation
+              sudo apt-get update
+              sudo apt-get -y install openjdk-11-jdk awscli jq
+              # Install halyard with the use ubuntu
+              sudo curl --silent --location -o /home/ubuntu/InstallHalyard.sh https://raw.githubusercontent.com/spinnaker/halyard/master/install/debian/InstallHalyard.sh
+              sudo chmod +x /home/ubuntu/InstallHalyard.sh
+              sudo bash /home/ubuntu/InstallHalyard.sh -y
+              source ~/.bashrc
+              sudo -H -u ubuntu hal -v
+              sudo service halyard start
+              sudo service halyard status
+              export ACCOUNT_ID=$(aws sts get-caller-identity --output text --query Account)
+              export AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
+              echo "export ACCOUNT_ID=${!ACCOUNT_ID}" >> /home/ubuntu/.bash_profile
+              echo "export AWS_REGION=${!AWS_REGION}" >> /home/ubuntu/.bash_profile
+              sudo service halyard status
+              # Configure and enable the AWS account to deploy on EC2
+              sudo -H -u ubuntu hal config provider aws account add my-aws-account --account-id ${!ACCOUNT_ID} --assume-role role/spinnakerManaged-${AWS::StackName} --regions ${!AWS_REGION}
+              sudo -H -u ubuntu hal config provider aws enable
+              # Choose Persistent Storage to S3 Using Halyard
+              sudo -H -u ubuntu hal config storage s3 edit --region ${!AWS_REGION}
+              sudo -H -u ubuntu hal config storage edit --type s3
+              # Choose the Spinnaker 
+              sudo -H -u ubuntu hal config version edit --version ${SpinnakerVersion}
+              # Deploy Spinnaker locally
+              sudo hal deploy apply
+              # Enable Launch Templates for all applications on clouddriver
+              sudo -H -u ubuntu cat << EOF > /home/spinnaker/.hal/default/profiles/clouddriver-local.yml
+              aws:
+                features:
+                  launch-templates:
+                    enabled: true
+                    all-applications:
+                      enabled: true
+              EOF
+              # Enable Launch Templates on the UI
+              sudo -H -u spinnaker cp /opt/deck/html/settings.js /home/spinnaker/.hal/default/profiles/
+              sudo -H -u spinnaker sed -i -e "s/var aws = {/var aws = { serverGroups: { enableLaunchTemplates: true, enableIMDSv2: true, enableCpuCredits: true, },/g" /home/spinnaker/.hal/default/profiles/settings.js
+              # Apply the Changes
+              sudo hal deploy apply
+              systemctl daemon-reload
+
+
+Outputs:
+  SpinnakerInstance:
+    Value: !Sub ${SpinnakerInstance.PublicDnsName}
+    Description: 'Spinnaker instance public name (connect via SSH using ssh -A -L 9000:localhost:9000 -L 8084:localhost:8084 -L 8087:localhost:8087 -i <keypair> ubuntu@<SpinnakerInstanceDNS>)'
+  VPCID:
+    Value: !GetAtt DeploymentVPCStack.Outputs.VPCID
