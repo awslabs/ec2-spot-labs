@@ -104,7 +104,7 @@ VPC_ID=$(aws cloudformation describe-stacks --stack-name ${STACK_NAME} --region 
 
 We will start with creating an application in Spinnaker, which will be the placeholder for the service we will be deploying.
 
-<table>
+<table cellspacing="0" cellpadding="0" border="0">
 <tr>
 <td>
 
@@ -153,7 +153,7 @@ Let's create an Application Load Balancer(ALB) and a target group for port 80, s
 Target groups are set up by default with a [deregistration delay](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html#deregistration-delay) of 300 seconds. This means that when ASG needs to remove an instance out of the fleet, it first puts the instance in **draining** state, informs ALB to stop sending new requests to it, and allows the configured time for in-flight requests to complete before the instance is finally deregistered. As Spot Instances are interrupted with a 2 minute warning, you need to [adjust this setting](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html#deregistration-delay) to a slightly lower time. Recommended values are **90 seconds** or less. This allows time for in-flight requests to complete and gracefully close existing connections before the instance is interrupted.
 
 
-<table>
+<table cellspacing="0" cellpadding="0" border="0">
 <tr>
 <td>
 
@@ -249,6 +249,7 @@ Learn more on [spinnaker.io](https://spinnaker.io/docs/setup/other_config/server
 Note: Spinnaker only support base64 encoded userdata. We have used a [base64enoder](https://www.base64encode.net/) to encode the below bash script.
 
 ```bash
+cat << "EOF" > user-data.sh
 #!/bin/bash
 yum update -y
 yum install httpd -y
@@ -269,13 +270,14 @@ echo "<html>
 </html>" > /var/www/html/index.html
 systemctl start httpd
 systemctl enable httpd
+EOF
 ```
 
 Create the Server Group by running the command below. Note we are using the KeyPairName we created as part of the prerequisites.
 
-<table>
+<table cellspacing="0" cellpadding="0" border="0">
 <tr>
-<td>
+<td style="width: 50%">
 
 ```bash
 
@@ -345,7 +347,7 @@ curl 'http://localhost:8084/tasks' \
          "targetGroups":[
             "demoapp-targetgroup"
          ],
-         "base64UserData":" IyEvYmluL2Jhc2gNCnl1bSB1cGRhdGUgLXkNCnl1bSBpbnN0YWxsIGh0dHBkIC15DQplY2hvICI8aHRtbD4NCiAgICA8aGVhZD4NCiAgICAgICAgPHRpdGxlPkRlbW8gQXBwbGljYXRpb248L3RpdGxlPg0KICAgICAgICA8c3R5bGU+Ym9keSB7bWFyZ2luLXRvcDogNDBweDsgYmFja2dyb3VuZC1jb2xvcjogI0dyYXk7fSA8L3N0eWxlPg0KICAgIDwvaGVhZD4NCiAgICA8Ym9keT4NCiAgICAgICAgPGgyPllvdSBoYXZlIHJlYWNoZWQgYSBEZW1vIEFwcGxpY2F0aW9uIHJ1bm5pbmcgb248L2gyPg0KICAgICAgICA8dWw+DQogICAgICAgICAgICA8bGk+aW5zdGFuY2UtaWQ6IDxiPiBgY3VybCBodHRwOi8vMTY5LjI1NC4xNjkuMjU0L2xhdGVzdC9tZXRhLWRhdGEvaW5zdGFuY2UtaWRgIDwvYj48L2xpPg0KICAgICAgICAgICAgPGxpPmluc3RhbmNlLXR5cGU6IDxiPiBgY3VybCBodHRwOi8vMTY5LjI1NC4xNjkuMjU0L2xhdGVzdC9tZXRhLWRhdGEvaW5zdGFuY2UtdHlwZWAgPC9iPjwvbGk+DQogICAgICAgICAgICA8bGk+aW5zdGFuY2UtbGlmZS1jeWNsZTogPGI+IGBjdXJsIGh0dHA6Ly8xNjkuMjU0LjE2OS4yNTQvbGF0ZXN0L21ldGEtZGF0YS9pbnN0YW5jZS1saWZlLWN5Y2xlYCA8L2I+PC9saT4NCiAgICAgICAgICAgIDxsaT5hdmFpbGFiaWxpdHktem9uZTogPGI+IGBjdXJsIGh0dHA6Ly8xNjkuMjU0LjE2OS4yNTQvbGF0ZXN0L21ldGEtZGF0YS9wbGFjZW1lbnQvYXZhaWxhYmlsaXR5LXpvbmVgIDwvYj48L2xpPg0KICAgICAgICA8L3VsPg0KICAgIDwvYm9keT4NCjwvaHRtbD4iID4gL3Zhci93d3cvaHRtbC9pbmRleC5odG1sDQpzeXN0ZW1jdGwgc3RhcnQgaHR0cGQNCnN5c3RlbWN0bCBlbmFibGUgaHR0cGQNCg==",
+         "base64UserData":"'"$(base64 user-data.sh)"'",
         "associatePublicIpAddress":false,
          "instanceMonitoring":false
       }
@@ -444,5 +446,5 @@ curl 'http://localhost:8084/tasks' \
 Delete the Spinnaker infrastructure by running the below command.
 
 ```bash
-aws cloudformation delete-stack --region ${AWS\_REGION} --stack-name ${STACK\_NAME}
+aws cloudformation delete-stack --region ${AWS_REGION} --stack-name ${STACK_NAME}
 ```
