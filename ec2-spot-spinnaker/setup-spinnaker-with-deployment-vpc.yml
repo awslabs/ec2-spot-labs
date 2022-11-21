@@ -471,7 +471,7 @@ Resources:
               source ~/.bashrc
               sudo -H -u ubuntu hal -v
               sudo service halyard start
-              sudo service halyard status
+              sleep 10
               export ACCOUNT_ID=$(aws sts get-caller-identity --output text --query Account)
               export AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
               echo "export ACCOUNT_ID=${!ACCOUNT_ID}" >> /home/ubuntu/.bash_profile

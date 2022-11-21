@@ -79,7 +79,7 @@ Get the SSH command to port forwarding for Deck - the browser based UI (9000) an
 
 ```bash
 SPINNAKER_INSTANCE_DNS_NAME=$(aws cloudformation describe-stacks --stack-name ${STACK_NAME} --region ${AWS_REGION} --query "Stacks[].Outputs[?OutputKey=='SpinnakerInstance'].OutputValue" --output text)
-echo 'ssh -A -L 9000:localhost:9000 -L 8084:localhost:8084 -L 8087:localhost:8087 -i ~/'${EC2_KEYPAIR_NAME}' ubuntu@$'{SPINNAKER_INSTANCE_DNS_NAME}''
+echo 'ssh -A -L 9000:localhost:9000 -L 8084:localhost:8084 -L 8087:localhost:8087 -i ~/'${EC2_KEYPAIR_NAME}'.pem ubuntu@'${SPINNAKER_INSTANCE_DNS_NAME}''
 ```
 
 Open a new terminal and use the SSH command (output from the previous command) to connect to Spinnaker Instance.
