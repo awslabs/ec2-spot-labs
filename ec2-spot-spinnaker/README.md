@@ -442,6 +442,7 @@ curl 'http://localhost:8084/tasks' \
    "description":"Deleting ServerGroup, ALB and Application: demoapp"
 }'
 ```
+Please wait for Spinnaker to delete all the resources before proceeding further. You can confirm that either on Spinnaker UI or AWS Console.
 
 Delete the Spinnaker infrastructure by running the below command.
 
