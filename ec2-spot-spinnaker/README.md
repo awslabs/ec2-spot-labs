@@ -446,5 +446,6 @@ curl 'http://localhost:8084/tasks' \
 Delete the Spinnaker infrastructure by running the below command.
 
 ```bash
+aws ec2 delete-key-pair --key-name ${EC2_KEYPAIR_NAME} 
 aws cloudformation delete-stack --region ${AWS_REGION} --stack-name ${STACK_NAME}
 ```
