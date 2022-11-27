@@ -6,11 +6,6 @@ Here is **THE COMPLETE** list of re:Invent sessions where you can learn about co
 If you are not attending re:Invent, we still have you covered! You can follow Breakout sessions using the [Virtual Registration Portal here](https://reinvent.awsevents.com/register/virtualregistration/).
 
 
-## Logistics
-
-![Know the campus](./campus.png)
-
-
 ## BREAKOUT SESSIONS
 
 **Breakout Sessions**
