@@ -6,9 +6,18 @@ Here is **THE COMPLETE** list of re:Invent sessions where you can learn about co
 If you are not attending re:Invent, we still have you covered! You can follow Breakout sessions using the [Virtual Registration Portal here](https://reinvent.awsevents.com/register/virtualregistration/).
 
 
+## Logistics
+
+![Know the campus](./campus.png)
+
+
 ## BREAKOUT SESSIONS
 
-### [CMP204 - Build a cost-, energy-, and resource-efficient compute environment](https://portal.awsevents.com/events/reinvent2022/dashboard/event/sessions/CMP204)
+**Breakout Sessions**
+
+> re:Invent breakout sessions are lecture style and 60 minutes long. These sessions will take place throughout the re:Invent campus and cover all topics at all levels (200–400). Sessions are delivered by AWS experts, customers, and partners, and they typically include 10–15 minutes at the end for Q&A.
+
+### [CMP204 - Build a cost-, energy-, and resource-efficient compute environment](https://portal.awsevents.com/events/reinvent2022/dashboard/event/sessions/CMP204)
 
 * When: Tuesday, November 29 - 2:00 PM - 3:00 PM
 * Location: Convention Promenade, Lafite 5, Wynn
@@ -53,6 +62,10 @@ If you are not attending re:Invent, we still have you covered! You can follow Br
 >In this session, Standard Chartered Bank shares how FinOps has been embedded in the way they build systems. Critical large systems at Standard Chartered Bank—such as scaling applications, container platforms, and their grid for calculating risk and analytics—use techniques to reduce waste and optimize cost and performance at scale. These techniques include using an optimal combination of AWS Savings Plans and Amazon EC2 Spot Instances, building for elasticity, and applying automation to switch down systems not in use.
 
 ## WORKSHOPS
+
+**Workshops**
+
+> Workshops are two-hour, hands-on sessions where you work in teams to solve problems using AWS. Workshops organize attendees into small groups and provide scenarios to encourage interaction, giving you the opportunity to learn from and teach each other. Each workshop starts with a 10–15-minute lecture by the main speaker, and the rest of the time is spent working as a group. AWS will provide credits.
 
 ### [CMP324-R - Spot the savings: Use Amazon EC2 Spot to optimize cloud deployments](https://portal.awsevents.com/events/reinvent2022/dashboard/event/sessions/CMP324)
 
@@ -104,6 +117,9 @@ If you are not attending re:Invent, we still have you covered! You can follow Br
 
 ## CHALK TALKS
 
+**Chalk Talks**
+
+> Chalk talks are a highly interactive content format with a smaller audience. They begin with a 10–15-minute lecture delivered by an AWS expert, followed by a 45–50-minute Q&A session with the audience. The goal is to foster a technical discussion around real-world architecture challenges. Chalk talks are one hour and are presented by AWS experts. They have expert level content.
 
 ### [CMP331 – High throughput computing for financial risk management and modeling](https://portal.awsevents.com/events/reinvent2022/dashboard/event/sessions/CMP331)
 
@@ -184,29 +200,3 @@ If you are not attending re:Invent, we still have you covered! You can follow Br
 
 
 >Amazon EC2 instances power the majority of the applications and workloads on AWS. Collectively, Amazon EC2 Auto Scaling, Amazon EC2 Fleet, and Spot Fleet allow users to provision and maintain Amazon EC2 instances to power their workloads on AWS. In this chalk talk, learn the key differences between each of these provisioning mechanisms along with pros and cons of applying them to a few common use cases.
-
-
-
-
-
-## What to expect in each type of session
-
-**Breakout Sessions**
-
-> re:Invent breakout sessions are lecture style and 60 minutes long. These sessions will take place throughout the re:Invent campus and cover all topics at all levels (200–400). Sessions are delivered by AWS experts, customers, and partners, and they typically include 10–15 minutes at the end for Q&A.
-
-**Workshops**
-
-> Workshops are two-hour, hands-on sessions where you work in teams to solve problems using AWS. Workshops organize attendees into small groups and provide scenarios to encourage interaction, giving you the opportunity to learn from and teach each other. Each workshop starts with a 10–15-minute lecture by the main speaker, and the rest of the time is spent working as a group. AWS will provide credits.
-
-**Builders Sessions**
-
-> Builders Sessions are 60-minute small groups sessions with up to five customers and one AWS expert, who is there to help, answer questions, and provide guidance. You will use your laptop to experiment and build with the AWS expert after a short demonstration. There is reserved seating for builders sessions. 
-
-**Chalk Talks**
-
-> Chalk talks are a highly interactive content format with a smaller audience. They begin with a 10–15-minute lecture delivered by an AWS expert, followed by a 45–50-minute Q&A session with the audience. The goal is to foster a technical discussion around real-world architecture challenges. Chalk talks are one hour and are presented by AWS experts. They have expert level content.
-
-## Logistics
-
-![Know the campus](./campus.png)
