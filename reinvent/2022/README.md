@@ -1,4 +1,4 @@
-# EC2 Spot @ re:Invent 2022
+# Flexible Compute, ASG and EC2 Spot & re:Invent 2022
 
 Here is **THE COMPLETE** list of re:Invent sessions where you can learn about compute, cost and capacity optimization
 #FlexibleCompute #Graviton #EC2Spot #SaveAtScale #SpotInstances
