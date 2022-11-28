@@ -49,18 +49,6 @@ If you are not attending re:Invent, we still have you covered! You can follow Br
 
 >In this session, Standard Chartered Bank shares how FinOps has been embedded in the way they build systems. Critical large systems at Standard Chartered Bank—such as scaling applications, container platforms, and their grid for calculating risk and analytics—use techniques to reduce waste and optimize cost and performance at scale. These techniques include using an optimal combination of AWS Savings Plans and Amazon EC2 Spot Instances, building for elasticity, and applying automation to switch down systems not in use.
 
-
-### [CMP213 - Building a budget-conscious culture at Standard Chartered Bank - How to use cloud efficiently and effectively](https://portal.awsevents.com/events/reinvent2022/dashboard/event/sessions/CMP213)
-
-* When: Thursday, December 1 - 2:00 PM - 3:00 PM
-* Location : Level 2 South, Reef C, Mandalay Bay
-* Session type: Breakout Session
-* Speaker: Carlos Manzanedo Rueda, WW SA Lead for EC2 Flexible Compute - Spot, AWS, Daniel Kazarinow, Head of Cloud, Containers & Grid SRE, Standard Chartered Bank
-* Learn how SCB applies FinOps and Flexible Compute techniques to optimize their compute.
-* Overflow Room : [Level 1, Summit 231, Content Hub, Yellow Screen, Caesars Forum](https://portal.awsevents.com/events/reinvent2022/dashboard/event/sessions/CMP213-OF)
-
->In this session, Standard Chartered Bank shares how FinOps has been embedded in the way they build systems. Critical large systems at Standard Chartered Bank—such as scaling applications, container platforms, and their grid for calculating risk and analytics—use techniques to reduce waste and optimize cost and performance at scale. These techniques include using an optimal combination of AWS Savings Plans and Amazon EC2 Spot Instances, building for elasticity, and applying automation to switch down systems not in use.
-
 ## WORKSHOPS
 
 **Workshops**
