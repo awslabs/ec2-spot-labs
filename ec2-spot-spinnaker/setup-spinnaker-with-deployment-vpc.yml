@@ -24,6 +24,7 @@ Metadata:
           - EC2KeyPairName
           - CurrentIP
           - SpinnakerVersion
+          - SpinnakerS3BucketName
 
       - Label:
           default: Deployment VPC Configurations
@@ -75,6 +76,8 @@ Metadata:
         default: Your current IP address (used to limit access to SSH services on Spinnaker instances)
       SpinnakerVersion:
         default: The version of the Spinnaker to be installed on the Instance
+      SpinnakerS3BucketName:
+        default: The Name of the S3 bucket Spinnaker will creates for its persistent storage
 
 Parameters:
   AvailabilityZones:
@@ -179,6 +182,10 @@ Parameters:
     AllowedPattern: ^\d{1,}\.\d{1,}\.\d{1,}$
     ConstraintDescription: must be valid Spinnaker version (e.g, 1.25.0)
     Default: 1.25.0
+  SpinnakerS3BucketName:
+    Description: The Name of the S3 bucket Spinnaker will creates for its persistent storage
+    Type: String
+    Default: spin-persitent-storage
 
 Conditions:
   CreateSGForElbAndInstancesCondition: !Equals [ !Ref 'CreateSecurityGroupsForElbAndInstances', 'true' ]
@@ -480,11 +487,11 @@ Resources:
               # Configure and enable the AWS account to deploy on EC2
               sudo -H -u ubuntu hal config provider aws account add my-aws-account --account-id ${!ACCOUNT_ID} --assume-role role/spinnakerManaged-${AWS::StackName} --regions ${!AWS_REGION}
               sudo -H -u ubuntu hal config provider aws enable
-              # Choose Persistent Storage to S3 Using Halyard
-              sudo -H -u ubuntu hal config storage s3 edit --region ${!AWS_REGION}
-              sudo -H -u ubuntu hal config storage edit --type s3
               # Choose the Spinnaker 
               sudo -H -u ubuntu hal config version edit --version ${SpinnakerVersion}
+              # Choose Persistent Storage to S3 Using Halyard
+              sudo -H -u ubuntu hal config storage s3 edit --bucket ${SpinnakerS3BucketName}
+              sudo -H -u ubuntu hal config storage edit --type s3
               # Deploy Spinnaker locally
               sudo hal deploy apply
               # Enable Launch Templates for all applications on clouddriver

@@ -61,16 +61,25 @@ chmod 600 ~/${EC2_KEYPAIR_NAME}.pem
 Deploy the Cloudformation stack
 
 ```bash
-STACK_NAME=Spinnaker
+STACK_NAME=spinnaker-blog
 SPINNAKER_VERSION=1.29.1 # Change the version if newer versions are available
 NUMBER_OF_AZS=3
 AVAILABILITY_ZONES=${AWS_REGION}a,${AWS_REGION}b,${AWS_REGION}c
+ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+S3_BUCKET_NAME=spin-persitent-store-${ACCOUNT_ID}
 
 # Download template
 curl -o setup-spinnaker-with-deployment-vpc.yml https://raw.githubusercontent.com/awslabs/ec2-spot-labs/master/ec2-spot-spinnaker/setup-spinnaker-with-deployment-vpc.yml
 
 # deploy stack
-aws cloudformation deploy --template-file setup-spinnaker-with-deployment-vpc.yml --stack-name ${STACK_NAME} --parameter-overrides NumberOfAZs=${NUMBER_OF_AZS} AvailabilityZones=${AVAILABILITY_ZONES}  EC2KeyPairName=${EC2_KEYPAIR_NAME} SpinnakerVersion=${SPINNAKER_VERSION} --capabilities CAPABILITY_NAMED_IAM --region ${AWS_REGION}
+aws cloudformation deploy --template-file setup-spinnaker-with-deployment-vpc.yml \
+    --stack-name ${STACK_NAME} \
+    --parameter-overrides NumberOfAZs=${NUMBER_OF_AZS} \
+    AvailabilityZones=${AVAILABILITY_ZONES} \
+    EC2KeyPairName=${EC2_KEYPAIR_NAME} \
+    SpinnakerVersion=${SPINNAKER_VERSION} \
+    SpinnakerS3BucketName=${S3_BUCKET_NAME} \
+    --capabilities CAPABILITY_NAMED_IAM --region ${AWS_REGION}
 ```
 
 ## Connecting to Spinnaker
@@ -93,12 +102,13 @@ After you have successfully connected to the Spinnaker instance via SSH, access 
 Lets make sure we have the environment variables required in the shell before proceeding. If you are using the same terminal window as before, you might already have these variables.
 
 ```bash
-STACK_NAME=Spinnaker 
+STACK_NAME=spinnaker-blog
 AWS_REGION=us-west-2 # use the same region as before
 EC2_KEYPAIR_NAME=spinnaker-blog-${AWS_REGION}
 
 VPC_ID=$(aws cloudformation describe-stacks --stack-name ${STACK_NAME} --region ${AWS_REGION} --query "Stacks[].Outputs[?OutputKey=='VPCID'].OutputValue" --output text)
 ```
+![](../)
 
 ### Create a Spinnaker Application
 
@@ -343,7 +353,7 @@ curl 'http://localhost:8084/tasks' \
          ],
          "instanceType":"m5.large",
          "virtualizationType":"hvm",
-         "amiName":"amzn2-ami-hvm-2.0.20210427.0-x86_64-gp2",
+         "amiName":"'"$(aws ec2 describe-images --owners amazon --filters "Name=name,Values=amzn2-ami-hvm-2*x86_64-gp2" --query 'reverse(sort_by(Images, &CreationDate))[0].Name' --region ${AWS_REGION} --output text)"'",
          "targetGroups":[
             "demoapp-targetgroup"
          ],
@@ -447,6 +457,20 @@ Please wait for Spinnaker to delete all the resources before proceeding further.
 Delete the Spinnaker infrastructure by running the below command.
 
 ```bash
-aws ec2 delete-key-pair --key-name ${EC2_KEYPAIR_NAME} 
+aws ec2 delete-key-pair --key-name ${EC2_KEYPAIR_NAME} --region ${AWS_REGION}
+rm ~/${EC2_KEYPAIR_NAME}.pem
+
+aws s3api delete-objects \
+    --bucket ${S3_BUCKET_NAME} \
+    --delete "$(aws s3api list-object-versions \
+    --bucket ${S3_BUCKET_NAME} \
+    --query='{Objects: Versions[].{Key:Key,VersionId:VersionId}}')" #If error occurs, there are no Versions and is OK
+aws s3api delete-objects \
+    --bucket ${S3_BUCKET_NAME} \
+    --delete "$(aws s3api list-object-versions \
+    --bucket ${S3_BUCKET_NAME} \
+    --query='{Objects: DeleteMarkers[].{Key:Key,VersionId:VersionId}}')" #If error occurs, there are no DeleteMarkers and is OK 
+aws s3 rb s3://${S3_BUCKET_NAME} --force #Delete Bucket
+
 aws cloudformation delete-stack --region ${AWS_REGION} --stack-name ${STACK_NAME}
 ```
