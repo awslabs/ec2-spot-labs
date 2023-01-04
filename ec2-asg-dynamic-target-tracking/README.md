@@ -73,7 +73,7 @@ There are three steps involved in the deployment of this solution which include 
 ### Comparing the two tests
 Despite the fact that Test 2 messages take twice as long to process, notice that the Auto Scaling group launched twice as many instances to attempt to process all the messages in the same amount of time as Test 1 (latency). Figure 2 below shows that the total time to process all 50 messages in Test 1 was 9mins vs 10mins in Test 2. In contrast, if we were to use a static/fixed Acceptable BPI of 12, a total of 4 instances would have been operational in Test 2, thereby requiring double the time of Test 1 (~20 minutes) to process all the messages. This demonstrates the value of using a dynamic scaling target when processing messages from SQS queues, especially in circumstances where the MPD is prone to vary with time.
 
-![Tests Comparison](/images/TestComparison.png)*Figure 2: CloudWatch dashboard showing Auto Scaling group scaling test results (Test 1 & 2)*
+![Tests Comparison](./images/TestComparison.png)*Figure 2: CloudWatch dashboard showing Auto Scaling group scaling test results (Test 1 & 2)*
 
 
 ## Cleaning up
