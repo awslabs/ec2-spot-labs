@@ -6,7 +6,7 @@
 
 To achieve this, we provide an automated deployment solution using an AWS SAM template that you can deploy by following the instructions below. Figure 1 below shows the architecture diagram and the resources deployed by the SAM template. For more information, please read the associated AWS blog post here.  
 
-![Architecture Diagram](ec2-asg-dynamic-target-tracking/images/architecture.png)*Figure 1: Architecture Diagram showing the components deployed by the SAM template*
+![Architecture Diagram](./images/architecture.png)*Figure 1: Architecture Diagram showing the components deployed by the SAM template*
 
 
 ## Getting started
