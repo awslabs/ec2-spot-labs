@@ -1,0 +1,415 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  dynamic-bpi-scaling
+
+  Template to demonstrate how an ASG can scale using target tracking where target is dynamically updated 
+  to account for changes in message processing times
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 30
+
+Parameters: 
+  QueueName: 
+    Type: String
+    Description: "How would you like to name your processing queue?"
+    Default: "ProcessingQueue.fifo"
+  AsgName: 
+    Type: String
+    Description: "How would you like to name your auto-scaling group?"
+    Default: "Test-ASG"
+  AsgPublicSubnetIds: 
+    Type: CommaDelimitedList
+    Description: "The list of public subnets (with auto-assign public IPv4 address) where ASG instances will be created"
+  Owner: 
+    Type: String 
+    Description: "Owner's name will be used to tag resources"
+    Default: "Your Name"
+  CodeBucketName:
+    Type: String
+    Description: "Name of the S3 bucket containing the consumer code (consumer.py)"
+    Default: "accountId-code-bucket"
+  EstMsgProcDuration:
+    Type: Number
+    Description: "Estimated message processing duration in seconds"
+  DesiredLatency: 
+    Type: Number 
+    Description: "Max latency for processing any message in the queue"
+  InitialTrackingTarget: 
+    Type: Number 
+    Description: "Initial Target BPI of the ASG (should equal desired latency / MsgProcDuration)"
+  TargetUpdateFrequency: 
+    Type: Number
+    Description: "The freqency in minutes with which the target value of the target tracking policy will be updated (provide value between 1 and 59)"
+    Default: 30
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'    
+  
+
+
+Resources:
+  MyMetricPublisher: 
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./scaling-metric-publisher/
+      Description: "This function publishes a custom BPI metric every minute"
+      Environment: 
+        Variables: 
+          queueName: !Ref QueueName 
+          asgName: !Ref AsgName
+      Events: 
+        MetricPublisherEventSource: 
+          Properties: 
+            Description: "this rule invokes the lambda every minute"
+            Enabled: true
+            Schedule: 'rate(1 minute)'
+          Type: Schedule
+      FunctionName: DTT-Metric-Publisher
+      Handler: app.lambda_handler
+      Policies: 
+        - CloudWatchPutMetricPolicy: {}
+        - Version: "2012-10-17"
+          Statement: 
+            - Effect: Allow
+              Action: 'autoscaling:DescribeAutoScalingGroups'
+              Resource: '*'
+        - Version: "2012-10-17"
+          Statement: 
+            - Effect: Allow
+              Action: 
+                - 'sqs:GetQueueUrl'
+                - 'sqs:GetQueueAttributes'
+              Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${QueueName}'            
+      Runtime: python3.8
+      Tags: 
+        Owner: !Ref Owner
+      Timeout: 30
+      Tracing: Active
+
+  MyTargetSetter: 
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./asg-target-setter/
+      Description: "This function regularly updates the target BPI of the ASG"
+      Environment: 
+        Variables: 
+          asgName: !Ref AsgName
+          desiredLatency: !Ref DesiredLatency
+          defaultMsgProcDuration: !Ref EstMsgProcDuration
+      Events: 
+        TargetSetterEventSource: 
+          Properties: 
+            Description: "this rule invokes the lambda every minute"
+            Enabled: true
+            Schedule: !Sub  'cron(0/${TargetUpdateFrequency} * * * ? *)'    # or 'rate(${TargetUpdateFrequency} minutes)'
+          Type: Schedule
+      FunctionName: DTT-Target-Setter
+      Handler: app.lambda_handler
+      Policies: 
+        - Version: "2012-10-17"
+          Statement: 
+            - Effect: Allow
+              Action: 
+                - "autoscaling:DescribePolicies"
+              Resource: '*'      
+            - Effect: Allow
+              Action: 
+                - "autoscaling:PutScalingPolicy"
+              Resource: 
+                - !Sub 'arn:aws:autoscaling:${AWS::Region}:${AWS::AccountId}:autoScalingGroup:*:autoScalingGroupName/${AsgName}'         
+        - Version: "2012-10-17"
+          Statement: 
+            - Effect: Allow
+              Action: 
+                - "cloudwatch:PutMetricData"
+                - "cloudwatch:GetMetricData"
+              Resource: '*'      
+                       
+      Runtime: python3.8
+      Tags: 
+        Owner: !Ref Owner
+      Timeout: 30
+      Tracing: Active      
+
+  MyTestingLambda: 
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./message-producer/
+      Description: "This function can be used to send test messages to the processing queue and trigger ASG scaling events."
+      Environment: 
+        Variables: 
+          queueName: !Ref QueueName
+          defaultMsgProcDuration: !Ref EstMsgProcDuration
+      FunctionName: DTT-Message-Producer
+      Handler: app.lambda_handler
+      Policies: 
+        - SQSSendMessagePolicy: 
+            QueueName: !Ref QueueName
+        - Version: "2012-10-17"
+          Statement: 
+            - Effect: Allow
+              Action: 
+                - 'sqs:GetQueueUrl'
+              Resource: 
+                - !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${QueueName}'             
+            
+      Runtime: python3.8
+      Tags: 
+        Owner: !Ref Owner
+      Timeout: 30
+      Tracing: Active         
+
+  MyProcessingQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      ContentBasedDeduplication: true
+      FifoQueue: true
+      QueueName: !Ref QueueName
+      Tags: 
+        - Key: Owner
+          Value: !Ref Owner
+      VisibilityTimeout: 120
+
+  MyInstanceRole: 
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'        
+      Description: "This role will be used by instances launched in the ASG"
+      Policies: 
+        - PolicyName: sqs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement: 
+              - Effect: Allow
+                Action: 
+                  - 'sqs:ReceiveMessage'
+                  - 'sqs:GetQueueUrl'
+                  - 'sqs:DeleteMessage'
+                Resource: 
+                  - !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${QueueName}' 
+        - PolicyName: s3
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement: 
+              - Effect: Allow
+                Action: 
+                  - 's3:Get*'
+                Resource: 
+                  - !Sub 'arn:aws:s3:::${CodeBucketName}/*'              
+        - PolicyName: Cloudwatch
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement: 
+              - Effect: Allow
+                Action: 
+                  - 'cloudwatch:PutMetricData'
+                Resource: '*'               
+        - PolicyName: SSM
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement: 
+              - Effect: Allow
+                Action: 
+                  - "ssm:GetParameters"
+                  - "ssm:GetParameter"
+                  - "ssm:GetParametersByPath"
+                Resource: 
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/ProcessingQueueName"                             
+      RoleName: ASG-EC2-Custom-Role
+      Tags: 
+        - Key: Owner
+          Value: !Ref Owner
+          
+  MyInstanceProfile: 
+    DependsOn: MyInstanceRole
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      Roles: 
+        - !Ref MyInstanceRole
+      
+  MyLaunchTemplate: 
+    Type: AWS::EC2::LaunchTemplate
+    Properties: 
+      LaunchTemplateData: 
+        IamInstanceProfile: 
+          Name: !Ref MyInstanceProfile
+        ImageId: !Ref LatestAmiId
+        InstanceType: t2.micro
+        UserData: 
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            echo "Checkpoint - Starting bootstrap script."
+            yum update -y
+            aws s3 cp s3://${CodeBucketName}/consumer.py ./home/ec2-user/
+            pip3 install boto3
+            cd /home/ec2-user/
+            aws configure set default.region "${AWS::Region}"
+            python3 consumer.py &
+            echo "Checkpoint - bootstrap completed"
+      LaunchTemplateName: Launch-Template-ASG
+
+
+  MyAutoScalingGroup: 
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties: 
+      AutoScalingGroupName: !Ref AsgName
+      VPCZoneIdentifier: !Ref AsgPublicSubnetIds
+      MixedInstancesPolicy: 
+        InstancesDistribution: 
+          SpotAllocationStrategy: "capacity-optimized"
+        LaunchTemplate: 
+          LaunchTemplateSpecification: 
+            LaunchTemplateId: !Ref MyLaunchTemplate
+            Version: !GetAtt MyLaunchTemplate.LatestVersionNumber
+          Overrides: 
+          - InstanceRequirements: 
+              VCpuCount: 
+                Min: 2
+                Max: 2
+              MemoryMiB: 
+                Min: 2048
+
+      DesiredCapacity: 1
+      MinSize: 1
+      MaxSize: 10
+      HealthCheckGracePeriod: 60
+      MetricsCollection: 
+        - Granularity: 1Minute
+      Tags: 
+        - Key: Owner
+          PropagateAtLaunch: false
+          Value: !Ref Owner
+
+  MyScalingPolicy: 
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties: 
+      AutoScalingGroupName: !Ref MyAutoScalingGroup
+      # EstimatedInstanceWarmup: Integer
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration: 
+        CustomizedMetricSpecification:  # Add a reference to your metric here
+          Dimensions: 
+            - Name: Type
+              Value: "Single Queue"
+          MetricName: BPI
+          Namespace: ASG-Metrics
+          Statistic: Average
+        TargetValue: !Ref InitialTrackingTarget
+
+  MyQueueNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties: 
+      Description: "Name of the processing queue that ASG nodes polling from."
+      Name: ProcessingQueueName
+      Type: String
+      Value: !Ref QueueName
+
+
+  MyCloudWatchDashboard: 
+    Type: AWS::CloudWatch::Dashboard
+    Properties: 
+      DashboardBody: !Sub |
+        {
+            "widgets": [
+                {
+                    "height": 6,
+                    "width": 12,
+                    "y": 0,
+                    "x": 0,
+                    "type": "metric",
+                    "properties": {
+                        "metrics": [
+                            [ "ASG-Metrics", "BPI", "Type", "Single Queue" ],
+                            [ ".", "ASG-Target-BPI" ]
+                        ],
+                        "view": "timeSeries",
+                        "stacked": false,
+                        "region": "${AWS::Region}",
+                        "stat": "Average",
+                        "period": 30
+                    }
+                },
+                {
+                    "height": 6,
+                    "width": 12,
+                    "y": 6,
+                    "x": 0,
+                    "type": "metric",
+                    "properties": {
+                        "metrics": [
+                            [ "ASG-Metrics", "MsgProcessingDuration" ]
+                        ],
+                        "view": "timeSeries",
+                        "stacked": false,
+                        "region": "${AWS::Region}",
+                        "period": 30,
+                        "stat": "Average"
+                    }
+                },
+                {
+                    "height": 6,
+                    "width": 12,
+                    "y": 0,
+                    "x": 12,
+                    "type": "metric",
+                    "properties": {
+                        "metrics": [
+                            [ "AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", "${QueueName}" ]
+                        ],
+                        "view": "timeSeries",
+                        "stacked": false,
+                        "region": "${AWS::Region}",
+                        "period": 30,
+                        "stat": "Average"
+                    }
+                },
+                {
+                    "height": 6,
+                    "width": 12,
+                    "y": 6,
+                    "x": 12,
+                    "type": "metric",
+                    "properties": {
+                        "metrics": [
+                            [ "AWS/AutoScaling", "GroupInServiceInstances", "AutoScalingGroupName", "${AsgName}" ]
+                        ],
+                        "view": "timeSeries",
+                        "stacked": false,
+                        "region": "${AWS::Region}",
+                        "period": 30,
+                        "stat": "Average"
+                    }
+                }
+            ]
+        }
+      DashboardName: "ASG-Scaling-Dashboard"    
+
+
+Outputs:
+
+  MyAutoScalingGroup:
+    Description: "Test ASG created for testing"
+    Value: !Ref MyAutoScalingGroup
+
+  MyMetricPublisher:
+    Description: "The lambda function that publishes the cloudwatch metric BPI"
+    Value: !Ref MyMetricPublisher
+
+  MyTargetSetter:
+    Description: "The lambda function that updates the target of the ASG"
+    Value: !Ref MyTargetSetter    
+
+  MyProcessingQueue:
+    Description: "URL of the queue that will be used to accumulate processing jobs"
+    Value: !Ref MyProcessingQueue
