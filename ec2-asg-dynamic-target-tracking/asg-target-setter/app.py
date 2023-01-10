@@ -8,6 +8,7 @@ from botocore.exceptions import ClientError
 from botocore.config import Config
 from datetime import datetime
 from datetime import timedelta
+from datetime import timezone
 
 # Create logger
 logging.basicConfig(level=logging.INFO)
@@ -68,8 +69,8 @@ def getMetricValue(metricNamespace, metricName):
 
     response = cloudwatch.get_metric_data(
         MetricDataQueries=[query],
-        StartTime=datetime.utcnow() - timedelta(seconds=86400),
-        EndTime=datetime.utcnow(),
+        StartTime=datetime.now(timezone.utc) - timedelta(seconds=86400),
+        EndTime=datetime.now(timezone.utc),
     )
 
     if not response.get('MetricDataResults')[0].get('Values'): 

@@ -47,7 +47,7 @@ def lambda_handler(event, context):
         # Build Msg body
         randomNumber = struct.unpack('H', os.urandom(2))[0]
         messageBody = {"id": randomNumber, "duration": defaultMsgProcDuration}
-        print('Sending message id: {}'.format(messageBody.get('id')))
+        print('Sending message id: {}'.format(randomNumber))
 
         # Call API
         response = queue.send_message(
