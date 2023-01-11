@@ -34,16 +34,19 @@ Parameters:
   EstMsgProcDuration:
     Type: Number
     Description: "Estimated message processing duration in seconds"
+    Default: 25
   DesiredLatency: 
     Type: Number 
     Description: "Max latency for processing any message in the queue"
+    Default: 300
   InitialTrackingTarget: 
     Type: Number 
     Description: "Initial Target BPI of the ASG (should equal desired latency / MsgProcDuration)"
+    Default: 12
   TargetUpdateFrequency: 
     Type: Number
     Description: "The freqency in minutes with which the target value of the target tracking policy will be updated (provide value between 1 and 59)"
-    Default: 30
+    Default: 1
   LatestAmiId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'    
