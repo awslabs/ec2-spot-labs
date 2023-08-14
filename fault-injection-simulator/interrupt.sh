@@ -62,9 +62,9 @@ $DEBUG && [ ! -z $REGION ]   && echo region:   $REGION
 
 # state files
 #
-JSON='interrupt.json'
-OUT='interrupt.out'
-ERR='interrupt.err'
+JSON=$(mktemp -t 'interrupt.XXXX.json')
+OUT=$(mktemp -t 'interrupt.XXXX.out')
+ERR=$(mktemp -t 'interrupt.XXXX.err')
 
 ########################################
 # multi-use functions
