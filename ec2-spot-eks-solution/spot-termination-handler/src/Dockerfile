@@ -1,4 +1,4 @@
-FROM alpine:3.6
+FROM public.ecr.aws/docker/library/alpine:latest
 
 ARG KUBE_VERSION=1.8.1
 ENV HOME=/srv

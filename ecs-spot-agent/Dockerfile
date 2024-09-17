@@ -1,4 +1,4 @@
-FROM python:3.7.2-alpine
+FROM public.ecr.aws/docker/library/python:3.9.20-slim
 
 LABEL maintainer "mats16 <mats.kazuki@gmail.com>"
 
