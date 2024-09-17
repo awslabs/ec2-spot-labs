@@ -12,9 +12,9 @@
 # language governing permissions and limitations under the License.
 
 # For more information on creating a Dockerfile
-# https://docs.docker.com/compose/gettingstarted/#step-2-create-a-dockerfile
-#FROM tensorflow/tensorflow:1.8.0-py3
+# https://docs.docker.com/compose/gettingstarted/#step-2-create-a-dockerfile#FROM tensorflow/tensorflow:1.8.0-py3
 FROM public.ecr.aws/kubeflow-on-aws/notebook-servers/jupyter-tensorflow:2.12.0-cpu-py310-ubuntu20.04-ec2-v1.0
+
 
 RUN apt-get update && apt-get install -y --no-install-recommends nginx curl
 
