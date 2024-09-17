@@ -13,7 +13,7 @@
 
 # For more information on creating a Dockerfile
 # https://docs.docker.com/compose/gettingstarted/#step-2-create-a-dockerfile
-FROM tensorflow/tensorflow:1.8.0-py3
+#FROM tensorflow/tensorflow:1.8.0-py3
 
 RUN apt-get update && apt-get install -y --no-install-recommends nginx curl
 
