@@ -1,7 +1,7 @@
-# re:Invent Github
+# re:Invent 2024
 
 **Efficient Compute**
-Here is the complete list or re:Invent sessions where you can learn about Graviton, EC2 Spot, Auto Scaling Groups, Savings Plans, Karpenter, and more. Our team has a shared mission of enabling customers to maximize cost, performance, and energy efficiencies on EC2.
+Here is the complete list or re:Invent sessions where you can learn about Graviton, EC2 Spot, Auto Scaling Groups, Savings Plans, Karpenter, and more. The AWS Efficient Compute team has a shared mission of enabling customers to optimize for cost, performance, and energy efficiency on EC2.
 
 
 ### BREAKOUT SESSIONS
