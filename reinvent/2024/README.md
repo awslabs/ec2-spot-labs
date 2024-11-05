@@ -10,7 +10,7 @@ Here is the complete list or re:Invent sessions where you can learn about Gravit
 Let this session be your guide to building cost-effective, sustainable infrastructure without sacrificing application performance on AWS. In this session, learn both technical and non-technical best practices for building efficient compute architectures on AWS, from the basics of AWS Savings Plans and Amazon EC2 Auto Scaling to more advanced strategies such as leveraging Amazon EC2 Spot Instances, AWS Graviton, automation, and more. Learn from AWS customers about their real-world experiences implementing compute optimization strategies and the benefits they’ve achieved.
 
 **Presenters:**
-- Cat Swetel, Senior Director of Engineering, Nubank
+- Juean Mestre, Principal GTM Specialist Efficient compute, AWS
 - David Bermeo, Sr. Product Manager, AWS
 
 **Details:**
@@ -180,7 +180,6 @@ Amazon EC2 Spot Instances use spare Amazon EC2 capacity available to you at stee
 AWS Graviton processors are designed to deliver the best price performance for your cloud workloads running on Amazon EC2. During this hands-on workshop, walk through the steps for migrating a workload running on x86 to AWS Graviton-based instances including performing tests locally and modifying the CI/CD pipeline to build and deploy the application in Amazon EKS using Karpenter. Learn how you can deploy applications in an efficient way by mixing AWS Graviton-based instances and Amazon EC2 Spot Instances. You must bring your laptop to participate.
 
 **Presenters:**
-- Syl Taylor, Specialist Solutions Architect, AWS
 - Christian Melendez, Specialist Compute SA, AWS
 
 **Details:**
