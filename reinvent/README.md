@@ -105,7 +105,7 @@ This session covers how Karpenter can help you reduce complexities and improve e
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon Elastic Kubernetes Service (Amazon EKS), Amazon EC2 - Graviton, Amazon EC2 Spot
 
-## WORKSHOP
+## WORKSHOP SESSIONS
 
 ### CMP308 | Improve sustainability and reduce costs with AWS Graviton
 
@@ -215,7 +215,7 @@ Ready to learn more about AWS Graviton in an immersive environment? In this team
 **Details:**
 - Tuesday, Dec 3 | 11:30 AM - 1:30 PM PST | MGM Grand | Level 3 | Premier 312
 
-## CHALK TALK
+## CHALK TALK SESSIONS
 
 ### CMP302-R [REPEAT] | Run containerized workloads efficiently on AWS [REPEAT]
 
@@ -481,7 +481,7 @@ Getting the best compute performance is a bit of an art, and knowing about low l
 - Thursday, Dec 5  4:00 PM - 5:00 PM PST
 - MGM Grand | Level 1 | Boulevard 169
 
-## CODE TALK
+## CODE TALK SESSIONS
 
 ### CMP404 |  Exploring performance analysis with AWS Graviton instances
 
@@ -521,7 +521,7 @@ The availability of processors with and without hyperthreading makes performance
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon Elastic Compute Cloud (Amazon EC2), Amazon EC2 - Graviton
 
-## LIGHTNING TALK
+## LIGHTNING TALK SESSIONS
 
 ### CMP346 | Uncover compute efficiency with AWS Graviton Savings Dashboard
 
