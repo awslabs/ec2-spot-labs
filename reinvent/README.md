@@ -3,9 +3,9 @@
 Here is the complete list or re:Invent sessions where you can learn about Graviton, EC2 Spot, Auto Scaling Groups, Savings Plans, Karpenter, and more. The AWS Efficient Compute team has a shared mission of enabling customers to optimize for cost, performance, and energy efficiency on EC2.
 
 
-### BREAKOUT SESSIONS
+## BREAKOUT SESSIONS
 
-#### CMP214 | Win-win: Maximize Amazon EC2 savings while improving performance
+### CMP214 | Win-win: Maximize Amazon EC2 savings while improving performance
 
 Let this session be your guide to building cost-effective, sustainable infrastructure without sacrificing application performance on AWS. In this session, learn both technical and non-technical best practices for building efficient compute architectures on AWS, from the basics of AWS Savings Plans and Amazon EC2 Auto Scaling to more advanced strategies such as leveraging Amazon EC2 Spot Instances, AWS Graviton, automation, and more. Learn from AWS customers about their real-world experiences implementing compute optimization strategies and the benefits they’ve achieved.
 
@@ -26,7 +26,7 @@ Let this session be your guide to building cost-effective, sustainable infrastru
 - Services: Amazon EC2 Auto Scaling, Amazon EC2 - Graviton, Amazon EC2 Spot
 
 
-#### CMP323 | Optimize your AIML workloads with Amazon EC2 Graviton
+### CMP323 | Optimize your AIML workloads with Amazon EC2 Graviton
 
 Amazon EC2 provides a wide selection of instance types optimized to fit different use cases, including AI/ML workloads. Join this session to learn best practices to maximize the performance for your AI/ML workloads while considering factors including sustainability and cost. Hear directly from customers who have accelerated their AI/ML innovation with the help of AWS tools and solutions. Leave equipped to explore optimization of your AI/ML solutions with services powered by AWS Graviton, accelerated computing instances, and Amazon EC2 Spot Instances.
 
@@ -47,7 +47,7 @@ Amazon EC2 provides a wide selection of instance types optimized to fit differen
 - Services: Amazon EC2 - Graviton, Amazon EC2 Spot
 
 
-#### CMP 319 | Managing Amazon EC2 capacity and availability 
+### CMP 319 | Managing Amazon EC2 capacity and availability 
 
 Amazon EC2 offers a variety of capacity usage and reservation models, so you can choose the right combination for your workload and budget. These include capacity reservations, On-Demand Instances, Amazon EC2 Capacity Blocks for ML, and more. Join this session to learn how to combine these models in a way that’s best for your business. Leave with knowledge on how to manage your capacity to improve utilization and availability.
 
@@ -66,7 +66,7 @@ Amazon EC2 offers a variety of capacity usage and reservation models, so you can
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon Elastic Compute Cloud (Amazon EC2)
 
-#### CMP320 | AWS Graviton: The best price performance for your AWS workloads
+### CMP320 | AWS Graviton: The best price performance for your AWS workloads
 
 AWS Graviton-based Amazon EC2 instances provide the best price performance for workloads in Amazon EC2. In this session, dive deep into the AWS Graviton processor and learn about its workload performance, energy efficiency, and software offerings. Learn about common use cases, best practices to optimize your workloads across various applications, customer success stories, and how you can accelerate your AWS Graviton journey.
 
@@ -86,7 +86,7 @@ AWS Graviton-based Amazon EC2 instances provide the best price performance for w
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon EC2 - Graviton
 
-#### CMP213 | Run workloads efficiently on Amazon EKS with Karpenter and EC2 Spot
+### CMP213 | Run workloads efficiently on Amazon EKS with Karpenter and EC2 Spot
 
 This session covers how Karpenter can help you reduce complexities and improve efficiency in Kubernetes clusters. Explore how to leverage Amazon EC2 Spot Instances as a purchase option, and learn how AWS Graviton-based Amazon EC2 instances help further optimize your workloads while improving sustainability.
 
@@ -105,9 +105,9 @@ This session covers how Karpenter can help you reduce complexities and improve e
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon Elastic Kubernetes Service (Amazon EKS), Amazon EC2 - Graviton, Amazon EC2 Spot
 
-### WORKSHOP
+## WORKSHOP
 
-#### CMP308 | Improve sustainability and reduce costs with AWS Graviton
+### CMP308 | Improve sustainability and reduce costs with AWS Graviton
 
 Are you looking to improve your price performance and reduce your environmental impact? AWS Graviton-based Amazon EC2 instances are a great fit for organizations of all sizes looking to maximize price performance and improve sustainability. In this hands-on workshop, learn how to modernize your workloads and reduce your carbon footprint by taking advantage of Graviton-based instances. Deep dive into AWS Graviton managed services, common use cases, and best practices. You must bring your laptop to participate.
 
@@ -126,7 +126,7 @@ Are you looking to improve your price performance and reduce your environmental 
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon Elastic Compute Cloud (Amazon EC2), Amazon EC2 - Graviton
 
-#### CMP311 | Proactively scale for optimal cost and availability in Amazon EC2
+### CMP311 | Proactively scale for optimal cost and availability in Amazon EC2
 
 Amazon EC2 Auto Scaling groups help you take advantage of the elasticity benefits that are built in to AWS. With more responsive and proactive scaling, you run only the required number of instances at any time of the day, reducing the cost of overprovisioned EC2 instances. In this workshop, learn how to take advantage of the latest innovations from Amazon EC2 Auto Scaling to improve your web application availability at lower costs. Discover how to use a combination of predictive scaling, dynamic scaling, and warm pool features to automatically launch and terminate capacity with changing demands. You must bring your laptop to participate.
 
@@ -145,7 +145,7 @@ Amazon EC2 Auto Scaling groups help you take advantage of the elasticity benefit
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon EC2 Auto Scaling, Amazon Elastic Compute Cloud (Amazon EC2)
 
-#### CMP312-R [REPEAT] | Spot the savings: Optimize deployments with Amazon EC2 Spot Instances [REPEAT]
+### CMP312-R [REPEAT] | Spot the savings: Optimize deployments with Amazon EC2 Spot Instances [REPEAT]
 
 Amazon EC2 Spot Instances use spare Amazon EC2 capacity available to you at steep discounts compared to on-demand prices. In this workshop, learn about the APIs and commands used to create Spot Instances. Create an Amazon EC2 launch template and use the template to launch Amazon EC2 Spot Instances with Amazon EC2 Auto Scaling groups, Amazon EC2 Spot Fleet, EC2 Fleet, and the EC2 RunInstances API. Discover how to use Spot features such as Spot placement scores and tools such as attribute-based instance selection and AWS Fault Injection Service to maximize your savings. You must bring your laptop to participate.
 
@@ -164,7 +164,7 @@ Amazon EC2 Spot Instances use spare Amazon EC2 capacity available to you at stee
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon Elastic Compute Cloud (Amazon EC2), Amazon EC2 Spot
 
-#### CMP312-R1 [REPEAT] | Spot the savings: Optimize deployments with Amazon EC2 Spot Instances [REPEAT]
+### CMP312-R1 [REPEAT] | Spot the savings: Optimize deployments with Amazon EC2 Spot Instances [REPEAT]
 
 Amazon EC2 Spot Instances use spare Amazon EC2 capacity available to you at steep discounts compared to on-demand prices. In this workshop, learn about the APIs and commands used to create Spot Instances. Create an Amazon EC2 launch template and use the template to launch Amazon EC2 Spot Instances with Amazon EC2 Auto Scaling groups, Amazon EC2 Spot Fleet, EC2 Fleet, and the EC2 RunInstances API. Discover how to use Spot features such as Spot placement scores and tools such as attribute-based instance selection and AWS Fault Injection Service to maximize your savings. You must bring your laptop to participate.
 
@@ -175,7 +175,7 @@ Amazon EC2 Spot Instances use spare Amazon EC2 capacity available to you at stee
 **Details:**
 - Wednesday, Dec 4 | 8:30 AM - 10:30 AM PST | Mandalay Bay | Level 2 South | Lagoon F
 
-#### CMP310 | Migrating applications to AWS Graviton on Amazon EKS
+### CMP310 | Migrating applications to AWS Graviton on Amazon EKS
 
 AWS Graviton processors are designed to deliver the best price performance for your cloud workloads running on Amazon EC2. During this hands-on workshop, walk through the steps for migrating a workload running on x86 to AWS Graviton-based instances including performing tests locally and modifying the CI/CD pipeline to build and deploy the application in Amazon EKS using Karpenter. Learn how you can deploy applications in an efficient way by mixing AWS Graviton-based instances and Amazon EC2 Spot Instances. You must bring your laptop to participate.
 
@@ -193,7 +193,7 @@ AWS Graviton processors are designed to deliver the best price performance for y
 - Role: Developer / Engineer, DevOps Engineer, Solution / Systems Architect
 - Services: Amazon EC2 - Graviton
 
-#### CMP316-R [REPEAT] | AWS Graviton GameDay: Optimize your Amazon EC2 workload with Graviton [REPEAT]
+### CMP316-R [REPEAT] | AWS Graviton GameDay: Optimize your Amazon EC2 workload with Graviton [REPEAT]
 
 Ready to learn more about AWS Graviton in an immersive environment? In this team-based gamified learning setting, perform a live migration of your workload to Graviton. You learn how to unlock Graviton’s full price-performance potential and optimize the size of an Amazon EC2 fleet. You have the opportunity to identify CPU-architectural incompatibilities with the Porting Advisor for Graviton tool, test performance, adjust a continuous integration and delivery (CI/CD) pipeline to create ARM64 artifacts, and explore popular Graviton use cases. You must bring your laptop to participate.
 
@@ -204,7 +204,7 @@ Ready to learn more about AWS Graviton in an immersive environment? In this team
 **Details:**
 - Thursday, Dec 5 | 3:00 PM - 5:00 PM PST | MGM Grand | Level 1 | Grand 117
 
-#### CMP316-R1 [REPEAT] | AWS Graviton GameDay: Optimize your Amazon EC2 workload with Graviton [REPEAT]
+### CMP316-R1 [REPEAT] | AWS Graviton GameDay: Optimize your Amazon EC2 workload with Graviton [REPEAT]
 
 Ready to learn more about AWS Graviton in an immersive environment? In this team-based gamified learning setting, perform a live migration of your workload to Graviton. You learn how to unlock Graviton’s full price-performance potential and optimize the size of an Amazon EC2 fleet. You have the opportunity to identify CPU-architectural incompatibilities with the Porting Advisor for Graviton tool, test performance, adjust a continuous integration and delivery (CI/CD) pipeline to create ARM64 artifacts, and explore popular Graviton use cases. You must bring your laptop to participate.
 
@@ -215,9 +215,9 @@ Ready to learn more about AWS Graviton in an immersive environment? In this team
 **Details:**
 - Tuesday, Dec 3 | 11:30 AM - 1:30 PM PST | MGM Grand | Level 3 | Premier 312
 
-### CHALK TALK
+## CHALK TALK
 
-#### CMP302-R [REPEAT] | Run containerized workloads efficiently on AWS [REPEAT]
+### CMP302-R [REPEAT] | Run containerized workloads efficiently on AWS [REPEAT]
 
 Containers offer scalability and flexibility, enabling seamless deployment, management, and scaling of applications in any environment. Using containers on AWS can help you improve your efficiency and achieve your price performance goals. In this chalk talk, explore how you can take advantage of solutions such as AWS Graviton–based instances and Amazon EC2 Spot Instances to boost the efficiency of your workloads. Learn how to build, test, and deploy containers using a multi-architecture approach that gives you the flexibility to deploy virtually anywhere on AWS with Amazon ECS, Amazon EKS, and AWS Fargate.
 
@@ -236,7 +236,7 @@ Containers offer scalability and flexibility, enabling seamless deployment, mana
 - Role: Developer / Engineer, IT Executive, IT Professional / Technical Manager
 - Services: Amazon Elastic Container Service (Amazon ECS), Amazon EC2 - Graviton, Amazon EC2 Spot
 
-#### CMP302-R 1 [REPEAT] | Run containerized workloads efficiently on AWS [REPEAT]
+### CMP302-R 1 [REPEAT] | Run containerized workloads efficiently on AWS [REPEAT]
 
 Containers offer scalability and flexibility, enabling seamless deployment, management, and scaling of applications in any environment. Using containers on AWS can help you improve your efficiency and achieve your price performance goals. In this chalk talk, explore how you can take advantage of solutions such as AWS Graviton–based instances and Amazon EC2 Spot Instances to boost the efficiency of your workloads. Learn how to build, test, and deploy containers using a multi-architecture approach that gives you the flexibility to deploy virtually anywhere on AWS with Amazon ECS, Amazon EKS, and AWS Fargate.
 
@@ -255,7 +255,7 @@ Containers offer scalability and flexibility, enabling seamless deployment, mana
 - Role: Developer / Engineer, IT Executive, IT Professional / Technical Manager
 - Services: Amazon Elastic Container Service (Amazon ECS), Amazon EC2 - Graviton, Amazon EC2 Spot
 
-#### CMP202 |  Resilient and resourceful: Balance compute resiliency and costs
+### CMP202 |  Resilient and resourceful: Balance compute resiliency and costs
 
 Amazon EC2 Auto Scaling helps you maintain application availability and automatically add or remove Amazon EC2 instances using scaling policies that you define. In this chalk talk, dive deep into Amazon EC2 Auto Scaling innovations and best practices designed to increase the resiliency of your applications while meeting your cost-efficiency objectives. Learn how your deployment patterns and tools such as Amazon EC2 Auto Scaling instance maintenance policy and instance refresh rollback can help you achieve the exact balance of healthy compute capacity needed.
 
@@ -274,7 +274,7 @@ Amazon EC2 Auto Scaling helps you maintain application availability and automati
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon EC2 Auto Scaling
 
-#### CMP340 | Managing and optimizing EC2 on-demand capacity reservations at scale
+### CMP340 | Managing and optimizing EC2 on-demand capacity reservations at scale
 
 
 Amazon EC2 On-Demand Capacity Reservations (ODCRs) provide you with capacity assurance for your critical workloads. To use ODCRs efficiently at scale, it is essential to proactively monitor and optimize your reservation usage. This chalk talk reviews how you can maximize the benefits of ODCRs, individually and across multiple AWS accounts, by adopting effective capacity management strategies. Learn how to select the right ODCR configurations, monitor capacity utilization, and employ capacity pooling strategies to efficiently manage your Capacity Reservations across your organization.
@@ -295,7 +295,7 @@ Amazon EC2 On-Demand Capacity Reservations (ODCRs) provide you with capacity ass
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon Elastic Compute Cloud (Amazon EC2)
 
-#### CMP343 |  Select and launch the right instance for your workload and budget
+### CMP343 |  Select and launch the right instance for your workload and budget
 
 AWS continuously innovates to meet customer needs. It now offers more than 800 instances for various use cases—including instances best for common workloads, like web application workloads, and those more appropriate for workloads with specific requirements, like SAP workloads. How do you choose instances? This session covers the latest compute innovations such as Amazon EC2 Flex instances and the new generation of Amazon EC2 instances powered by custom Intel Xeon Scalable processors (Sapphire Rapids), AMD EPYC processors (Genoa), and AWS Graviton. Learn how to determine which instance is best for your specific use case and budget.
 
@@ -314,7 +314,7 @@ AWS continuously innovates to meet customer needs. It now offers more than 800 i
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon Elastic Compute Cloud (Amazon EC2), Amazon EC2 - Graviton
 
-#### CMP305-R [REPEAT] |  Learnings from developers adopting AWS Graviton at scale [REPEAT]
+### CMP305-R [REPEAT] |  Learnings from developers adopting AWS Graviton at scale [REPEAT]
 
 AWS Graviton processors are custom designed to enable the best price performance for a wide variety of workloads on AWS including application servers, microservices, open source–based databases and in-memory caches, gaming, high performance computing, and machine learning. In this chalk talk, engage directly with AWS specialists that help customers on a daily basis with their adoption journey—from workload selection to running at scale in production. Explore AWS Graviton use cases, best practices, performance, and customer success stories.
 
@@ -333,7 +333,7 @@ AWS Graviton processors are custom designed to enable the best price performance
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon Elastic Compute Cloud (Amazon EC2), Amazon EC2 - Graviton
 
-#### CMP305-R1 [REPEAT] |  Learnings from developers adopting AWS Graviton at scale [REPEAT]
+### CMP305-R1 [REPEAT] |  Learnings from developers adopting AWS Graviton at scale [REPEAT]
 
 AWS Graviton processors are custom designed to enable the best price performance for a wide variety of workloads on AWS including application servers, microservices, open source–based databases and in-memory caches, gaming, high performance computing, and machine learning. In this chalk talk, engage directly with AWS specialists that help customers on a daily basis with their adoption journey—from workload selection to running at scale in production. Explore AWS Graviton use cases, best practices, performance, and customer success stories.
 
@@ -345,7 +345,7 @@ AWS Graviton processors are custom designed to enable the best price performance
 - Wednesday, Dec 4| 4:30 PM - 5:30 PM PST
 - MGM Grand | Level 1 | Boulevard 169
 
-#### CMP211-R [REPEAT] |  Boost Amazon EKS efficiency: Karpenter, Graviton, and EC2 Spot Instances [REPEAT]
+### CMP211-R [REPEAT] |  Boost Amazon EKS efficiency: Karpenter, Graviton, and EC2 Spot Instances [REPEAT]
 
 Achieving optimal compute efficiency is a key goal for modern cloud architectures. This chalk talk explores how to optimize compute costs and performance for workloads running on Amazon EKS using Karpenter, AWS Graviton, and Amazon EC2 Spot Instances. Through practical examples and expert insights, learn how to integrate these technologies to achieve a more efficient, scalable, and cost-effective Amazon EKS environment.
 
@@ -364,7 +364,7 @@ Achieving optimal compute efficiency is a key goal for modern cloud architecture
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon Elastic Kubernetes Service (Amazon EKS), Amazon EC2 - Graviton, Amazon EC2 Spot
 
-#### CMP211-R1 [REPEAT] |  Boost Amazon EKS efficiency: Karpenter, Graviton, and EC2 Spot Instances [REPEAT]
+### CMP211-R1 [REPEAT] |  Boost Amazon EKS efficiency: Karpenter, Graviton, and EC2 Spot Instances [REPEAT]
 
 Achieving optimal compute efficiency is a key goal for modern cloud architectures. This chalk talk explores how to optimize compute costs and performance for workloads running on Amazon EKS using Karpenter, AWS Graviton, and Amazon EC2 Spot Instances. Through practical examples and expert insights, learn how to integrate these technologies to achieve a more efficient, scalable, and cost-effective Amazon EKS environment.
 
@@ -375,7 +375,7 @@ Achieving optimal compute efficiency is a key goal for modern cloud architecture
 **Details:**
 - Monday, Dec 2  4:30 PM - 5:30 PM
 
-#### CMP413 |  Moving from naive benchmarking to application performance engineering
+### CMP413 |  Moving from naive benchmarking to application performance engineering
 
 When asked to compare performance at the infrastructure level, many people are running benchmarks. Most of the time, benchmarks aren’t representative of their applications’ behaviors. In this chalk talk, learn the tools and best practices that will help you understand your applications’ performance behaviors on Amazon EC2 instances, which will ultimately allow you to maximize your applications’ performance.
 
@@ -393,7 +393,7 @@ When asked to compare performance at the infrastructure level, many people are r
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon Elastic Compute Cloud (Amazon EC2), Amazon EC2 - Graviton
 
-#### CMP345 |  Crawl, walk, run: Accelerating FinOps journey to reduce compute costs
+### CMP345 |  Crawl, walk, run: Accelerating FinOps journey to reduce compute costs
 
 Compute costs can be a significant expense for many AWS customers. In this chalk talk, learn how organizations leverage AWS tools, such as AWS Cloud Financial Management Assessment, CUDOS, Cost Intelligence Dashboard, and Optimization Hub, to reduce compute costs and identify opportunities to advance FinOps capabilities. These tools drive cost savings by enabling you to modernize, migrate, and innovate more efficiently. Discover how to transform the recommendations from these tools into a strategic roadmap, translating assessment insights into prioritized initiatives for methodically executing FinOps best practices. Optimize your compute usage and accelerate your FinOps maturity on AWS.
 
@@ -412,7 +412,7 @@ Compute costs can be a significant expense for many AWS customers. In this chalk
 - Role: Developer / Engineer, IT Executive, IT Professional / Technical Manager
 - Services: Amazon Elastic Compute Cloud (Amazon EC2)
 
-#### CMP344 | Sustainable compute optimization on Amazon EC2
+### CMP344 | Sustainable compute optimization on Amazon EC2
 
 This chalk talk focuses on optimizing compute efficiency and sustainability of workloads running on Amazon EC2. Learn strategies to leverage Amazon EC2 capabilities and features including instance selection, Amazon EC2 Auto Scaling, and AWS Graviton-based Amazon EC2 instances to improve workload efficiency. The talk discusses and demonstrates how to measure and track resource utilization, price performance, and resource efficiency using workload metrics. This data-driven approach helps you identify bottlenecks, optimize resource allocation, and make informed decisions to enhance the performance and environmental sustainability of your Amazon EC2-based applications.
 
@@ -431,7 +431,7 @@ This chalk talk focuses on optimizing compute efficiency and sustainability of w
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon EC2 Auto Scaling, Amazon EC2 - Graviton
 
-#### CMP407 |  Optimized RAG pipelines using AWS Graviton: VectorDB and LLM endpoints
+### CMP407 |  Optimized RAG pipelines using AWS Graviton: VectorDB and LLM endpoints
 
 Retrieval Augmented Generation (RAG) enhances generative AI inference by augmenting pretrained FMs and LLMs with current information that is contextual and relevant to the query. Learn from AWS experts about efficient RAG deployment options for use cases that optimize cloud resource usage and costs. Graviton-based instances are designed to deliver the best price performance for cloud workloads running in Amazon EC2 and use up to 60% less energy than comparable instances for the same performance. Learn what’s possible when using AWS Graviton to power your RAG-optimized generative AI inference workloads.
 
@@ -450,7 +450,7 @@ Retrieval Augmented Generation (RAG) enhances generative AI inference by augment
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon EC2 - Graviton
 
-#### CMP411-R [REPEAT]| Everything you've wanted to know about performance on EC2 instances [REPEAT]
+### CMP411-R [REPEAT]| Everything you've wanted to know about performance on EC2 instances [REPEAT]
 
 Getting the best compute performance is a bit of an art, and knowing about low level details can help a lot. This chalk talk covers all the details you've always wanted to know about, such as memory topology, how to get access to hardware counters, how to take into account the side-effects of hyperthreading, and how to properly run performance tests and optimize your latency.
 
@@ -469,7 +469,7 @@ Getting the best compute performance is a bit of an art, and knowing about low l
 - Role: Data Engineer, Developer / Engineer, DevOps Engineer
 - Services: Amazon Elastic Compute Cloud (Amazon EC2), Amazon Q, Amazon EC2 - Graviton
 
-#### CMP411-R1 [REPEAT] | Everything you've wanted to know about performance on EC2 instances [REPEAT]
+### CMP411-R1 [REPEAT] | Everything you've wanted to know about performance on EC2 instances [REPEAT]
 
 Getting the best compute performance is a bit of an art, and knowing about low level details can help a lot. This chalk talk covers all the details you've always wanted to know about, such as memory topology, how to get access to hardware counters, how to take into account the side-effects of hyperthreading, and how to properly run performance tests and optimize your latency.
 
@@ -481,9 +481,9 @@ Getting the best compute performance is a bit of an art, and knowing about low l
 - Thursday, Dec 5  4:00 PM - 5:00 PM PST
 - MGM Grand | Level 1 | Boulevard 169
 
-### CODE TALK
+## CODE TALK
 
-#### CMP404 |  Exploring performance analysis with AWS Graviton instances
+### CMP404 |  Exploring performance analysis with AWS Graviton instances
 
 Many developers are working at a higher and higher level, which is fantastic from a productivity standpoint. However, when it comes to performance, it is often necessary to be closer to the metal to understand the dynamics of applications, study their behavior, and understand and fix their bottlenecks. In this code talk, AWS experts open a shell on an Amazon EC2 instance and dig into the system to see which tools and resources you can use, including the Amazon Aperf tool. Learn as they write some mini-applications to study their performance behavior and troubleshoot how to improve them.
 
@@ -502,7 +502,7 @@ Many developers are working at a higher and higher level, which is fantastic fro
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon Elastic Compute Cloud (Amazon EC2), Amazon EC2 - Graviton
 
-#### CMP405 |  How to optimize latency and throughput
+### CMP405 |  How to optimize latency and throughput
 
 The availability of processors with and without hyperthreading makes performance evaluation a tricky game. In this code talk, study a web application and evaluate its performance in various scenarios, and discover how to optimize throughput and latency along the way.
 
@@ -521,9 +521,9 @@ The availability of processors with and without hyperthreading makes performance
 - Role: Developer / Engineer, IT Professional / Technical Manager, Solution / Systems Architect
 - Services: Amazon Elastic Compute Cloud (Amazon EC2), Amazon EC2 - Graviton
 
-### LIGHTNING TALK
+## LIGHTNING TALK
 
-#### CMP346 | Uncover compute efficiency with AWS Graviton Savings Dashboard
+### CMP346 | Uncover compute efficiency with AWS Graviton Savings Dashboard
 
 Boost your workloads’ price performance with AWS Graviton. The Graviton Savings Dashboard offers a comprehensive analysis of your compute usage, identifying prime candidates for Graviton migration. Customers who migrate to Graviton-based instances see up to 40% better price performance. Learn how to implement and use the Graviton Savings Dashboard to quantify the potential TCO reduction of modernizing your infrastructure through performance and efficiency benefits of AWS Graviton. In this lightning talk, gain a clear understanding of how to identify current Graviton savings and a roadmap to migrate eligible workloads, helping you reinvest in core business initiatives.
 
