@@ -81,7 +81,7 @@ def run_commands_on_instance(instance_id, asg_name):
     
     # Configure SSM RunCommand Logging to CloudWatchLogs
     cloudwatch_output_config = {
-        'CloudWatchOutputEnabled' : bool(os.environ['EnableRunCommandOutputLogging']) 
+        'CloudWatchOutputEnabled' : os.environ['EnableRunCommandOutputLogging'] == "True"
     }
 
     # Send Command to the instance
